@@ -1,0 +1,33 @@
+# Build output
+build/
+
+# Object files
+*.o
+*.obj
+
+# Libraries
+*.a
+*.so
+*.dylib
+*.lib
+
+# Debug symbols
+*.dSYM/
+
+# Coverage artifacts
+*.gcda
+*.gcno
+*.gcov
+
+# Precompiled headers
+*.gch
+*.pch
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+/.cache

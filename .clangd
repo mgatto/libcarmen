@@ -1,0 +1,6 @@
+CompileFlags:
+  Add:
+    - -Iinclude
+    - -Ivendor/stb
+    - -Ivendor/unity
+    - -DUNITY_INCLUDE_DOUBLE

@@ -1,0 +1,9 @@
+prefix=@PREFIX@
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: libcarmen
+Description: C library for building Carmen Sandiego-style world exploration games
+Version: @VERSION@
+Cflags: -I${includedir}
+Libs: -L${libdir} -lcarmen
