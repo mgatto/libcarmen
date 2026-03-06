@@ -1,6 +1,6 @@
 CC       = cc
 CFLAGS   = -std=c17 -Wall -Wextra -pedantic -O2
-INCLUDES = -Iinclude -Ivendor/stb
+INCLUDES = -Iinclude -Ivendor/stb -Ivendor/utf8
 
 BUILD_DIR = build
 VERSION   = 0.1.0
