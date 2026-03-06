@@ -11,6 +11,7 @@
 typedef struct {
     char             id[CARMEN_MAX_NAME_LEN];
     char             name[CARMEN_MAX_NAME_LEN];
+    char             local_name[CARMEN_MAX_NAME_LEN];
     char             country[CARMEN_MAX_NAME_LEN];
     char             continent[CARMEN_MAX_NAME_LEN];
     double           latitude;
@@ -23,6 +24,7 @@ typedef struct {
 
 CARMEN_API void              carmen_city_init(CarmenCity *c, const char *id,
                                               const char *name,
+                                              const char *local_name,
                                               const char *country,
                                               const char *continent,
                                               double latitude,

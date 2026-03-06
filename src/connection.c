@@ -1,16 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 #include "carmen/connection.h"
+#include "carmen/utf8.h"
 
 void carmen_connection_init(CarmenConnection *c, const char *dest_id,
                             int distance_km, const char *transport_mode)
 {
     if (!c || !dest_id) return;
     memset(c, 0, sizeof(*c));
-    snprintf(c->destination_id, CARMEN_MAX_NAME_LEN, "%s", dest_id);
+    carmen_utf8_copy(c->destination_id, CARMEN_MAX_NAME_LEN, dest_id);
     c->distance_km = distance_km;
-    snprintf(c->transport_mode, CARMEN_MAX_NAME_LEN, "%s",
-             transport_mode ? transport_mode : "flight");
+    carmen_utf8_copy(c->transport_mode, CARMEN_MAX_NAME_LEN,
+                     transport_mode ? transport_mode : "flight");
 }
 
 int carmen_connection_to_string(const CarmenConnection *c,

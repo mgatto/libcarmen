@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "carmen/site.h"
+#include "carmen/utf8.h"
 
 static carmen_rand_fn g_rand_fn  = NULL;
 static void          *g_rand_ctx = NULL;
@@ -23,8 +24,8 @@ void carmen_site_init(CarmenSite *s, const char *name, const char *site_type)
 {
     if (!s || !name || !site_type) return;
     memset(s, 0, sizeof(*s));
-    snprintf(s->name, CARMEN_MAX_NAME_LEN, "%s", name);
-    snprintf(s->site_type, CARMEN_MAX_NAME_LEN, "%s", site_type);
+    carmen_utf8_copy(s->name, CARMEN_MAX_NAME_LEN, name);
+    carmen_utf8_copy(s->site_type, CARMEN_MAX_NAME_LEN, site_type);
 }
 
 void carmen_site_add_clue(CarmenSite *s, const char *text,
@@ -34,10 +35,10 @@ void carmen_site_add_clue(CarmenSite *s, const char *text,
     if (s->clue_count < CARMEN_MAX_CLUES) {
         CarmenClue *c = &s->clues[s->clue_count];
         memset(c, 0, sizeof(*c));
-        snprintf(c->text, CARMEN_MAX_CLUE_LEN, "%s", text);
+        carmen_utf8_copy(c->text, CARMEN_MAX_CLUE_LEN, text);
         if (target_city_id)
-            snprintf(c->target_city_id, CARMEN_MAX_NAME_LEN, "%s",
-                     target_city_id);
+            carmen_utf8_copy(c->target_city_id, CARMEN_MAX_NAME_LEN,
+                             target_city_id);
         c->type = type;
         s->clue_count++;
     }

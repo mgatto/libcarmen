@@ -3,6 +3,7 @@
 
 #include "carmen/carmen_version.h"
 #include "carmen/carmen_export.h"
+#include "carmen/utf8.h"
 #include "carmen/clue.h"
 #include "carmen/site.h"
 #include "carmen/connection.h"

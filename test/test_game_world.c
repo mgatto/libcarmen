@@ -22,7 +22,7 @@ static void test_world_init_zeroes_state(void)
 
 static void test_add_city_returns_pointer(void)
 {
-    CarmenCity *c = carmen_world_add_city(&world, "paris", "Paris",
+    CarmenCity *c = carmen_world_add_city(&world, "paris", "Paris", NULL,
                                           "France", "Europe", 48.86, 2.35);
     TEST_ASSERT_NOT_NULL(c);
     TEST_ASSERT_EQUAL_STRING("paris", c->id);
@@ -31,11 +31,11 @@ static void test_add_city_returns_pointer(void)
 
 static void test_add_city_updates_continent_index(void)
 {
-    carmen_world_add_city(&world, "paris", "Paris",
+    carmen_world_add_city(&world, "paris", "Paris", NULL,
                           "France", "Europe", 48.86, 2.35);
-    carmen_world_add_city(&world, "london", "London",
+    carmen_world_add_city(&world, "london", "London", NULL,
                           "England", "Europe", 51.51, -0.13);
-    carmen_world_add_city(&world, "cairo", "Cairo",
+    carmen_world_add_city(&world, "cairo", "Cairo", NULL,
                           "Egypt", "Africa", 30.04, 31.24);
 
     TEST_ASSERT_EQUAL_INT(2, world.continent_count);
@@ -47,10 +47,10 @@ static void test_add_city_returns_null_at_capacity(void)
         char id[16];
         snprintf(id, sizeof(id), "city_%d", i);
         TEST_ASSERT_NOT_NULL(
-            carmen_world_add_city(&world, id, id, "C", "X", 0, 0));
+            carmen_world_add_city(&world, id, id, NULL, "C", "X", 0, 0));
     }
     TEST_ASSERT_NULL(
-        carmen_world_add_city(&world, "overflow", "Overflow", "C", "X", 0, 0));
+        carmen_world_add_city(&world, "overflow", "Overflow", NULL, "C", "X", 0, 0));
     TEST_ASSERT_EQUAL_INT(CARMEN_MAX_CITIES, world.city_count);
 }
 
@@ -58,7 +58,7 @@ static void test_add_city_returns_null_at_capacity(void)
 
 static void test_find_existing_city(void)
 {
-    carmen_world_add_city(&world, "tokyo", "Tokyo",
+    carmen_world_add_city(&world, "tokyo", "Tokyo", NULL,
                           "Japan", "Asia", 35.68, 139.69);
     CarmenCity *found = carmen_world_find(&world, "tokyo");
     TEST_ASSERT_NOT_NULL(found);
@@ -67,16 +67,16 @@ static void test_find_existing_city(void)
 
 static void test_find_nonexistent_city(void)
 {
-    carmen_world_add_city(&world, "tokyo", "Tokyo",
+    carmen_world_add_city(&world, "tokyo", "Tokyo", NULL,
                           "Japan", "Asia", 35.68, 139.69);
     TEST_ASSERT_NULL(carmen_world_find(&world, "atlantis"));
 }
 
 static void test_find_among_many(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "b", "B", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "c", "C", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "b", "B", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "c", "C", NULL, "C", "X", 0, 0);
     CarmenCity *b = carmen_world_find(&world, "b");
     TEST_ASSERT_NOT_NULL(b);
     TEST_ASSERT_EQUAL_STRING("B", b->name);
@@ -86,11 +86,11 @@ static void test_find_among_many(void)
 
 static void test_cities_in_continent_returns_correct_set(void)
 {
-    carmen_world_add_city(&world, "paris", "Paris",
+    carmen_world_add_city(&world, "paris", "Paris", NULL,
                           "France", "Europe", 48.86, 2.35);
-    carmen_world_add_city(&world, "rome", "Rome",
+    carmen_world_add_city(&world, "rome", "Rome", NULL,
                           "Italy", "Europe", 41.90, 12.50);
-    carmen_world_add_city(&world, "cairo", "Cairo",
+    carmen_world_add_city(&world, "cairo", "Cairo", NULL,
                           "Egypt", "Africa", 30.04, 31.24);
 
     CarmenCity *out[CARMEN_MAX_CITIES];
@@ -101,7 +101,7 @@ static void test_cities_in_continent_returns_correct_set(void)
 
 static void test_cities_in_continent_unknown_returns_zero(void)
 {
-    carmen_world_add_city(&world, "paris", "Paris",
+    carmen_world_add_city(&world, "paris", "Paris", NULL,
                           "France", "Europe", 48.86, 2.35);
     CarmenCity *out[CARMEN_MAX_CITIES];
     int n = carmen_world_cities_in_continent(&world, "Antarctica",
@@ -113,9 +113,9 @@ static void test_cities_in_continent_unknown_returns_zero(void)
 
 static void test_destinations_from_returns_connected_cities(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "b", "B", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "c", "C", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "b", "B", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "c", "C", NULL, "C", "X", 0, 0);
 
     CarmenCity *a = carmen_world_find(&world, "a");
     CarmenConnection conn;
@@ -142,7 +142,7 @@ static void test_destinations_from_unknown_city(void)
 
 static void test_reachable_within_zero_hops(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
     CarmenCity *out[CARMEN_MAX_CITIES];
     int n = carmen_world_reachable_within(&world, "a", 0,
                                           out, CARMEN_MAX_CITIES);
@@ -151,9 +151,9 @@ static void test_reachable_within_zero_hops(void)
 
 static void test_reachable_within_one_hop(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "b", "B", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "c", "C", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "b", "B", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "c", "C", NULL, "C", "X", 0, 0);
 
     CarmenCity *a = carmen_world_find(&world, "a");
     CarmenConnection conn;
@@ -173,9 +173,9 @@ static void test_reachable_within_one_hop(void)
 
 static void test_reachable_within_two_hops(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "b", "B", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "c", "C", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "b", "B", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "c", "C", NULL, "C", "X", 0, 0);
 
     CarmenCity *a = carmen_world_find(&world, "a");
     CarmenConnection conn;
@@ -204,7 +204,7 @@ static void test_reachable_within_unknown_city(void)
 
 static void test_shortest_path_same_city(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
     const char *path[CARMEN_MAX_CITIES];
     int hops = carmen_world_shortest_path(&world, "a", "a",
                                           path, CARMEN_MAX_CITIES);
@@ -214,8 +214,8 @@ static void test_shortest_path_same_city(void)
 
 static void test_shortest_path_direct_connection(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "b", "B", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "b", "B", NULL, "C", "X", 0, 0);
 
     CarmenCity *a = carmen_world_find(&world, "a");
     CarmenConnection conn;
@@ -232,9 +232,9 @@ static void test_shortest_path_direct_connection(void)
 
 static void test_shortest_path_multi_hop(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "b", "B", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "c", "C", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "b", "B", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "c", "C", NULL, "C", "X", 0, 0);
 
     CarmenConnection conn;
     CarmenCity *a = carmen_world_find(&world, "a");
@@ -256,8 +256,8 @@ static void test_shortest_path_multi_hop(void)
 
 static void test_shortest_path_no_path(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
-    carmen_world_add_city(&world, "b", "B", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
+    carmen_world_add_city(&world, "b", "B", NULL, "C", "X", 0, 0);
     const char *path[CARMEN_MAX_CITIES];
     int hops = carmen_world_shortest_path(&world, "a", "b",
                                           path, CARMEN_MAX_CITIES);
@@ -266,7 +266,7 @@ static void test_shortest_path_no_path(void)
 
 static void test_shortest_path_nonexistent_origin(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
     const char *path[CARMEN_MAX_CITIES];
     int hops = carmen_world_shortest_path(&world, "ghost", "a",
                                           path, CARMEN_MAX_CITIES);
@@ -275,7 +275,7 @@ static void test_shortest_path_nonexistent_origin(void)
 
 static void test_shortest_path_nonexistent_destination(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
     const char *path[CARMEN_MAX_CITIES];
     int hops = carmen_world_shortest_path(&world, "a", "ghost",
                                           path, CARMEN_MAX_CITIES);
@@ -291,9 +291,9 @@ static void test_continent_count_empty(void)
 
 static void test_continent_count_after_adds(void)
 {
-    carmen_world_add_city(&world, "p", "P", "France", "Europe", 0, 0);
-    carmen_world_add_city(&world, "c", "C", "Egypt", "Africa", 0, 0);
-    carmen_world_add_city(&world, "l", "L", "England", "Europe", 0, 0);
+    carmen_world_add_city(&world, "p", "P", NULL, "France", "Europe", 0, 0);
+    carmen_world_add_city(&world, "c", "C", NULL, "Egypt", "Africa", 0, 0);
+    carmen_world_add_city(&world, "l", "L", NULL, "England", "Europe", 0, 0);
     TEST_ASSERT_EQUAL_INT(2, carmen_world_continent_count(&world));
 }
 
@@ -302,7 +302,7 @@ static void test_continent_count_after_adds(void)
 static void test_random_clue_from_valid_city(void)
 {
     srand(42);
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
     CarmenCity *a = carmen_world_find(&world, "a");
     CarmenSite s;
     carmen_site_init(&s, "Museum", "museum");
@@ -322,7 +322,7 @@ static void test_random_clue_from_nonexistent_city(void)
 
 static void test_random_clue_from_city_with_no_clues(void)
 {
-    carmen_world_add_city(&world, "a", "A", "C", "X", 0, 0);
+    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
     TEST_ASSERT_NULL(carmen_world_random_clue(&world, "a"));
 }
 

@@ -22,7 +22,7 @@ endif
 #  Library sources
 # --------------------------------------------------------------------------- #
 
-LIB_SRCS = src/site.c src/connection.c src/city.c src/game_world.c \
+LIB_SRCS = src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
            src/seed_data.c src/seed_data_islamic.c
 LIB_OBJS = $(LIB_SRCS:src/%.c=$(BUILD_DIR)/%.o)
 
@@ -86,10 +86,11 @@ $(BUILD_DIR)/carmen.pc: carmen.pc.in | $(BUILD_DIR)
 # --------------------------------------------------------------------------- #
 
 PUBLIC_HEADERS = include/carmen/carmen.h include/carmen/carmen_export.h \
-                 include/carmen/carmen_version.h include/carmen/clue.h \
-                 include/carmen/site.h include/carmen/connection.h \
-                 include/carmen/city.h include/carmen/game_world.h \
-                 include/carmen/seed_data.h include/carmen/seed_data_islamic.h
+                 include/carmen/carmen_version.h include/carmen/utf8.h \
+                 include/carmen/clue.h include/carmen/site.h \
+                 include/carmen/connection.h include/carmen/city.h \
+                 include/carmen/game_world.h include/carmen/seed_data.h \
+                 include/carmen/seed_data_islamic.h
 
 INCLUDEDIR   = $(PREFIX)/include/carmen
 LIBDIR       = $(PREFIX)/lib
@@ -147,13 +148,13 @@ test: $(TEST_BINS)
 $(TEST_DIR):
 	mkdir -p $(TEST_DIR)
 
-$(TEST_DIR)/test_site: test/test_site.c src/site.c $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_connection: test/test_connection.c src/connection.c $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
 $(TEST_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
@@ -214,14 +215,14 @@ $(COV_DIR)/llvm-gcov.sh: | $(COV_DIR)
 $(COV_DIR):
 	mkdir -p $(COV_DIR)
 
-$(COV_DIR)/test_site: test/test_site.c src/site.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/site.c $(UNITY_SRC)
+$(COV_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/site.c src/utf8.c $(UNITY_SRC)
 
-$(COV_DIR)/test_connection: test/test_connection.c src/connection.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/connection.c $(UNITY_SRC)
+$(COV_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/connection.c src/utf8.c $(UNITY_SRC)
 
-$(COV_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/city.c src/site.c src/connection.c $(UNITY_SRC)
+$(COV_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC)
 
 $(COV_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)

@@ -1,17 +1,20 @@
 #include <stdio.h>
 #include <string.h>
 #include "carmen/city.h"
+#include "carmen/utf8.h"
 
 void carmen_city_init(CarmenCity *c, const char *id, const char *name,
-                      const char *country, const char *continent,
-                      double latitude, double longitude)
+                      const char *local_name, const char *country,
+                      const char *continent, double latitude, double longitude)
 {
     if (!c || !id || !name || !country || !continent) return;
     memset(c, 0, sizeof(*c));
-    snprintf(c->id, CARMEN_MAX_NAME_LEN, "%s", id);
-    snprintf(c->name, CARMEN_MAX_NAME_LEN, "%s", name);
-    snprintf(c->country, CARMEN_MAX_NAME_LEN, "%s", country);
-    snprintf(c->continent, CARMEN_MAX_NAME_LEN, "%s", continent);
+    carmen_utf8_copy(c->id, CARMEN_MAX_NAME_LEN, id);
+    carmen_utf8_copy(c->name, CARMEN_MAX_NAME_LEN, name);
+    if (local_name)
+        carmen_utf8_copy(c->local_name, CARMEN_MAX_NAME_LEN, local_name);
+    carmen_utf8_copy(c->country, CARMEN_MAX_NAME_LEN, country);
+    carmen_utf8_copy(c->continent, CARMEN_MAX_NAME_LEN, continent);
     c->latitude  = latitude;
     c->longitude = longitude;
 }

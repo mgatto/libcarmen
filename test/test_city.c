@@ -11,7 +11,7 @@ void tearDown(void) {}
 static CarmenCity make_test_city(void)
 {
     CarmenCity c;
-    carmen_city_init(&c, "paris", "Paris", "France", "Europe", 48.86, 2.35);
+    carmen_city_init(&c, "paris", "Paris", NULL, "France", "Europe", 48.86, 2.35);
     return c;
 }
 
@@ -20,7 +20,7 @@ static CarmenCity make_test_city(void)
 static void test_city_init_sets_all_fields(void)
 {
     CarmenCity c;
-    carmen_city_init(&c, "cairo", "Cairo", "Egypt", "Africa", 30.04, 31.24);
+    carmen_city_init(&c, "cairo", "Cairo", NULL, "Egypt", "Africa", 30.04, 31.24);
     TEST_ASSERT_EQUAL_STRING("cairo", c.id);
     TEST_ASSERT_EQUAL_STRING("Cairo", c.name);
     TEST_ASSERT_EQUAL_STRING("Egypt", c.country);
@@ -35,7 +35,7 @@ static void test_city_init_zeroes_arrays(void)
 {
     CarmenCity c;
     memset(&c, 0xFF, sizeof(c));
-    carmen_city_init(&c, "test", "Test", "Country", "Continent", 0, 0);
+    carmen_city_init(&c, "test", "Test", NULL, "Country", "Continent", 0, 0);
     TEST_ASSERT_EQUAL_INT(0, c.site_count);
     TEST_ASSERT_EQUAL_INT(0, c.connection_count);
 }

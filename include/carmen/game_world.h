@@ -35,6 +35,7 @@ CARMEN_API CarmenWorld *carmen_world_create(void);
 CARMEN_API void         carmen_world_free(CarmenWorld *w);
 CARMEN_API CarmenCity *carmen_world_add_city(CarmenWorld *w, const char *id,
                                              const char *name,
+                                             const char *local_name,
                                              const char *country,
                                              const char *continent,
                                              double lat, double lon);

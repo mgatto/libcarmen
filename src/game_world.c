@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "stb_ds.h"
 #include "carmen/game_world.h"
+#include "carmen/utf8.h"
 
 /* stb_ds string hash map entry: maps city ID string -> slot in storage[] */
 typedef struct {
@@ -26,7 +27,7 @@ static CarmenIndexEntry *find_or_create_index(CarmenIndexEntry *index,
         return NULL;
     CarmenIndexEntry *entry = &index[(*count)++];
     memset(entry, 0, sizeof(*entry));
-    snprintf(entry->key, CARMEN_MAX_NAME_LEN, "%s", key);
+    carmen_utf8_copy(entry->key, CARMEN_MAX_NAME_LEN, key);
     return entry;
 }
 
@@ -81,8 +82,8 @@ void carmen_world_free(CarmenWorld *w)
 /* ------------------------------------------------------------- add / find */
 
 CarmenCity *carmen_world_add_city(CarmenWorld *w, const char *id,
-                                  const char *name, const char *country,
-                                  const char *continent,
+                                  const char *name, const char *local_name,
+                                  const char *country, const char *continent,
                                   double lat, double lon)
 {
     if (!w || !id || !name || !country || !continent)
@@ -92,7 +93,7 @@ CarmenCity *carmen_world_add_city(CarmenWorld *w, const char *id,
 
     int slot       = w->city_count;
     CarmenCity *c  = &w->storage[slot];
-    carmen_city_init(c, id, name, country, continent, lat, lon);
+    carmen_city_init(c, id, name, local_name, country, continent, lat, lon);
     w->city_count++;
 
     CityMapEntry *m = map_ptr(w);
