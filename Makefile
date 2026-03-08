@@ -30,15 +30,18 @@ LIB_OBJS = $(LIB_SRCS:src/%.c=$(BUILD_DIR)/%.o)
 STATIC_LIB = $(BUILD_DIR)/libcarmen.a
 SHARED_LIB = $(BUILD_DIR)/libcarmen.$(SHARED_EXT)
 
-# Demo binary (links against the static lib)
+# Demo binaries (link against the static lib)
 TARGET     = $(BUILD_DIR)/carmen
 TARGET_OBJ = $(BUILD_DIR)/carmen.o
+
+TRAIL_DEMO     = $(BUILD_DIR)/trail_demo
+TRAIL_DEMO_OBJ = $(BUILD_DIR)/trail_demo.o
 
 # --------------------------------------------------------------------------- #
 #  Default: build the static library and the demo binary
 # --------------------------------------------------------------------------- #
 
-all: $(STATIC_LIB) $(TARGET)
+all: $(STATIC_LIB) $(TARGET) $(TRAIL_DEMO)
 
 # --------------------------------------------------------------------------- #
 #  Library targets
@@ -54,13 +57,19 @@ $(SHARED_LIB): $(LIB_SRCS) | $(BUILD_DIR)
 lib: $(STATIC_LIB) $(SHARED_LIB)
 
 # --------------------------------------------------------------------------- #
-#  Demo binary
+#  Demo binaries
 # --------------------------------------------------------------------------- #
 
 $(TARGET): $(TARGET_OBJ) $(STATIC_LIB)
 	$(CC) $(CFLAGS) -o $@ $(TARGET_OBJ) $(STATIC_LIB)
 
 $(TARGET_OBJ): examples/carmen.c | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+
+$(TRAIL_DEMO): $(TRAIL_DEMO_OBJ) $(STATIC_LIB)
+	$(CC) $(CFLAGS) -o $@ $(TRAIL_DEMO_OBJ) $(STATIC_LIB)
+
+$(TRAIL_DEMO_OBJ): examples/trail_demo.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(BUILD_DIR)/%.o: src/%.c | $(BUILD_DIR)
