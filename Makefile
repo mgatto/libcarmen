@@ -23,7 +23,7 @@ endif
 # --------------------------------------------------------------------------- #
 
 LIB_SRCS = src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
-           src/seed_data.c src/seed_data_islamic.c
+           src/seed_data.c src/seed_data_islamic.c src/villain.c
 LIB_OBJS = $(LIB_SRCS:src/%.c=$(BUILD_DIR)/%.o)
 
 # Library artifacts
@@ -99,7 +99,8 @@ PUBLIC_HEADERS = include/carmen/carmen.h include/carmen/carmen_export.h \
                  include/carmen/clue.h include/carmen/site.h \
                  include/carmen/connection.h include/carmen/city.h \
                  include/carmen/game_world.h include/carmen/seed_data.h \
-                 include/carmen/seed_data_islamic.h
+                 include/carmen/seed_data_islamic.h \
+                 include/carmen/villain.h
 
 INCLUDEDIR   = $(PREFIX)/include/carmen
 LIBDIR       = $(PREFIX)/lib
