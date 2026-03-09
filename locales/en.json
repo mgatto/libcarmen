@@ -668,6 +668,60 @@
   "villain.rumi.2": "The suspect quoted Hafez to a bewildered security guard",
   "villain.rumi.3": "A handwritten verse was tucked inside the broken display",
 
+  "artifact.astrolabe_isfahan.name": "Brass Astrolabe of Isfahan",
+  "artifact.astrolabe_isfahan.desc": "A 12th-century brass astrolabe engraved with Arabic star names, used by astronomers at the Isfahan observatory to chart the heavens.",
+
+  "artifact.quran_manuscript_cairo.name": "Illuminated Quran of Sultan Baybars",
+  "artifact.quran_manuscript_cairo.desc": "A 13th-century Quran commissioned by Sultan Baybars, with gold-leaf illumination and intricate geometric borders painted by master calligraphers in Cairo.",
+
+  "artifact.iznik_tile_istanbul.name": "Iznik Ceramic Tile Panel",
+  "artifact.iznik_tile_istanbul.desc": "A 16th-century panel of cobalt-blue and tulip-red Iznik tiles, originally part of the interior decoration of the Rüstem Pasha Mosque in Istanbul.",
+
+  "artifact.khanjar_muscat.name": "Silver Khanjar of the Sultan",
+  "artifact.khanjar_muscat.desc": "A ceremonial curved dagger with a silver-filigree sheath and rhinoceros-horn hilt, presented to the Sultan of Oman in the 18th century.",
+
+  "artifact.brass_lamp_cairo.name": "Mamluk Mosque Lamp",
+  "artifact.brass_lamp_cairo.desc": "A pierced brass hanging lamp from the Mamluk era, inscribed with the Verse of Light in flowing thuluth script, once suspended in a Cairo madrasa.",
+
+  "artifact.whirling_robe_konya.name": "Dervish Ceremonial Robe",
+  "artifact.whirling_robe_konya.desc": "A white wool tennure robe worn by a senior Mevlevi dervish during the sema ceremony at the Konya lodge, dating to the 17th century.",
+
+  "artifact.samarkand_paper_tashkent.name": "Samarkand Silk Paper Folio",
+  "artifact.samarkand_paper_tashkent.desc": "A folio of polished mulberry-bark paper from the legendary Samarkand mills, bearing a treatise on algebra in the hand of a 10th-century scholar.",
+
+  "artifact.mughal_miniature_lahore.name": "Mughal Miniature Painting",
+  "artifact.mughal_miniature_lahore.desc": "A jewel-toned miniature depicting Emperor Jahangir receiving a Sufi saint, painted with crushed lapis lazuli and gold at the Lahore court.",
+
+  "artifact.zellige_mosaic_fez.name": "Zellige Mosaic Star Panel",
+  "artifact.zellige_mosaic_fez.desc": "A hand-cut geometric mosaic of glazed terracotta tiles arranged in a 16-point star, removed from a 14th-century riad courtyard in the Fez medina.",
+
+  "artifact.dead_sea_scrolls_amman.name": "Copper Scroll of the Dead Sea",
+  "artifact.dead_sea_scrolls_amman.desc": "A thin copper sheet inscribed with an inventory of hidden treasures, discovered in a cave near the Dead Sea and kept in the Amman Citadel museum.",
+
+  "artifact.pearl_chest_dubai.name": "Pearl Diver's Chest",
+  "artifact.pearl_chest_dubai.desc": "A teak chest inlaid with mother-of-pearl, used by Gulf pearl merchants to store and grade natural pearls before the oil era transformed Dubai.",
+
+  "artifact.vakufnama_sarajevo.name": "Ottoman Vakufnama of Gazi Husrev-beg",
+  "artifact.vakufnama_sarajevo.desc": "A 1531 endowment deed in ornate Ottoman calligraphy, establishing Sarajevo's great mosque, library, and madrasa -- the founding charter of the city's Islamic cultural quarter.",
+
+  "artifact.zanzibar_door.name": "Carved Door of Stone Town",
+  "artifact.zanzibar_door.desc": "A massive teak door studded with brass spikes and carved with lotus and chain motifs, once the entrance to a wealthy Omani merchant's house in Zanzibar.",
+
+  "artifact.muslin_dhaka.name": "Jamdani Muslin Sari",
+  "artifact.muslin_dhaka.desc": "A near-translucent handwoven muslin sari with supplementary weft patterns, produced by Dhaka weavers whose technique was once thought lost to history.",
+
+  "artifact.pewter_tankard_kuala_lumpur.name": "Royal Selangor Pewter Vessel",
+  "artifact.pewter_tankard_kuala_lumpur.desc": "A ceremonial pewter wine vessel crafted from Straits tin, decorated with Islamic arabesques and presented to a Malay sultan in the 19th century.",
+
+  "artifact.keris_jakarta.name": "Javanese Keris Blade",
+  "artifact.keris_jakarta.desc": "A sinuous-bladed keris with a damascened iron blade folded from meteorite nickel, believed to hold spiritual power and forged by an empu master smith.",
+
+  "artifact.cedar_oud_beirut.name": "Cedar-Wood Oud",
+  "artifact.cedar_oud_beirut.desc": "A pear-shaped oud crafted from Lebanese cedar with bone tuning pegs, once played by a renowned musician at the Beirut conservatory.",
+
+  "artifact.glass_weight_dakar.name": "Fatimid Glass Weight",
+  "artifact.glass_weight_dakar.desc": "A translucent green glass disc stamped with a Fatimid caliph's name, used as a trade standard along the trans-Saharan gold route through Dakar.",
+
   "ui.title": "CARMEN: THE MODERN MUSLIM TRAVELER",
   "ui.intel": "A FITNA operative has been sighted.",
   "ui.instruction": "Gather clues and identify the suspect.",
