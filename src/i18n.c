@@ -14,6 +14,15 @@ struct CarmenI18n {
     I18nEntry *map;
 };
 
+static int valid_i18n_key(const char *key)
+{
+    for (const char *p = key; *p; p++)
+        if (!((*p >= 'a' && *p <= 'z') || (*p >= '0' && *p <= '9') ||
+              *p == '.' || *p == '_'))
+            return 0;
+    return key[0] != '\0';
+}
+
 CarmenI18n *carmen_i18n_load(const char *json_path)
 {
     if (!json_path) return NULL;
@@ -25,30 +34,61 @@ CarmenI18n *carmen_i18n_load(const char *json_path)
     long len = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    if (len <= 0) { fclose(f); return NULL; }
+    if (len <= 0 || (size_t)len > CARMEN_I18N_MAX_FILE_SIZE) {
+        fclose(f);
+        return NULL;
+    }
 
     char *buf = malloc((size_t)len + 1);
     if (!buf) { fclose(f); return NULL; }
 
-    size_t read = fread(buf, 1, (size_t)len, f);
+    size_t nread = fread(buf, 1, (size_t)len, f);
     fclose(f);
-    buf[read] = '\0';
+    buf[nread] = '\0';
 
-    cJSON *root = cJSON_Parse(buf);
+    cJSON *root = cJSON_ParseWithLength(buf, nread);
     free(buf);
-    if (!root) return NULL;
+    if (!root || !cJSON_IsObject(root)) {
+        cJSON_Delete(root);
+        return NULL;
+    }
 
     CarmenI18n *ctx = malloc(sizeof(*ctx));
     if (!ctx) { cJSON_Delete(root); return NULL; }
     ctx->map = NULL;
     sh_new_strdup(ctx->map);
 
+    int entry_count = 0;
     cJSON *item = NULL;
     cJSON_ArrayForEach(item, root) {
-        if (item->string && item->string[0] != '_' && cJSON_IsString(item)) {
-            char *dup = strdup(item->valuestring);
-            shput(ctx->map, item->string, dup);
+        if (entry_count >= CARMEN_I18N_MAX_ENTRIES) {
+            fprintf(stderr, "i18n: entry limit reached (%d), remaining keys ignored\n",
+                    CARMEN_I18N_MAX_ENTRIES);
+            break;
         }
+        if (!item->string || item->string[0] == '_' || !cJSON_IsString(item))
+            continue;
+
+        size_t klen = strlen(item->string);
+        size_t vlen = strlen(item->valuestring);
+
+        if (klen >= CARMEN_I18N_MAX_KEY_LEN) {
+            fprintf(stderr, "i18n: skipping oversized key \"%.*s...\" (%zu bytes)\n",
+                    20, item->string, klen);
+            continue;
+        }
+        if (!valid_i18n_key(item->string))
+            continue;
+        if (vlen >= CARMEN_I18N_MAX_VALUE_LEN) {
+            fprintf(stderr, "i18n: skipping oversized value for key \"%s\" (%zu bytes)\n",
+                    item->string, vlen);
+            continue;
+        }
+
+        char *dup = strdup(item->valuestring);
+        if (!dup) continue;
+        shput(ctx->map, item->string, dup);
+        entry_count++;
     }
 
     cJSON_Delete(root);

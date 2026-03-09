@@ -128,6 +128,14 @@ static int build_trail(CarmenWorld *w, const char *trail[]) {
     return TRAIL_LEN;
 }
 
+static int valid_locale_id(const char *id) {
+    for (const char *p = id; *p; p++)
+        if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') ||
+              (*p >= '0' && *p <= '9') || *p == '_' || *p == '-'))
+            return 0;
+    return id[0] != '\0';
+}
+
 static void print_city_name(const CarmenI18n *i18n, const CarmenCity *c) {
     const char *name = carmen_i18n_get(i18n, c->name);
     const char *local = carmen_i18n_get(i18n, c->local_name);
@@ -140,6 +148,10 @@ static void print_city_name(const CarmenI18n *i18n, const CarmenCity *c) {
 
 int main(int argc, char *argv[]) {
     const char *locale = (argc > 1) ? argv[1] : "en";
+    if (!valid_locale_id(locale)) {
+        fprintf(stderr, "Invalid locale id: %s\n", locale);
+        return 1;
+    }
     char path[256];
     snprintf(path, sizeof path, "locales/%s.json", locale);
 
