@@ -3,9 +3,9 @@
 
 #include "carmen/carmen_export.h"
 
-#define CARMEN_MAX_NAME_LEN 64
-#define CARMEN_MAX_CLUE_LEN 256
-#define CARMEN_MAX_CLUES    8
+#define CARMEN_MAX_NAME_LEN 48
+#define CARMEN_MAX_CLUE_LEN 48
+#define CARMEN_MAX_CLUES    4
 
 typedef enum {
     CARMEN_CLUE_POSITIVE,   /* 0 -- points toward the correct next city */

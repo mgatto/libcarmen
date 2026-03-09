@@ -5,8 +5,8 @@
 #include "carmen/site.h"
 #include "carmen/connection.h"
 
-#define CARMEN_MAX_SITES       8
-#define CARMEN_MAX_CONNECTIONS 12
+#define CARMEN_MAX_SITES       6
+#define CARMEN_MAX_CONNECTIONS 10
 
 typedef struct {
     char             id[CARMEN_MAX_NAME_LEN];

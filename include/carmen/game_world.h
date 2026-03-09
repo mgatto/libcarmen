@@ -4,9 +4,9 @@
 #include "carmen/carmen_export.h"
 #include "carmen/city.h"
 
-#define CARMEN_MAX_CITIES         64
-#define CARMEN_MAX_INDEX_ENTRIES   16
-#define CARMEN_MAX_IDS_PER_INDEX   32
+#define CARMEN_MAX_CITIES         32
+#define CARMEN_MAX_INDEX_ENTRIES   32
+#define CARMEN_MAX_IDS_PER_INDEX   16
 
 typedef struct {
     char key[CARMEN_MAX_NAME_LEN];
