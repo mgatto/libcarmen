@@ -140,6 +140,22 @@ int carmen_world_cities_in_continent(CarmenWorld *w, const char *continent,
     return count;
 }
 
+int carmen_world_cities_in_country(CarmenWorld *w, const char *country,
+                                   CarmenCity **out, int max_out)
+{
+    if (!w || !country || !out || max_out <= 0) return 0;
+    int count = 0;
+    for (int i = 0; i < w->country_count && count < max_out; i++) {
+        if (strcmp(w->country_index[i].key, country) == 0) {
+            CarmenIndexEntry *e = &w->country_index[i];
+            for (int j = 0; j < e->count && count < max_out; j++)
+                out[count++] = &w->storage[e->slots[j]];
+            break;
+        }
+    }
+    return count;
+}
+
 int carmen_world_destinations_from(CarmenWorld *w, const char *city_id,
                                    CarmenCity **out, int max_out)
 {

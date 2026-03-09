@@ -45,6 +45,10 @@ CARMEN_API int   carmen_world_cities_in_continent(CarmenWorld *w,
                                                    const char *continent,
                                                    CarmenCity **out,
                                                    int max_out);
+CARMEN_API int   carmen_world_cities_in_country(CarmenWorld *w,
+                                                  const char *country,
+                                                  CarmenCity **out,
+                                                  int max_out);
 CARMEN_API int   carmen_world_destinations_from(CarmenWorld *w,
                                                 const char *city_id,
                                                 CarmenCity **out,
