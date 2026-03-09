@@ -1,33 +1,63 @@
 [
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -c -o build/site.o src/site.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/site.o src/site.c",
     "file": "src/site.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -c -o build/connection.o src/connection.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/connection.o src/connection.c",
     "file": "src/connection.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -c -o build/city.o src/city.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/city.o src/city.c",
     "file": "src/city.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -c -o build/game_world.o src/game_world.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/game_world.o src/game_world.c",
     "file": "src/game_world.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -c -o build/seed_data.o src/seed_data.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/seed_data.o src/seed_data.c",
     "file": "src/seed_data.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -c -o build/seed_data_islamic.o src/seed_data_islamic.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/seed_data_islamic.o src/seed_data_islamic.c",
     "file": "src/seed_data_islamic.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/utf8.o src/utf8.c",
+    "file": "src/utf8.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/villain.o src/villain.c",
+    "file": "src/villain.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/artifact.o src/artifact.c",
+    "file": "src/artifact.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/case.o src/case.c",
+    "file": "src/case.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/session.o src/session.c",
+    "file": "src/session.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/i18n.o src/i18n.c",
+    "file": "src/i18n.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
@@ -36,27 +66,42 @@
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/unity -c test/test_site.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_artifact.c",
+    "file": "test/test_artifact.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_case.c",
+    "file": "test/test_case.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_session.c",
+    "file": "test/test_session.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_site.c",
     "file": "test/test_site.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/unity -c test/test_connection.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_connection.c",
     "file": "test/test_connection.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/unity -c test/test_city.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_city.c",
     "file": "test/test_city.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/unity -c test/test_game_world.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_game_world.c",
     "file": "test/test_game_world.c"
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
-    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/unity -c test/test_carmen_scenarios.c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_carmen_scenarios.c",
     "file": "test/test_carmen_scenarios.c"
   }
 ]

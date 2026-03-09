@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <string.h>
 #include "carmen/case.h"
 #include "carmen/utf8.h"
@@ -39,15 +40,6 @@ static int time_budget_hrs_for(CarmenDifficulty d, int trail_travel_hrs)
     return base + trail_travel_hrs;
 }
 
-static int in_trail(const char trail[][CARMEN_MAX_NAME_LEN], int len,
-                    const char *id)
-{
-    for (int i = 0; i < len; i++)
-        if (strcmp(trail[i], id) == 0)
-            return 1;
-    return 0;
-}
-
 static int sites_covering(const CarmenCity *city, const char *target)
 {
     int count = 0;
@@ -64,55 +56,82 @@ static int sites_covering(const CarmenCity *city, const char *target)
     return count;
 }
 
+static int city_slot(const CarmenWorld *w, const CarmenCity *c)
+{
+    return (int)(c - w->storage);
+}
+
 static int build_trail(CarmenWorld *w,
                        char trail[][CARMEN_MAX_NAME_LEN],
                        int target_len, int max_hops)
 {
     int start = carmen_random() % w->city_count;
-    carmen_utf8_copy(trail[0], CARMEN_MAX_NAME_LEN,
-                     w->storage[start].id);
+    CarmenCity *cur = &w->storage[start];
+    carmen_utf8_copy(trail[0], CARMEN_MAX_NAME_LEN, cur->id);
+
+    bool on_trail[CARMEN_MAX_CITIES] = {false};
+    on_trail[start] = true;
 
     for (int i = 1; i < target_len; i++) {
-        CarmenCity *cur = carmen_world_find(w, trail[i - 1]);
-        if (!cur)
-            return i;
-
         CarmenCity *reach[CARMEN_MAX_CITIES];
-        int n = carmen_world_reachable_within(w, trail[i - 1], max_hops,
+        int n = carmen_world_reachable_within(w, cur->id, max_hops,
                                               reach, CARMEN_MAX_CITIES);
 
-        /* Tier 1: neighbors with >= 2 sites covering the candidate */
-        const char *cand[CARMEN_MAX_CITIES];
-        int nc = 0;
-        for (int j = 0; j < n; j++)
-            if (!in_trail(trail, i, reach[j]->id) &&
-                sites_covering(cur, reach[j]->id) >= 2)
-                cand[nc++] = reach[j]->id;
+        /* Single pass: compute coverage and filter out trail duplicates */
+        int coverage[CARMEN_MAX_CITIES];
+        int valid[CARMEN_MAX_CITIES];
+        int nv = 0;
+        for (int j = 0; j < n; j++) {
+            if (on_trail[city_slot(w, reach[j])])
+                continue;
+            coverage[nv] = sites_covering(cur, reach[j]->id);
+            valid[nv]    = j;
+            nv++;
+        }
 
-        /* Tier 2: neighbors with >= 1 site covering the candidate */
-        if (nc == 0)
-            for (int j = 0; j < n; j++)
-                if (!in_trail(trail, i, reach[j]->id) &&
-                    sites_covering(cur, reach[j]->id) >= 1)
-                    cand[nc++] = reach[j]->id;
-
-        /* Tier 3: any reachable city not already in trail */
-        if (nc == 0)
-            for (int j = 0; j < n; j++)
-                if (!in_trail(trail, i, reach[j]->id))
-                    cand[nc++] = reach[j]->id;
-
-        if (nc == 0)
+        if (nv == 0)
             return i;
 
-        carmen_utf8_copy(trail[i], CARMEN_MAX_NAME_LEN,
-                         cand[carmen_random() % nc]);
+        /* Pick from best available tier */
+        const char *cand[CARMEN_MAX_CITIES];
+        int nc = 0;
+
+        for (int j = 0; j < nv; j++)
+            if (coverage[j] >= 2)
+                cand[nc++] = reach[valid[j]]->id;
+
+        if (nc == 0)
+            for (int j = 0; j < nv; j++)
+                if (coverage[j] >= 1)
+                    cand[nc++] = reach[valid[j]]->id;
+
+        if (nc == 0)
+            for (int j = 0; j < nv; j++)
+                cand[nc++] = reach[valid[j]]->id;
+
+        const char *chosen = cand[carmen_random() % nc];
+        carmen_utf8_copy(trail[i], CARMEN_MAX_NAME_LEN, chosen);
+
+        cur = carmen_world_find(w, chosen);
+        if (!cur)
+            return i;
+        on_trail[city_slot(w, cur)] = true;
     }
     return target_len;
 }
 
-/* Sum per-leg travel hours along the trail, respecting each connection's
-   transport mode speed. */
+/* Travel hours for a single direct connection between two cities. */
+static int direct_leg_hrs(const CarmenCity *from, const char *to_id)
+{
+    for (int c = 0; c < from->connection_count; c++)
+        if (strcmp(from->connections[c].destination_id, to_id) == 0)
+            return carmen_connection_travel_hrs(&from->connections[c]);
+    return 0;
+}
+
+/* Sum travel hours along the trail. For multi-hop legs (consecutive trail
+   cities not directly connected), walks the shortest path between them
+   and sums each hop's travel time. */
 static int compute_trail_travel_hrs(CarmenWorld *w,
                                     char trail[][CARMEN_MAX_NAME_LEN],
                                     int trail_len)
@@ -121,12 +140,22 @@ static int compute_trail_travel_hrs(CarmenWorld *w,
     for (int i = 1; i < trail_len; i++) {
         CarmenCity *prev = carmen_world_find(w, trail[i - 1]);
         if (!prev) continue;
-        for (int c = 0; c < prev->connection_count; c++) {
-            if (strcmp(prev->connections[c].destination_id, trail[i]) == 0) {
-                total_hrs += carmen_connection_travel_hrs(
-                                 &prev->connections[c]);
-                break;
-            }
+
+        int hrs = direct_leg_hrs(prev, trail[i]);
+        if (hrs > 0) {
+            total_hrs += hrs;
+            continue;
+        }
+
+        /* Not directly connected -- walk shortest path */
+        const char *path[CARMEN_MAX_CITIES];
+        int hops = carmen_world_shortest_path(w, trail[i - 1], trail[i],
+                                              path, CARMEN_MAX_CITIES);
+        if (hops <= 0) continue;
+        for (int h = 0; h < hops; h++) {
+            CarmenCity *step = carmen_world_find(w, path[h]);
+            if (step)
+                total_hrs += direct_leg_hrs(step, path[h + 1]);
         }
     }
     return total_hrs;

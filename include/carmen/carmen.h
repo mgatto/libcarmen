@@ -11,6 +11,9 @@
 #include "carmen/game_world.h"
 #include "carmen/seed_data_islamic.h"
 #include "carmen/villain.h"
+#include "carmen/artifact.h"
+#include "carmen/case.h"
+#include "carmen/session.h"
 #include "carmen/i18n.h"
 
 #endif

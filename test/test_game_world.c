@@ -282,6 +282,46 @@ static void test_shortest_path_nonexistent_destination(void)
     TEST_ASSERT_EQUAL_INT(-1, hops);
 }
 
+/* ------------------------------------------------ cities_in_country */
+
+static void test_cities_in_country_returns_correct_set(void)
+{
+    carmen_world_add_city(&world, "paris", "Paris", NULL,
+                          "France", "Europe", 48.86, 2.35);
+    carmen_world_add_city(&world, "lyon", "Lyon", NULL,
+                          "France", "Europe", 45.76, 4.84);
+    carmen_world_add_city(&world, "cairo", "Cairo", NULL,
+                          "Egypt", "Africa", 30.04, 31.24);
+
+    CarmenCity *out[CARMEN_MAX_CITIES];
+    int n = carmen_world_cities_in_country(&world, "France",
+                                            out, CARMEN_MAX_CITIES);
+    TEST_ASSERT_EQUAL_INT(2, n);
+}
+
+static void test_cities_in_country_unknown_returns_zero(void)
+{
+    carmen_world_add_city(&world, "paris", "Paris", NULL,
+                          "France", "Europe", 48.86, 2.35);
+    CarmenCity *out[CARMEN_MAX_CITIES];
+    int n = carmen_world_cities_in_country(&world, "Narnia",
+                                            out, CARMEN_MAX_CITIES);
+    TEST_ASSERT_EQUAL_INT(0, n);
+}
+
+static void test_cities_in_country_null_args(void)
+{
+    CarmenCity *out[CARMEN_MAX_CITIES];
+    TEST_ASSERT_EQUAL_INT(0,
+        carmen_world_cities_in_country(NULL, "France", out, CARMEN_MAX_CITIES));
+    TEST_ASSERT_EQUAL_INT(0,
+        carmen_world_cities_in_country(&world, NULL, out, CARMEN_MAX_CITIES));
+    TEST_ASSERT_EQUAL_INT(0,
+        carmen_world_cities_in_country(&world, "France", NULL, CARMEN_MAX_CITIES));
+    TEST_ASSERT_EQUAL_INT(0,
+        carmen_world_cities_in_country(&world, "France", out, 0));
+}
+
 /* -------------------------------------------------- continent_count */
 
 static void test_continent_count_empty(void)
@@ -340,6 +380,9 @@ int main(void)
     RUN_TEST(test_find_among_many);
     RUN_TEST(test_cities_in_continent_returns_correct_set);
     RUN_TEST(test_cities_in_continent_unknown_returns_zero);
+    RUN_TEST(test_cities_in_country_returns_correct_set);
+    RUN_TEST(test_cities_in_country_unknown_returns_zero);
+    RUN_TEST(test_cities_in_country_null_args);
     RUN_TEST(test_destinations_from_returns_connected_cities);
     RUN_TEST(test_destinations_from_unknown_city);
     RUN_TEST(test_reachable_within_zero_hops);

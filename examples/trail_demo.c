@@ -1,132 +1,14 @@
 #include "carmen/carmen.h"
-#include "carmen/villain.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#define TRAIL_LEN 5
-#define MAX_RETRIES 20
 #define LINE "============================================================"
 #define RULE "------------------------------------------------------------"
 #define EXPAND_BUF 512
 
-/* ── Trail helpers ────────────────────────────────────────────────── */
-
-static int in_trail(const char *trail[], int len, const char *id) {
-    for (int i = 0; i < len; i++)
-        if (strcmp(trail[i], id) == 0)
-            return 1;
-    return 0;
-}
-
-static int sites_covering(const CarmenCity *city, const char *target) {
-    int count = 0;
-    for (int s = 0; s < city->site_count; s++) {
-        const CarmenSite *site = &city->sites[s];
-        for (int c = 0; c < site->clue_count; c++) {
-            if (site->clues[c].type == CARMEN_CLUE_POSITIVE &&
-                strcmp(site->clues[c].target_city_id, target) == 0) {
-                count++;
-                break;
-            }
-        }
-    }
-    return count;
-}
-
-static int find_sites_for(const CarmenCity *city, const char *target,
-                          const CarmenSite **out, int max) {
-    int n = 0;
-    for (int s = 0; s < city->site_count && n < max; s++) {
-        const CarmenSite *site = &city->sites[s];
-        for (int c = 0; c < site->clue_count; c++) {
-            if (site->clues[c].type == CARMEN_CLUE_POSITIVE &&
-                strcmp(site->clues[c].target_city_id, target) == 0) {
-                out[n++] = site;
-                break;
-            }
-        }
-    }
-    return n;
-}
-
-static const CarmenClue *pick_clue_to(const CarmenSite *site,
-                                      const char *target) {
-    for (int c = 0; c < site->clue_count; c++)
-        if (site->clues[c].type == CARMEN_CLUE_POSITIVE &&
-            strcmp(site->clues[c].target_city_id, target) == 0)
-            return &site->clues[c];
-    return NULL;
-}
-
-static const CarmenClue *pick_herring_from(const CarmenSite *site,
-                                           const char *target) {
-    for (int c = 0; c < site->clue_count; c++)
-        if (site->clues[c].type == CARMEN_CLUE_POSITIVE &&
-            strcmp(site->clues[c].target_city_id, target) != 0)
-            return &site->clues[c];
-    return NULL;
-}
-
-static const CarmenClue *pick_negative(const CarmenSite *site) {
-    for (int c = 0; c < site->clue_count; c++)
-        if (site->clues[c].type == CARMEN_CLUE_NEGATIVE)
-            return &site->clues[c];
-    return NULL;
-}
-
-static const CarmenSite *pick_noise_site(const CarmenCity *city,
-                                         const CarmenSite *s1,
-                                         const CarmenSite *s2) {
-    const CarmenSite *pool[CARMEN_MAX_SITES];
-    int n = 0;
-    for (int s = 0; s < city->site_count; s++) {
-        const CarmenSite *site = &city->sites[s];
-        if (site != s1 && site != s2)
-            pool[n++] = site;
-    }
-    if (n == 0)
-        return NULL;
-    return pool[carmen_random() % n];
-}
-
-static int build_trail(CarmenWorld *w, const char *trail[]) {
-    trail[0] = w->storage[carmen_random() % w->city_count].id;
-
-    for (int i = 1; i < TRAIL_LEN; i++) {
-        CarmenCity *cur = carmen_world_find(w, trail[i - 1]);
-        if (!cur)
-            return i;
-
-        CarmenCity *nbr[CARMEN_MAX_CONNECTIONS];
-        int n = carmen_world_destinations_from(w, trail[i - 1], nbr,
-                                               CARMEN_MAX_CONNECTIONS);
-
-        const char *cand[CARMEN_MAX_CONNECTIONS];
-        int nc = 0;
-        for (int j = 0; j < n; j++)
-            if (!in_trail(trail, i, nbr[j]->id) &&
-                sites_covering(cur, nbr[j]->id) >= 2)
-                cand[nc++] = nbr[j]->id;
-
-        if (nc == 0)
-            for (int j = 0; j < n; j++)
-                if (!in_trail(trail, i, nbr[j]->id) &&
-                    sites_covering(cur, nbr[j]->id) >= 1)
-                    cand[nc++] = nbr[j]->id;
-
-        if (nc == 0)
-            for (int j = 0; j < n; j++)
-                if (!in_trail(trail, i, nbr[j]->id))
-                    cand[nc++] = nbr[j]->id;
-
-        if (nc == 0)
-            return i;
-        trail[i] = cand[carmen_random() % nc];
-    }
-    return TRAIL_LEN;
-}
+/* ── Helpers ─────────────────────────────────────────────────────── */
 
 static int valid_locale_id(const char *id) {
     for (const char *p = id; *p; p++)
@@ -142,6 +24,63 @@ static void print_city_name(const CarmenI18n *i18n, const CarmenCity *c) {
     printf("%s", name);
     if (local[0] && strcmp(name, local) != 0)
         printf(" (%s)", local);
+}
+
+static void print_status_bar(const CarmenI18n *i18n, const CarmenSession *s) {
+    printf("  %s %d %s  |  %s %d\n",
+           carmen_i18n_get(i18n, "ui.time_left"),
+           carmen_session_time_remaining(s),
+           carmen_i18n_get(i18n, "ui.hours"),
+           carmen_i18n_get(i18n, "ui.moves"),
+           carmen_session_moves(s));
+}
+
+static void print_evidence(const CarmenI18n *i18n, const CarmenSession *s) {
+    if (s->evidence_count == 0)
+        return;
+    printf("\n  %s\n", carmen_i18n_get(i18n, "ui.evidence_header"));
+    for (int i = 0; i < s->evidence_count; i++) {
+        char expanded[EXPAND_BUF];
+        carmen_villain_expand_clue(
+            carmen_i18n_get(i18n, s->evidence[i]),
+            s->active_case.villain->gender, expanded, sizeof expanded);
+        printf("    %d. %s\n", i + 1, expanded);
+    }
+}
+
+static void print_notebook(const CarmenI18n *i18n, const CarmenSession *s,
+                           char villain_gender) {
+    if (s->notebook_count == 0)
+        return;
+    int start = s->notebook_count > 5 ? s->notebook_count - 5 : 0;
+    printf("\n  %s (last %d)\n",
+           carmen_i18n_get(i18n, "ui.notebook_header"),
+           s->notebook_count - start);
+    for (int i = start; i < s->notebook_count; i++) {
+        const char *raw = carmen_i18n_get(i18n, s->notebook[i].text);
+        char expanded[EXPAND_BUF];
+        carmen_villain_expand_clue(raw, villain_gender, expanded,
+                                   sizeof expanded);
+        const char *tag = s->notebook[i].type == CARMEN_CLUE_POSITIVE
+                        ? "+" : "-";
+        printf("    [%s] \"%s\"\n", tag, expanded);
+    }
+}
+
+static int read_int(void) {
+    char buf[64];
+    if (!fgets(buf, sizeof buf, stdin))
+        return -1;
+    return atoi(buf);
+}
+
+static int read_line(char *buf, int size) {
+    if (!fgets(buf, size, stdin)) {
+        buf[0] = '\0';
+        return 0;
+    }
+    buf[strcspn(buf, "\n")] = '\0';
+    return 1;
 }
 
 /* ── Main ─────────────────────────────────────────────────────────── */
@@ -171,141 +110,168 @@ int main(int argc, char *argv[]) {
     }
     carmen_seed_build_islamic_world(world);
 
-    const char *trail[TRAIL_LEN];
-    int len = 0;
-    for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
-        len = build_trail(world, trail);
-        if (len == TRAIL_LEN)
-            break;
-    }
-    if (len < TRAIL_LEN) {
-        fprintf(stderr, "Could not build a trail of %d cities after %d attempts\n",
-                TRAIL_LEN, MAX_RETRIES);
+    CarmenSession session;
+    CarmenCaseSettings settings = { CARMEN_DIFFICULTY_MEDIUM, 0 };
+    if (!carmen_session_start(&session, world, &settings)) {
+        fprintf(stderr, "Failed to generate case\n");
         carmen_world_free(world);
         carmen_i18n_free(i18n);
         return 1;
     }
 
-    const FitnaVillain *villain =
-        &FITNA_VILLAINS[carmen_random() % FITNA_VILLAIN_COUNT];
+    const CarmenCase *cas = carmen_session_case(&session);
 
+    /* ── Banner ──────────────────────────────────────────────────── */
     printf("\n%s\n", LINE);
     printf("  %s\n", carmen_i18n_get(i18n, "ui.title"));
     printf("  %s\n", carmen_i18n_get(i18n, "ui.intel"));
     printf("  %s\n", carmen_i18n_get(i18n, "ui.instruction"));
-    printf("%s\n\n", LINE);
-
-    printf("  %s ", carmen_i18n_get(i18n, "ui.route"));
-    for (int i = 0; i < TRAIL_LEN; i++) {
-        CarmenCity *c = carmen_world_find(world, trail[i]);
-        const char *name = carmen_i18n_get(i18n, c->name);
-        if (i > 0)
-            printf(" --> ");
-        if (i == TRAIL_LEN - 1)
-            printf("[%s]", name);
-        else
-            printf("%s", name);
-    }
-    printf("\n\n");
-
-    for (int i = 0; i < TRAIL_LEN; i++) {
-        CarmenCity *city = carmen_world_find(world, trail[i]);
-        if (!city)
-            continue;
-
-        printf("%s\n", RULE);
-        printf("  [%d/%d]  ", i + 1, TRAIL_LEN);
-        print_city_name(i18n, city);
+    printf("\n  %s %s\n",
+           carmen_i18n_get(i18n, "ui.stolen"),
+           carmen_i18n_get(i18n, cas->artifact.name));
+    const CarmenCity *origin = carmen_world_find(world, cas->artifact.origin_city_id);
+    if (origin) {
+        printf("  %s ", carmen_i18n_get(i18n, "ui.from"));
+        print_city_name(i18n, origin);
         printf("\n");
-        printf("         %s, %s\n",
+    }
+    printf("  [%s]\n", carmen_i18n_get(i18n,
+           cas->difficulty == CARMEN_DIFFICULTY_EASY   ? "ui.difficulty_easy" :
+           cas->difficulty == CARMEN_DIFFICULTY_HARD   ? "ui.difficulty_hard" :
+                                                        "ui.difficulty_medium"));
+    printf("%s\n", LINE);
+
+    /* ── Game loop ───────────────────────────────────────────────── */
+    while (carmen_session_status(&session) == CARMEN_STATUS_PLAYING) {
+        const CarmenCity *city = carmen_session_current_city(&session);
+        if (!city) break;
+
+        printf("\n%s\n", RULE);
+        printf("  ");
+        print_city_name(i18n, city);
+        printf("\n  %s, %s\n",
                carmen_i18n_get(i18n, city->country),
                carmen_i18n_get(i18n, city->continent));
-        printf("%s\n\n", RULE);
+        print_status_bar(i18n, &session);
+        printf("%s\n", RULE);
 
-        if (i == TRAIL_LEN - 1) {
-            printf("  *** %s ***\n\n", carmen_i18n_get(i18n, "ui.found"));
+        printf("\n  %s\n", carmen_i18n_get(i18n, "ui.sites_header"));
+        for (int s = 0; s < city->site_count; s++)
+            printf("    [%d] %s (%s)\n", s + 1,
+                   carmen_i18n_get(i18n, city->sites[s].name),
+                   carmen_i18n_get(i18n, city->sites[s].site_type));
+
+        /* Show connections */
+        printf("\n  Connections:\n");
+        for (int c = 0; c < city->connection_count; c++) {
+            CarmenCity *dest = carmen_world_find(world,
+                city->connections[c].destination_id);
+            if (dest) {
+                printf("    - ");
+                print_city_name(i18n, dest);
+                printf(" (%s, %d km)\n",
+                       carmen_i18n_get(i18n, city->connections[c].transport_mode),
+                       city->connections[c].distance_km);
+            }
+        }
+
+        print_evidence(i18n, &session);
+        print_notebook(i18n, &session, cas->villain->gender);
+
+        printf("\n  ");
+        printf(carmen_i18n_get(i18n, "ui.investigate_prompt"), city->site_count);
+        printf(" ");
+
+        char input[64];
+        if (!read_line(input, sizeof input))
             break;
-        }
 
-        const char *next_id = trail[i + 1];
-        CarmenCity *next = carmen_world_find(world, next_id);
+        if (input[0] == 't' || input[0] == 'T') {
+            printf("  %s ", carmen_i18n_get(i18n, "ui.travel_prompt"));
+            char dest_buf[CARMEN_MAX_NAME_LEN];
+            if (!read_line(dest_buf, sizeof dest_buf))
+                break;
 
-        const CarmenSite *correct_sites[CARMEN_MAX_SITES];
-        int ncorrect =
-            find_sites_for(city, next_id, correct_sites, CARMEN_MAX_SITES);
-
-        const CarmenSite *s1 = NULL, *s2 = NULL;
-        const CarmenClue *c1 = NULL, *c2 = NULL;
-
-        if (ncorrect >= 2) {
-            int a = carmen_random() % ncorrect;
-            int b;
-            do { b = carmen_random() % ncorrect; } while (b == a);
-            s1 = correct_sites[a];
-            s2 = correct_sites[b];
-            c1 = pick_clue_to(s1, next_id);
-            c2 = pick_clue_to(s2, next_id);
-        } else if (ncorrect == 1) {
-            s1 = correct_sites[0];
-            c1 = pick_clue_to(s1, next_id);
-        }
-
-        const CarmenSite *s3 = pick_noise_site(city, s1, s2);
-        const CarmenClue *noise = NULL;
-        const char *noise_tag = NULL;
-
-        if (s3) {
-            int use_herring = carmen_random() % 2;
-            if (use_herring) {
-                noise = pick_herring_from(s3, next_id);
-                noise_tag = "?";
+            int result = carmen_session_travel(&session, dest_buf);
+            if (result == 0) {
+                const CarmenCity *nc = carmen_session_current_city(&session);
+                if (nc) {
+                    printf("  %s ", carmen_i18n_get(i18n, "ui.travel_ok"));
+                    print_city_name(i18n, nc);
+                    printf(".\n");
+                }
+            } else if (result == -2) {
+                printf("  %s\n", carmen_i18n_get(i18n, "ui.travel_timeout"));
+            } else {
+                printf("  %s\n", carmen_i18n_get(i18n, "ui.travel_fail"));
             }
-            if (!noise) {
-                noise = pick_negative(s3);
-                noise_tag = "-";
+        } else if (input[0] == 'w' || input[0] == 'W') {
+            printf("  %s\n", carmen_i18n_get(i18n, "ui.warrant_prompt"));
+            for (int v = 0; v < FITNA_VILLAIN_COUNT; v++)
+                printf("    [%2d] %s, a.k.a. \"%s\"\n", v + 1,
+                       carmen_i18n_get(i18n, FITNA_VILLAINS[v].name),
+                       carmen_i18n_get(i18n, FITNA_VILLAINS[v].alias));
+            printf("  > ");
+            int choice = read_int();
+            if (carmen_session_issue_warrant(&session, choice - 1) == 0) {
+                printf("  %s %s.\n",
+                       carmen_i18n_get(i18n, "ui.warrant_ok"),
+                       carmen_i18n_get(i18n, FITNA_VILLAINS[choice - 1].name));
+            } else {
+                printf("  %s\n", carmen_i18n_get(i18n, "ui.warrant_fail"));
             }
-        }
-
-        typedef struct {
-            const CarmenClue *clue;
-            const CarmenSite *site;
-            const char *tag;
-        } Slot;
-
-        Slot slots[3];
-        int ns = 0;
-        if (c1 && s1) { slots[ns].clue = c1; slots[ns].site = s1; slots[ns].tag = "+"; ns++; }
-        if (c2 && s2) { slots[ns].clue = c2; slots[ns].site = s2; slots[ns].tag = "+"; ns++; }
-        if (noise && s3) { slots[ns].clue = noise; slots[ns].site = s3; slots[ns].tag = noise_tag; ns++; }
-
-        for (int j = ns - 1; j > 0; j--) {
-            int k = carmen_random() % (j + 1);
-            Slot tmp = slots[j]; slots[j] = slots[k]; slots[k] = tmp;
-        }
-
-        for (int j = 0; j < ns; j++) {
-            const char *clue_text = carmen_i18n_get(i18n, slots[j].clue->text);
-            char expanded[EXPAND_BUF];
-            carmen_villain_expand_clue(clue_text, villain->gender, expanded,
-                              sizeof expanded);
-            printf("  * %s (%s)\n",
-                   carmen_i18n_get(i18n, slots[j].site->name),
-                   carmen_i18n_get(i18n, slots[j].site->site_type));
-            printf("    [%s] \"%s\"\n\n", slots[j].tag, expanded);
-        }
-
-        if (next) {
-            printf("  >>> %s ", carmen_i18n_get(i18n, "ui.clues_point"));
-            print_city_name(i18n, next);
-            printf("...\n\n");
+        } else if (input[0] == 'a' || input[0] == 'A') {
+            CarmenSessionStatus result = carmen_session_arrest(&session);
+            switch (result) {
+                case CARMEN_STATUS_WON:
+                    break;
+                case CARMEN_STATUS_LOST_WRONG_ARREST:
+                    printf("  %s\n", carmen_i18n_get(i18n, "ui.arrest_wrong"));
+                    break;
+                case CARMEN_STATUS_LOST_NO_WARRANT:
+                    printf("  %s\n", carmen_i18n_get(i18n, "ui.arrest_no_warrant"));
+                    break;
+                case CARMEN_STATUS_NOT_AT_HIDEOUT:
+                    printf("  %s\n", carmen_i18n_get(i18n, "ui.arrest_not_here"));
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            int site_idx = atoi(input) - 1;
+            if (site_idx >= 0 && site_idx < city->site_count) {
+                const CarmenClue *clue =
+                    carmen_session_investigate(&session, site_idx);
+                if (clue) {
+                    const char *raw = carmen_i18n_get(i18n, clue->text);
+                    char expanded[EXPAND_BUF];
+                    carmen_villain_expand_clue(raw, cas->villain->gender,
+                                               expanded, sizeof expanded);
+                    const char *tag = clue->type == CARMEN_CLUE_POSITIVE
+                                    ? "+" : "-";
+                    printf("\n    [%s] \"%s\"\n", tag, expanded);
+                } else {
+                    printf("  %s\n", carmen_i18n_get(i18n, "ui.no_clues"));
+                }
+            }
         }
     }
 
-    printf("%s\n", LINE);
-    printf("  %s\n", carmen_i18n_get(i18n, "ui.closed"));
-    printf("  (It was %s, a.k.a. \"%s\")\n",
-           carmen_i18n_get(i18n, villain->name),
-           carmen_i18n_get(i18n, villain->alias));
+    /* ── Endgame ─────────────────────────────────────────────────── */
+    printf("\n%s\n", LINE);
+    CarmenSessionStatus final = carmen_session_status(&session);
+    if (final == CARMEN_STATUS_WON) {
+        printf("  %s\n", carmen_i18n_get(i18n, "ui.won"));
+        printf("  (It was %s, a.k.a. \"%s\")\n",
+               carmen_i18n_get(i18n, cas->villain->name),
+               carmen_i18n_get(i18n, cas->villain->alias));
+    } else if (final == CARMEN_STATUS_LOST_TIME) {
+        printf("  %s\n", carmen_i18n_get(i18n, "ui.lost_time"));
+    } else if (final == CARMEN_STATUS_LOST_WRONG_ARREST) {
+        printf("  %s\n", carmen_i18n_get(i18n, "ui.arrest_wrong"));
+    } else if (final == CARMEN_STATUS_LOST_NO_WARRANT) {
+        printf("  %s\n", carmen_i18n_get(i18n, "ui.arrest_no_warrant"));
+    }
     printf("%s\n\n", LINE);
 
     carmen_world_free(world);

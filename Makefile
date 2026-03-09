@@ -23,7 +23,8 @@ endif
 # --------------------------------------------------------------------------- #
 
 LIB_SRCS = src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
-           src/seed_data_islamic.c src/villain.c src/i18n.c \
+           src/seed_data_islamic.c src/villain.c src/artifact.c src/case.c \
+           src/session.c src/i18n.c \
            vendor/cjson/cJSON.c
 LIB_OBJS = $(patsubst src/%.c,$(BUILD_DIR)/%.o,$(filter src/%.c,$(LIB_SRCS))) \
            $(BUILD_DIR)/cJSON.o
@@ -96,7 +97,8 @@ PUBLIC_HEADERS = include/carmen/carmen.h include/carmen/carmen_export.h \
                  include/carmen/connection.h include/carmen/city.h \
                  include/carmen/game_world.h \
                  include/carmen/seed_data_islamic.h \
-                 include/carmen/villain.h \
+                 include/carmen/villain.h include/carmen/artifact.h \
+                 include/carmen/case.h include/carmen/session.h \
                  include/carmen/i18n.h
 
 INCLUDEDIR   = $(PREFIX)/include/carmen
@@ -128,7 +130,8 @@ TEST_FLAGS = -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE
 
 TEST_DIR  = $(BUILD_DIR)/test
 TEST_BINS = $(TEST_DIR)/test_site $(TEST_DIR)/test_connection $(TEST_DIR)/test_city \
-            $(TEST_DIR)/test_game_world $(TEST_DIR)/test_carmen_scenarios
+            $(TEST_DIR)/test_game_world $(TEST_DIR)/test_carmen_scenarios \
+            $(TEST_DIR)/test_artifact $(TEST_DIR)/test_case $(TEST_DIR)/test_session
 
 test: $(TEST_BINS)
 	@echo "========================================"
@@ -170,6 +173,15 @@ $(TEST_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS) $(UNITY_SRC) | $
 $(TEST_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
+$(TEST_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(TEST_DIR)/test_case: test/test_case.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(TEST_DIR)/test_session: test/test_session.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
 # --------------------------------------------------------------------------- #
 #  Code Coverage  (requires lcov:  brew install lcov)
 # --------------------------------------------------------------------------- #
@@ -184,7 +196,8 @@ ifneq ($(LLVM_COV_GCOV),)
 endif
 
 COV_BINS = $(COV_DIR)/test_site $(COV_DIR)/test_connection $(COV_DIR)/test_city \
-           $(COV_DIR)/test_game_world $(COV_DIR)/test_carmen_scenarios
+           $(COV_DIR)/test_game_world $(COV_DIR)/test_carmen_scenarios \
+           $(COV_DIR)/test_artifact $(COV_DIR)/test_case $(COV_DIR)/test_session
 
 coverage: $(COV_BINS)
 	@echo "========================================"
@@ -235,6 +248,15 @@ $(COV_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS) $(UNITY_SRC) | $(
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
 
 $(COV_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+
+$(COV_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+
+$(COV_DIR)/test_case: test/test_case.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+
+$(COV_DIR)/test_session: test/test_session.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
 
 .PHONY: all lib clean test coverage install uninstall

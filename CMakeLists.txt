@@ -32,6 +32,9 @@ set(CARMEN_SOURCES
     src/game_world.c
     src/seed_data_islamic.c
     src/villain.c
+    src/artifact.c
+    src/case.c
+    src/session.c
     src/i18n.c
     vendor/cjson/cJSON.c
 )
@@ -48,6 +51,9 @@ set(CARMEN_PUBLIC_HEADERS
     include/carmen/game_world.h
     include/carmen/seed_data_islamic.h
     include/carmen/villain.h
+    include/carmen/artifact.h
+    include/carmen/case.h
+    include/carmen/session.h
     include/carmen/i18n.h
 )
 
@@ -126,6 +132,9 @@ if(CARMEN_BUILD_TESTS)
     carmen_add_test(test_city              test/test_city.c)
     carmen_add_test(test_game_world        test/test_game_world.c)
     carmen_add_test(test_carmen_scenarios  test/test_carmen_scenarios.c)
+    carmen_add_test(test_artifact          test/test_artifact.c)
+    carmen_add_test(test_case              test/test_case.c)
+    carmen_add_test(test_session            test/test_session.c)
 endif()
 
 # --------------------------------------------------------------------------- #

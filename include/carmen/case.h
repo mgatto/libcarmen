@@ -2,18 +2,22 @@
 #define CARMEN_CASE_H
 
 #include "carmen/carmen_export.h"
-#include "carmen/clue.h"
 #include "carmen/artifact.h"
 #include "carmen/villain.h"
-#include "carmen/session.h"
 #include "carmen/game_world.h"
 
-#define CARMEN_MAX_TRAIL 8
+typedef enum {
+    CARMEN_DIFFICULTY_EASY,
+    CARMEN_DIFFICULTY_MEDIUM,
+    CARMEN_DIFFICULTY_HARD
+} CarmenDifficulty;
 
 typedef struct {
     CarmenDifficulty difficulty;
     int  max_trail_hops;  /* 0 = use difficulty default (EASY=1, MEDIUM=2, HARD=3) */
 } CarmenCaseSettings;
+
+#define CARMEN_MAX_TRAIL 8
 
 typedef struct {
     const FitnaVillain *villain;
@@ -32,7 +36,7 @@ typedef struct {
  *
  * Picks a random villain and artifact, builds a trail of cities whose
  * length is determined by difficulty (EASY=3, MEDIUM=5, HARD=7), and
- * sets a time budget based on difficulty and total trail distance.
+ * sets a time budget based on difficulty and total trail travel time.
  *
  * The trail builder searches for next-stop candidates within
  * max_trail_hops of the current city (default per difficulty if 0),
