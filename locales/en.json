@@ -1,0 +1,646 @@
+{
+  "_locale": "en",
+
+  "city.istanbul.name": "Istanbul",
+  "city.istanbul.local_name": "İstanbul",
+  "city.istanbul.country": "Turkey",
+  "city.istanbul.continent": "Europe",
+
+  "city.sarajevo.name": "Sarajevo",
+  "city.sarajevo.local_name": "Sarajevo",
+  "city.sarajevo.country": "Bosnia",
+  "city.sarajevo.continent": "Europe",
+
+  "city.cairo.name": "Cairo",
+  "city.cairo.local_name": "القاهرة",
+  "city.cairo.country": "Egypt",
+  "city.cairo.continent": "Africa",
+
+  "city.casablanca.name": "Casablanca",
+  "city.casablanca.local_name": "الدار البيضاء",
+  "city.casablanca.country": "Morocco",
+  "city.casablanca.continent": "Africa",
+
+  "city.marrakech.name": "Marrakech",
+  "city.marrakech.local_name": "مراكش",
+  "city.marrakech.country": "Morocco",
+  "city.marrakech.continent": "Africa",
+
+  "city.fez.name": "Fez",
+  "city.fez.local_name": "فاس",
+  "city.fez.country": "Morocco",
+  "city.fez.continent": "Africa",
+
+  "city.dakar.name": "Dakar",
+  "city.dakar.local_name": "Dakar",
+  "city.dakar.country": "Senegal",
+  "city.dakar.continent": "Africa",
+
+  "city.dubai.name": "Dubai",
+  "city.dubai.local_name": "دبي",
+  "city.dubai.country": "UAE",
+  "city.dubai.continent": "Asia",
+
+  "city.doha.name": "Doha",
+  "city.doha.local_name": "الدوحة",
+  "city.doha.country": "Qatar",
+  "city.doha.continent": "Asia",
+
+  "city.abu_dhabi.name": "Abu Dhabi",
+  "city.abu_dhabi.local_name": "أبوظبي",
+  "city.abu_dhabi.country": "UAE",
+  "city.abu_dhabi.continent": "Asia",
+
+  "city.zanzibar.name": "Zanzibar",
+  "city.zanzibar.local_name": "زنجبار",
+  "city.zanzibar.country": "Tanzania",
+  "city.zanzibar.continent": "Africa",
+
+  "city.hyderabad.name": "Hyderabad",
+  "city.hyderabad.local_name": "حیدرآباد",
+  "city.hyderabad.country": "India",
+  "city.hyderabad.continent": "Asia",
+
+  "city.muscat.name": "Muscat",
+  "city.muscat.local_name": "مسقط",
+  "city.muscat.country": "Oman",
+  "city.muscat.continent": "Asia",
+
+  "city.amman.name": "Amman",
+  "city.amman.local_name": "عمّان",
+  "city.amman.country": "Jordan",
+  "city.amman.continent": "Asia",
+
+  "city.beirut.name": "Beirut",
+  "city.beirut.local_name": "بيروت",
+  "city.beirut.country": "Lebanon",
+  "city.beirut.continent": "Asia",
+
+  "city.isfahan.name": "Isfahan",
+  "city.isfahan.local_name": "اصفهان",
+  "city.isfahan.country": "Iran",
+  "city.isfahan.continent": "Asia",
+
+  "city.konya.name": "Konya",
+  "city.konya.local_name": "Konya",
+  "city.konya.country": "Turkey",
+  "city.konya.continent": "Asia",
+
+  "city.tashkent.name": "Tashkent",
+  "city.tashkent.local_name": "Тошкент",
+  "city.tashkent.country": "Uzbekistan",
+  "city.tashkent.continent": "Asia",
+
+  "city.lahore.name": "Lahore",
+  "city.lahore.local_name": "لاہور",
+  "city.lahore.country": "Pakistan",
+  "city.lahore.continent": "Asia",
+
+  "city.dhaka.name": "Dhaka",
+  "city.dhaka.local_name": "ঢাকা",
+  "city.dhaka.country": "Bangladesh",
+  "city.dhaka.continent": "Asia",
+
+  "city.kuala_lumpur.name": "Kuala Lumpur",
+  "city.kuala_lumpur.local_name": "كوالالمبور",
+  "city.kuala_lumpur.country": "Malaysia",
+  "city.kuala_lumpur.continent": "Asia",
+
+  "city.jakarta.name": "Jakarta",
+  "city.jakarta.local_name": "Jakarta",
+  "city.jakarta.country": "Indonesia",
+  "city.jakarta.continent": "Asia",
+
+  "city.bandung.name": "Bandung",
+  "city.bandung.local_name": "Bandung",
+  "city.bandung.country": "Indonesia",
+  "city.bandung.continent": "Asia",
+
+  "site.istanbul.suleymaniye": "Suleymaniye Mosque",
+  "site.istanbul.istanbul_modern": "Istanbul Modern",
+  "site.istanbul.kadikoy": "Kadikoy Food Market",
+  "site.istanbul.camlica": "Camlica Mosque",
+
+  "site.dubai.museum_future": "Museum of the Future",
+  "site.dubai.al_fahidi": "Al Fahidi Historical Dist",
+  "site.dubai.dubai_mall": "Dubai Mall",
+  "site.dubai.jumeirah": "Jumeirah Mosque",
+
+  "site.kuala_lumpur.petronas": "Petronas Towers",
+  "site.kuala_lumpur.islamic_arts": "Islamic Arts Museum",
+  "site.kuala_lumpur.jalan_alor": "Jalan Alor",
+  "site.kuala_lumpur.masjid_negara": "Masjid Negara",
+
+  "site.doha.islamic_art": "Museum of Islamic Art",
+  "site.doha.souq_waqif": "Souq Waqif",
+  "site.doha.katara": "Katara Cultural Village",
+  "site.doha.education_city": "Education City",
+
+  "site.amman.citadel": "The Citadel",
+  "site.amman.rainbow_street": "Rainbow Street Cafes",
+  "site.amman.king_abdullah": "King Abdullah Mosque",
+
+  "site.casablanca.hassan_ii": "Hassan II Mosque",
+  "site.casablanca.habous": "Habous Quarter",
+  "site.casablanca.morocco_mall": "Morocco Mall",
+  "site.casablanca.art_deco": "Art Deco Downtown",
+
+  "site.jakarta.istiqlal": "Istiqlal Mosque",
+  "site.jakarta.national_museum": "National Museum",
+  "site.jakarta.kota_tua": "Kota Tua",
+  "site.jakarta.menteng": "Menteng Cafes",
+
+  "site.sarajevo.bascarsija": "Bascarsija",
+  "site.sarajevo.gazi_husrev": "Gazi Husrev-beg Mosque",
+  "site.sarajevo.war_tunnel": "War Tunnel Museum",
+
+  "site.tashkent.khast_imam": "Khast Imam Complex",
+  "site.tashkent.chorsu": "Chorsu Bazaar",
+  "site.tashkent.tashkent_metro": "Tashkent Metro",
+  "site.tashkent.minor_mosque": "Minor Mosque",
+
+  "site.cairo.azhar_park": "Al-Azhar Park",
+  "site.cairo.tahrir": "Tahrir Square",
+  "site.cairo.khan_khalili": "Khan el-Khalili",
+  "site.cairo.sultan_hassan": "Sultan Hassan Mosque",
+
+  "site.beirut.al_amin": "Mohammad Al-Amin Mosque",
+  "site.beirut.gemmayzeh": "Gemmayzeh Street Art",
+  "site.beirut.national_museum": "National Museum",
+
+  "site.marrakech.jemaa": "Jemaa el-Fnaa",
+  "site.marrakech.macaal": "MACAAL",
+  "site.marrakech.le_jardin": "Le Jardin Secret",
+
+  "site.lahore.badshahi": "Badshahi Mosque",
+  "site.lahore.lahore_fort": "Lahore Fort",
+  "site.lahore.food_street": "Food Street",
+  "site.lahore.anarkali": "Anarkali Bazaar",
+
+  "site.konya.mevlana": "Mevlana Museum",
+  "site.konya.alaeddin": "Alaeddin Mosque",
+  "site.konya.sille": "Sille Village",
+
+  "site.abu_dhabi.sheikh_zayed": "Sheikh Zayed Mosque",
+  "site.abu_dhabi.louvre_ad": "Louvre Abu Dhabi",
+  "site.abu_dhabi.mangrove_park": "Mangrove Park",
+  "site.abu_dhabi.qasr_watan": "Qasr Al Watan",
+
+  "site.muscat.sultan_qaboos": "Sultan Qaboos Mosque",
+  "site.muscat.bimmah": "Bimmah Sinkhole",
+  "site.muscat.royal_opera": "Royal Opera House",
+
+  "site.dakar.grande_mosquee": "Grande Mosquee",
+  "site.dakar.goree": "Goree Island",
+  "site.dakar.african_renaissance": "African Renaissance Monument",
+
+  "site.bandung.braga": "Braga Street",
+  "site.bandung.masjid_raya": "Masjid Raya Bandung",
+  "site.bandung.tangkuban": "Tangkuban Perahu",
+
+  "site.isfahan.naqsh_e_jahan": "Naqsh-e Jahan Square",
+  "site.isfahan.vank": "Vank Cathedral",
+  "site.isfahan.si_o_se_pol": "Si-o-se-pol Tea Houses",
+
+  "site.dhaka.baitul_mukarram": "Baitul Mukarram Mosque",
+  "site.dhaka.star_mosque": "Star Mosque",
+  "site.dhaka.lalbagh": "Lalbagh Fort",
+  "site.dhaka.sadarghat": "Sadarghat Terminal",
+
+  "site.fez.qarawiyyin": "Al-Qarawiyyin",
+  "site.fez.fez_medina": "Fez Medina",
+  "site.fez.borj_nord": "Borj Nord Viewpoint",
+
+  "site.zanzibar.stone_town": "Stone Town",
+  "site.zanzibar.hamamni": "Hamamni Persian Baths",
+  "site.zanzibar.malindi": "Malindi Mosque",
+  "site.zanzibar.forodhani": "Forodhani Gardens",
+
+  "site.hyderabad.charminar": "Charminar",
+  "site.hyderabad.mecca_masjid": "Mecca Masjid",
+  "site.hyderabad.salar_jung": "Salar Jung Museum",
+  "site.hyderabad.laad_bazaar": "Laad Bazaar",
+
+  "type.mosque": "mosque",
+  "type.museum": "museum",
+  "type.market": "market",
+  "type.landmark": "landmark",
+  "type.cafe": "cafe",
+  "type.park": "park",
+
+  "clue.istanbul.suleymaniye.0": "The suspect was googling Bosnian coffee recipes",
+  "clue.istanbul.suleymaniye.1": "{They} was comparing Ottoman tile patterns to Mamluk ones along the Nile",
+  "clue.istanbul.suleymaniye.2": "The muezzin shook his head -- no strangers at today's prayer",
+
+  "clue.istanbul.istanbul_modern.0": "{They} kept staring at a Nile River postcard pinned to the gallery wall",
+  "clue.istanbul.istanbul_modern.1": "{They} mentioned the Whirling Dervishes' hometown as {their} next cultural stop",
+  "clue.istanbul.istanbul_modern.2": "The gallery staff haven't noticed anyone matching that description",
+
+  "clue.istanbul.kadikoy.0": "The suspect ordered a ferry ticket and asked about the Whirling Dervishes",
+  "clue.istanbul.kadikoy.1": "{They} was raving about the food scene in a city where church bells mix with the adhan",
+  "clue.istanbul.kadikoy.2": "The fish vendor hasn't seen anyone unusual today",
+
+  "clue.istanbul.camlica.0": "{They} mentioned a city where you can ski in the morning and swim the Mediterranean by noon",
+  "clue.istanbul.camlica.1": "{They} was reading about Ottoman bridges in a Balkan city known for its coppersmiths",
+  "clue.istanbul.camlica.2": "The imam has not seen any unfamiliar faces at today's prayers",
+
+  "clue.dubai.museum_future.0": "{They} said the world's best collection of Islamic calligraphy is just a short flight south",
+  "clue.dubai.museum_future.1": "{They} mentioned pearl diving traditions across the Gulf to the southeast",
+  "clue.dubai.museum_future.2": "The receptionist hasn't seen anyone matching that description",
+
+  "clue.dubai.al_fahidi.0": "{They} mentioned old dhow routes along the Omani coast",
+  "clue.dubai.al_fahidi.1": "{They} had a PIA boarding pass tucked in {their} passport",
+  "clue.dubai.al_fahidi.2": "The guide said no foreigners have visited this week",
+
+  "clue.dubai.dubai_mall.0": "{They} was dreaming aloud about Mughal gardens and Wazir Khan's tilework",
+  "clue.dubai.dubai_mall.1": "{They} asked the imam about Persian tile patterns and dome geometry",
+  "clue.dubai.dubai_mall.2": "The concierge hasn't seen anyone matching that description",
+
+  "clue.dubai.jumeirah.0": "{They} was studying Farsi on {their} phone and comparing dome geometry",
+  "clue.dubai.jumeirah.1": "{They} was checking flight times to a nearby Gulf peninsula capital",
+  "clue.dubai.jumeirah.2": "The mosque attendant has not noticed any unfamiliar visitors",
+
+  "clue.kuala_lumpur.petronas.0": "{They} was raving about volcanic highland coffee from Java's most artistic city",
+  "clue.kuala_lumpur.petronas.1": "{They} was researching Charminar and biryani in India's Nizam city",
+  "clue.kuala_lumpur.petronas.2": "The observation deck staff haven't noticed anyone unusual today",
+
+  "clue.kuala_lumpur.islamic_arts.0": "{They} wanted to see the largest mosque in the world's most populous Muslim-majority country",
+  "clue.kuala_lumpur.islamic_arts.1": "The suspect was craving kacchi biryani from Bengal",
+  "clue.kuala_lumpur.islamic_arts.2": "The curator said no one has asked about travel lately",
+
+  "clue.kuala_lumpur.jalan_alor.0": "{They} mentioned flying to Bangladesh for a friend's wedding",
+  "clue.kuala_lumpur.jalan_alor.1": "{They} said the Laad Bazaar bangles in India's pearl city are even prettier",
+  "clue.kuala_lumpur.jalan_alor.2": "The hawker stall owner shrugged -- too busy to notice anyone",
+
+  "clue.kuala_lumpur.masjid_negara.0": "{They} said the mihrab here can't match the one inside Istiqlal across the strait",
+  "clue.kuala_lumpur.masjid_negara.1": "{They} compared the batik here to the highland city in Java where it's made by hand",
+  "clue.kuala_lumpur.masjid_negara.2": "The worshippers here don't recall seeing a stranger",
+
+  "clue.doha.islamic_art.0": "{They} mentioned wanting to see the white marble mosque that seats 40,000 worshippers",
+  "clue.doha.islamic_art.1": "{They} said the glittering skyline just an hour's drive away puts this one to shame",
+  "clue.doha.islamic_art.2": "The security guard says no tourists have been asking unusual questions",
+
+  "clue.doha.souq_waqif.0": "{They} was comparing spice prices to the souks in the city with the world's tallest tower",
+  "clue.doha.souq_waqif.1": "{They} kept talking about the Louvre branch just across the Gulf",
+  "clue.doha.souq_waqif.2": "The spice merchant has not seen anyone suspicious this week",
+
+  "clue.doha.katara.0": "{They} had a campus visitor badge from a university in the Emirates' capital",
+  "clue.doha.katara.1": "{They} was checking Emirates flights to the mega-mall across the Gulf",
+  "clue.doha.katara.2": "The cultural center staff have not seen anyone fitting that description",
+
+  "clue.doha.education_city.0": "{They} said the Museum of the Future in the Gulf's glitziest city is {their} next stop",
+  "clue.doha.education_city.1": "{They} mentioned studying at a Gulf university where East meets West academically",
+  "clue.doha.education_city.2": "Nobody at the campus remembers seeing a stranger",
+
+  "clue.amman.citadel.0": "The suspect was reading about Pharaonic architecture",
+  "clue.amman.citadel.1": "{They} mentioned a city where you can party till dawn and hear church bells with the adhan",
+  "clue.amman.citadel.2": "The site guards have not seen any strangers today",
+
+  "clue.amman.rainbow_street.0": "{They} was converting dinars to Lebanese pounds and checking nightlife reviews",
+  "clue.amman.rainbow_street.1": "{They} asked about the city where they built the world's tallest tower in the desert",
+  "clue.amman.rainbow_street.2": "The barista doesn't recall anyone out of the ordinary",
+
+  "clue.amman.king_abdullah.0": "{They} was checking Emirates airline schedules to a Gulf megacity",
+  "clue.amman.king_abdullah.1": "{They} was exchanging dinars for Egyptian pounds at the currency desk",
+  "clue.amman.king_abdullah.2": "The imam said no visitors have asked about travel recently",
+
+  "clue.casablanca.hassan_ii.0": "The suspect mentioned the Atlas Mountains are just a train ride away",
+  "clue.casablanca.hassan_ii.1": "{They} was studying a map of West Africa with a city on the Atlantic coast circled",
+  "clue.casablanca.hassan_ii.2": "The mosque caretaker has not seen any unusual visitors",
+
+  "clue.casablanca.habous.0": "{They} was asking about flights to Senegal at a travel agency",
+  "clue.casablanca.habous.1": "{They} had a guidebook for the Egyptian pyramids in {their} shopping bag",
+  "clue.casablanca.habous.2": "The shopkeeper hasn't seen any strangers today",
+
+  "clue.casablanca.morocco_mall.0": "{They} was exchanging dirhams for Egyptian currency at the bureau de change",
+  "clue.casablanca.morocco_mall.1": "{They} said the city with the world's oldest university has finer examples of this style",
+  "clue.casablanca.morocco_mall.2": "The mall security hasn't flagged anyone matching that description",
+
+  "clue.casablanca.art_deco.0": "{They} said the medina in Morocco's oldest imperial city makes this look modern",
+  "clue.casablanca.art_deco.1": "{They} had a riad reservation in the Red City",
+  "clue.casablanca.art_deco.2": "No one in the cafe recalls a traveler asking for directions",
+
+  "clue.jakarta.istiqlal.0": "{They} said even the world's largest mosque can't match the Islamic arts collection across the strait",
+  "clue.jakarta.istiqlal.1": "{They} was checking train schedules to a volcanic highland city in West Java",
+  "clue.jakarta.istiqlal.2": "The security guard has not noticed anyone suspicious",
+
+  "clue.jakarta.national_museum.0": "{They} was sketching Art Deco facades and said a Javanese highland city has even better ones",
+  "clue.jakarta.national_museum.1": "{They} booked a flight north to Malaysia",
+  "clue.jakarta.national_museum.2": "The museum attendant doesn't recall any visitors asking about travel",
+
+  "clue.jakarta.kota_tua.0": "{They} ordered es kopi susu and researched street food near the twin towers up north",
+  "clue.jakarta.kota_tua.1": "{They} said the volcanic highland city three hours by train is worth the trip",
+  "clue.jakarta.kota_tua.2": "The old Dutch building's caretaker saw nothing out of the ordinary",
+
+  "clue.jakarta.menteng.0": "{They} mentioned visiting the Paris of Java for its colonial architecture and hot springs",
+  "clue.jakarta.menteng.1": "{They} said the nasi lemak across the strait in Malaysia is better than anything here",
+  "clue.jakarta.menteng.2": "The cafe owner hasn't seen anyone fitting that description",
+
+  "clue.sarajevo.bascarsija.0": "{They} was reading about the city where Sinan built his masterpiece mosques",
+  "clue.sarajevo.bascarsija.1": "{They} mentioned wanting to study at the world's oldest university in Morocco",
+  "clue.sarajevo.bascarsija.2": "The coppersmiths haven't noticed any outsiders this week",
+
+  "clue.sarajevo.gazi_husrev.0": "{They} asked about flights to Morocco's oldest imperial city",
+  "clue.sarajevo.gazi_husrev.1": "{They} was pricing flights to the city that straddles two continents",
+  "clue.sarajevo.gazi_husrev.2": "The imam says no visitors have asked about onward travel",
+
+  "clue.sarajevo.war_tunnel.0": "The suspect muttered something about the Bosphorus at sunset",
+  "clue.sarajevo.war_tunnel.1": "{They} had a printout of cheap flights to a Moroccan city with the oldest medina",
+  "clue.sarajevo.war_tunnel.2": "The museum staff don't remember any unusual visitors",
+
+  "clue.tashkent.khast_imam.0": "{They} was comparing the Silk Road tilework here to the ones in the city that's half the world",
+  "clue.tashkent.khast_imam.1": "{They} said the food scene in Pakistan's cultural capital would blow this bazaar away",
+  "clue.tashkent.khast_imam.2": "The librarian guarding the Quran manuscript hasn't seen any strangers",
+
+  "clue.tashkent.chorsu.0": "{They} was buying dried fruits to bring to friends near the Badshahi Mosque",
+  "clue.tashkent.chorsu.1": "{They} asked about direct flights to Iran",
+  "clue.tashkent.chorsu.2": "The bazaar vendors have not seen anyone matching that description",
+
+  "clue.tashkent.tashkent_metro.0": "{They} photographed Soviet mosaics and said a Mughal city's tilework puts them to shame",
+  "clue.tashkent.tashkent_metro.1": "{They} said the tilework here is beautiful but a certain Persian city's is unmatchable",
+  "clue.tashkent.tashkent_metro.2": "The metro staff haven't noticed anyone unusual riding the trains",
+
+  "clue.tashkent.minor_mosque.0": "A hotel booking in the city with Naqsh-e Jahan Square was on {their} phone",
+  "clue.tashkent.minor_mosque.1": "{They} was telling a local that the Mughal fort in Pakistan's second city makes this look small",
+  "clue.tashkent.minor_mosque.2": "The prayer attendant hasn't seen any foreigners this week",
+
+  "clue.cairo.azhar_park.0": "{They} said this park's view rivals the ancient Citadel perched over a Levantine capital",
+  "clue.cairo.azhar_park.1": "{They} mentioned connecting through the Moroccan city that shares its name with a famous film",
+  "clue.cairo.azhar_park.2": "The park gardener hasn't noticed anyone out of place",
+
+  "clue.cairo.tahrir.0": "{They} was checking Royal Air Maroc flights on {their} laptop",
+  "clue.cairo.tahrir.1": "{They} was comparing the massive scale here to a grand mosque in the Emirates' capital",
+  "clue.cairo.tahrir.2": "The street vendors haven't noticed anyone asking about flights",
+
+  "clue.cairo.khan_khalili.0": "{They} was sketching the muqarnas and comparing them to the white marble mosque that seats 40,000",
+  "clue.cairo.khan_khalili.1": "{They} was checking visa requirements for Jordan",
+  "clue.cairo.khan_khalili.2": "The merchants say business has been slow -- no new faces",
+
+  "clue.cairo.sultan_hassan.0": "The suspect was exchanging Egyptian pounds for Jordanian dinars",
+  "clue.cairo.sultan_hassan.1": "{They} mentioned heading west to Morocco before flying home",
+  "clue.cairo.sultan_hassan.2": "The prayer attendants say no tourists have been around today",
+
+  "clue.beirut.al_amin.0": "{They} was reading about Nabataean ruins and a Roman amphitheater in a Levantine capital",
+  "clue.beirut.al_amin.1": "{They} said the street art is good but the scene in Turkey's largest city is better",
+  "clue.beirut.al_amin.2": "The mosque guard hasn't noticed any outsiders this afternoon",
+
+  "clue.beirut.gemmayzeh.0": "{They} mentioned heading to the city where Hagia Sophia stands",
+  "clue.beirut.gemmayzeh.1": "{They} was converting Lebanese lira to Jordanian dinar at the exchange",
+  "clue.beirut.gemmayzeh.2": "The gallery owner shook his head -- no one asked about travel",
+
+  "clue.beirut.national_museum.0": "{They} was comparing Phoenician artifacts to ones from a city perched over a desert Citadel",
+  "clue.beirut.national_museum.1": "{They} had a Turkish Airlines boarding pass stub in {their} jacket",
+  "clue.beirut.national_museum.2": "The front desk has no record of anyone fitting that description",
+
+  "clue.marrakech.jemaa.0": "The suspect asked a storyteller about the oldest university in the world",
+  "clue.marrakech.jemaa.1": "{They} was searching for flights to the Moroccan city named in a classic Bogart film",
+  "clue.marrakech.jemaa.2": "The snake charmer says he sees thousands of faces -- none stood out",
+
+  "clue.marrakech.macaal.0": "{They} said {they}'s catching a train to Morocco's economic capital tonight",
+  "clue.marrakech.macaal.1": "{They} said the city with the world's oldest university has finer art",
+  "clue.marrakech.macaal.2": "The gallery guard hasn't seen anyone matching that description",
+
+  "clue.marrakech.le_jardin.0": "{They} had a train ticket to Morocco's oldest imperial city in {their} back pocket",
+  "clue.marrakech.le_jardin.1": "{They} mentioned visiting the Art Deco district in Morocco's coastal business hub",
+  "clue.marrakech.le_jardin.2": "The riad keeper hasn't had any unusual guests this month",
+
+  "clue.lahore.badshahi.0": "{They} was comparing this mosque to one in a Bengali river capital surrounded by waterways",
+  "clue.lahore.badshahi.1": "{They} was reading about Timurid architecture in a city famous for its Soviet-era metro",
+  "clue.lahore.badshahi.2": "The prayer hall attendant says no foreigners have visited today",
+
+  "clue.lahore.lahore_fort.0": "{They} mentioned comparing these Mughal walls to Silk Road forts in Central Asia's largest city",
+  "clue.lahore.lahore_fort.1": "{They} was reading restaurant reviews from the Gulf city with the world's tallest building",
+  "clue.lahore.lahore_fort.2": "The fort guard has not seen any suspicious visitors",
+
+  "clue.lahore.food_street.0": "{They} said the Pakistani restaurants in the Gulf's glitziest city can't compare to the real thing",
+  "clue.lahore.food_street.1": "{They} was comparing the biryani here to the famous Hyderabadi dum style across the border",
+  "clue.lahore.food_street.2": "The waiter doesn't recall anyone unusual this week",
+
+  "clue.lahore.anarkali.0": "{They} mentioned shipping a box of silk fabric to a friend near the Charminar",
+  "clue.lahore.anarkali.1": "{They} mentioned visiting relatives in Bangladesh next",
+  "clue.lahore.anarkali.2": "The bazaar shopkeepers haven't seen anyone out of the ordinary",
+
+  "clue.konya.mevlana.0": "{They} was reading Rumi and said {they}'d follow the poet's path to Persia's city of bridges",
+  "clue.konya.mevlana.1": "{They} asked the guide about bus connections to Turkey's largest city",
+  "clue.konya.mevlana.2": "The museum docent hasn't seen any visitors asking about onward travel",
+
+  "clue.konya.alaeddin.0": "{They} said the great Sinan mosque on the Golden Horn is more impressive but this one has soul",
+  "clue.konya.alaeddin.1": "{They} had an Iran visa application form half-filled",
+  "clue.konya.alaeddin.2": "The worshippers don't remember seeing a stranger",
+
+  "clue.konya.sille.0": "The suspect said {they}'d rather be where the call to prayer echoes across two continents",
+  "clue.konya.sille.1": "{They} was comparing the Sufi lodges here to the mystic gardens in a Persian oasis city",
+  "clue.konya.sille.2": "The villagers say no tourists have come through lately",
+
+  "clue.abu_dhabi.sheikh_zayed.0": "{They} said the Sultan's Grand Mosque on the Arabian Sea coast has comparable grandeur",
+  "clue.abu_dhabi.sheikh_zayed.1": "{They} said {they} prefers the I.M. Pei-designed museum on the peninsula for Islamic art",
+  "clue.abu_dhabi.sheikh_zayed.2": "The mosque attendant has not noticed anyone unfamiliar",
+
+  "clue.abu_dhabi.louvre_ad.0": "{They} said a nearby Gulf capital's collection of Islamic art is even deeper",
+  "clue.abu_dhabi.louvre_ad.1": "{They} was reading about Saladin's Citadel on the Nile and comparing palaces",
+  "clue.abu_dhabi.louvre_ad.2": "The ticket desk has no record of anyone matching that description",
+
+  "clue.abu_dhabi.mangrove_park.0": "{They} was exchanging dirhams for Egyptian pounds at the park gift shop",
+  "clue.abu_dhabi.mangrove_park.1": "{They} said the Museum of the Future in the Gulf's glitziest city is next on {their} list",
+  "clue.abu_dhabi.mangrove_park.2": "The park ranger says it's been quiet all day",
+
+  "clue.abu_dhabi.qasr_watan.0": "{They} was checking Emirates flights to the mega-mall across the Gulf",
+  "clue.abu_dhabi.qasr_watan.1": "{They} mentioned kayaking near a port city where frankincense ships once sailed",
+  "clue.abu_dhabi.qasr_watan.2": "The palace staff say no visitors have asked about flights today",
+
+  "clue.muscat.sultan_qaboos.0": "{They} was reading about the old Omani stone houses on a spice island off East Africa",
+  "clue.muscat.sultan_qaboos.1": "{They} said a desert city's cultural scene rivals this one -- its opera season is next month",
+  "clue.muscat.sultan_qaboos.2": "The mosque guide hasn't seen anyone asking for directions lately",
+
+  "clue.muscat.bimmah.0": "{They} mentioned visiting the world's most densely populated city where rickshaws outnumber cars",
+  "clue.muscat.bimmah.1": "{They} had a documentary about Swahili trading ports bookmarked on {their} tablet",
+  "clue.muscat.bimmah.2": "The swimmers here haven't seen any strangers",
+
+  "clue.muscat.royal_opera.0": "{They} was checking Emirates airline schedules heading west across the Gulf",
+  "clue.muscat.royal_opera.1": "{They} said {they}'s heading east to a river delta capital in South Asia",
+  "clue.muscat.royal_opera.2": "The box office has no record of tickets sold to anyone matching that description",
+
+  "clue.dakar.grande_mosquee.0": "{They} said the Art Deco of a Moroccan coastal city reminded {them} of home",
+  "clue.dakar.grande_mosquee.1": "{They} was researching how the slave trade connected West Africa to the land of the Pharaohs",
+  "clue.dakar.grande_mosquee.2": "The mosque caretaker has not seen anyone asking about flights",
+
+  "clue.dakar.goree.0": "{They} said the history museums along the Nile cover similar stories of trade and movement",
+  "clue.dakar.goree.1": "{They} mentioned booking a dhow trip along the East African coast to a spice island",
+  "clue.dakar.goree.2": "The ferry operators haven't seen anyone matching that description",
+
+  "clue.dakar.african_renaissance.0": "{They} was reading about old Omani stone houses in a Swahili port off the East African coast",
+  "clue.dakar.african_renaissance.1": "{They} was booking a Royal Air Maroc flight heading north to Morocco",
+  "clue.dakar.african_renaissance.2": "The monument guards say no tourists have asked about flights",
+
+  "clue.bandung.braga.0": "{They} was comparing Braga Street to the famous hawker lane near the twin towers",
+  "clue.bandung.braga.1": "{They} said the world's largest mosque in Indonesia's capital makes this city look tiny",
+  "clue.bandung.braga.2": "The barista hasn't served anyone fitting that description",
+
+  "clue.bandung.masjid_raya.0": "{They} had a train ticket back to the Javanese megacity on the coast",
+  "clue.bandung.masjid_raya.1": "{They} said the coffee here is good but Malaysia's capital has better variety",
+  "clue.bandung.masjid_raya.2": "No one at the mosque recalls a visitor asking about travel",
+
+  "clue.bandung.tangkuban.0": "{They} mentioned catching the evening train back to Indonesia's capital",
+  "clue.bandung.tangkuban.1": "{They} was comparing the tea plantations here to the Cameron Highlands near the twin towers",
+  "clue.bandung.tangkuban.2": "The volcano guides haven't seen any tourists asking about onward travel",
+
+  "clue.isfahan.naqsh_e_jahan.0": "{They} said this square is half the world, but a glittering Gulf port has the other half",
+  "clue.isfahan.naqsh_e_jahan.1": "{They} visited the Armenian quarter and said {their} next stop is a Turkish city famous for Sufis",
+  "clue.isfahan.naqsh_e_jahan.2": "The carpet sellers say no one has asked about travel today",
+
+  "clue.isfahan.vank.0": "{They} said the Mevlana Museum in the city where Rumi rests is {their} next spiritual stop",
+  "clue.isfahan.vank.1": "{They} was sipping tea and reading about Soviet metro mosaics in Central Asia's largest city",
+  "clue.isfahan.vank.2": "The priests at the cathedral have not seen any strangers",
+
+  "clue.isfahan.si_o_se_pol.0": "{They} said {they}'s following the Silk Road east to Central Asia's largest city",
+  "clue.isfahan.si_o_se_pol.1": "{They} mentioned the desert city skyline with the world's tallest tower as {their} next stop",
+  "clue.isfahan.si_o_se_pol.2": "The tea house regulars don't remember anyone new this week",
+
+  "clue.dhaka.baitul_mukarram.0": "{They} said the world's tallest twin towers are calling {their} name",
+  "clue.dhaka.baitul_mukarram.1": "{They} photographed the star-shaped tiles and said a Pakistani city's are even finer",
+  "clue.dhaka.baitul_mukarram.2": "The mosque guard says no strangers have attended prayers today",
+
+  "clue.dhaka.star_mosque.0": "{They} said the Wazir Khan Mosque in the Mughal heartland has even more intricate tiles",
+  "clue.dhaka.star_mosque.1": "{They} was haggling for a rickshaw and talking about frankincense merchants across the ocean",
+  "clue.dhaka.star_mosque.2": "The caretaker says only locals have visited today",
+
+  "clue.dhaka.lalbagh.0": "{They} mentioned sailing to a port city on the Arabian Sea along an old trade route",
+  "clue.dhaka.lalbagh.1": "{They} was buying bangles and said the Charminar city has them even cheaper",
+  "clue.dhaka.lalbagh.2": "The rickshaw drivers haven't taken any foreigners to the fort",
+
+  "clue.dhaka.sadarghat.0": "{They} was comparing the river chaos to nothing -- India's Nizam city is calmer",
+  "clue.dhaka.sadarghat.1": "{They} was checking Malaysia Airlines prices on {their} phone",
+  "clue.dhaka.sadarghat.2": "The ferry ticket sellers haven't seen any foreigners today",
+
+  "clue.fez.qarawiyyin.0": "{They} bragged about the world's oldest university and said a Balkan city with minarets and church bells is next",
+  "clue.fez.qarawiyyin.1": "{They} mentioned a friend waiting for {them} in Morocco's economic capital",
+  "clue.fez.qarawiyyin.2": "The university librarian hasn't seen any visitors matching that description",
+
+  "clue.fez.fez_medina.0": "{They} said the Red City at the foot of the Atlas Mountains is easier to navigate",
+  "clue.fez.fez_medina.1": "{They} had a printout of cheap flights to Bosnia",
+  "clue.fez.fez_medina.2": "The leather tannery workers don't recall any foreigners asking questions",
+
+  "clue.fez.borj_nord.0": "The suspect posted a panoramic photo with a hashtag about the Moroccan city from the classic Bogart film",
+  "clue.fez.borj_nord.1": "{They} said the city at the foot of the Atlas Mountains is more fun but this one has more soul",
+  "clue.fez.borj_nord.2": "The ticket booth operator hasn't sold any tickets to outsiders",
+
+  "clue.zanzibar.stone_town.0": "{They} mentioned the Omani sultans who once ruled this island",
+  "clue.zanzibar.stone_town.1": "{They} had a printout of flights to a West African city where Sufi brotherhoods lead prayers",
+  "clue.zanzibar.stone_town.2": "The shopkeeper in the narrow lanes hasn't seen anyone unusual",
+
+  "clue.zanzibar.hamamni.0": "{They} mentioned wanting to visit Senegal's Atlantic coast next",
+  "clue.zanzibar.hamamni.1": "{They} said the great Mamluk mosques by the pyramids put this island to shame",
+  "clue.zanzibar.hamamni.2": "The old bath-house guide has not noticed any strangers",
+
+  "clue.zanzibar.malindi.0": "{They} was reading about parks along the Nile on {their} phone",
+  "clue.zanzibar.malindi.1": "{They} was reading about Swahili coast trade routes to a frankincense port on the Arabian Sea",
+  "clue.zanzibar.malindi.2": "The imam has not seen any foreigners at prayers this week",
+
+  "clue.zanzibar.forodhani.0": "{They} was comparing the old Omani fort here to the Sultan's palace across the sea",
+  "clue.zanzibar.forodhani.1": "{They} was eating Zanzibar pizza and said the street food by the pyramids is even better",
+  "clue.zanzibar.forodhani.2": "The food vendors say no tourists have been asking questions tonight",
+
+  "clue.hyderabad.charminar.0": "{They} was comparing the four minarets to the great Badshahi Mosque in Pakistan's Mughal city",
+  "clue.hyderabad.charminar.1": "{They} was checking Emirates flights to the Gulf on {their} phone",
+  "clue.hyderabad.charminar.2": "The monument guard hasn't noticed anyone matching that description",
+
+  "clue.hyderabad.mecca_masjid.0": "{They} said this mosque is beautiful but the one in the Gulf city with the tallest tower is more famous",
+  "clue.hyderabad.mecca_masjid.1": "{They} was researching street food near the twin towers across the Indian Ocean",
+  "clue.hyderabad.mecca_masjid.2": "The prayer attendant has not seen any strangers today",
+
+  "clue.hyderabad.salar_jung.0": "{They} said Malaysia's capital has even more impressive Islamic art collections",
+  "clue.hyderabad.salar_jung.1": "{They} mentioned shipping a box of lac bangles to a friend in Bangladesh",
+  "clue.hyderabad.salar_jung.2": "The security staff have not logged any unusual visitors",
+
+  "clue.hyderabad.laad_bazaar.0": "{They} was buying bangles and said the river capital of Bengal has them even cheaper",
+  "clue.hyderabad.laad_bazaar.1": "{They} mentioned flying to Pakistan next to see the Badshahi Mosque",
+  "clue.hyderabad.laad_bazaar.2": "The bazaar merchants haven't noticed anyone unusual today",
+
+  "villain.qamar.0": "The suspect left a crescent moon sticker on the display case",
+  "villain.qamar.1": "A witness said the suspect was quoting Persian poetry under her breath",
+  "villain.qamar.2": "The suspect was wearing white silk gloves -- the kind a conservator would use",
+  "villain.qamar.3": "The suspect asked the curator about provenance records before the theft",
+
+  "villain.saffron.0": "The suspect smelled strongly of saffron and cardamom",
+  "villain.saffron.1": "He was carrying a small brass merchant's scale",
+  "villain.saffron.2": "The suspect's fingers were stained yellow -- turmeric, perhaps",
+  "villain.saffron.3": "A spice pouch was found near the broken lock",
+
+  "villain.layla.0": "The suspect wore a striking lapis lazuli pendant",
+  "villain.layla.1": "The suspect was only spotted after dark",
+  "villain.layla.2": "The suspect's nails were painted a deep midnight blue",
+  "villain.layla.3": "A turquoise bead was found at the scene",
+
+  "villain.tariq.0": "The break-in happened just before the dawn prayer",
+  "villain.tariq.1": "He carried a set of antique brass keys on his belt",
+  "villain.tariq.2": "The suspect entered through a window no one thought could open",
+  "villain.tariq.3": "A night guard said the suspect moved like someone who already knew the layout",
+
+  "villain.minara.0": "Plaster dust was found under the suspect's fingernails",
+  "villain.minara.1": "The suspect was photographing the tilework on the mihrab",
+  "villain.minara.2": "The suspect carried a small chisel in a velvet pouch",
+  "villain.minara.3": "A carved stone screen panel was surgically removed from the wall",
+
+  "villain.fakhr.0": "The suspect's hands were stained with walnut ink",
+  "villain.fakhr.1": "The suspect was seen practicing Arabic calligraphy in a cafe",
+  "villain.fakhr.2": "He carried a reed qalam pen behind his ear",
+  "villain.fakhr.3": "A magnifying loupe was found near the empty manuscript case",
+
+  "villain.dinar.0": "The guard said the suspect was spinning slowly, almost hypnotically",
+  "villain.dinar.1": "Gold coin wrappers were found in the stairwell",
+  "villain.dinar.2": "He was humming a Sufi devotional melody",
+  "villain.dinar.3": "The vault was emptied while every guard watched the courtyard performance",
+
+  "villain.henna.0": "A tiny henna dot was found on the doorframe",
+  "villain.henna.1": "Security footage shows the suspect in three different outfits in one hour",
+  "villain.henna.2": "The suspect changed appearance between the market and the mosque",
+  "villain.henna.3": "A wig and colored contact lenses were discarded in the alley",
+
+  "villain.kohl.0": "No one actually saw the suspect -- only her shadow",
+  "villain.kohl.1": "A miniature surveillance camera was found taped under a bench",
+  "villain.kohl.2": "The suspect's eyes were lined with thick kohl",
+  "villain.kohl.3": "The suspect seemed to know exactly where the blind spots in the cameras were",
+
+  "villain.murad.0": "He vanished into the medina and no one could follow",
+  "villain.murad.1": "The suspect wore leather sandals worn thin from running",
+  "villain.murad.2": "A crumpled map of the old city's back alleys was found in a drain",
+  "villain.murad.3": "The police chase ended at a dead-end wall -- but the suspect was gone",
+
+  "villain.soraya.0": "A smoke device was triggered just before the theft",
+  "villain.soraya.1": "Witnesses described a sudden cloud of dust in the gallery",
+  "villain.soraya.2": "The suspect wore a desert scarf wrapped loosely around her face",
+  "villain.soraya.3": "The fire alarm went off on the opposite side of the building -- a diversion",
+
+  "villain.nasreen.0": "The guard fell asleep at his post -- a faint floral scent lingered",
+  "villain.nasreen.1": "A rose petal was found on the empty pedestal",
+  "villain.nasreen.2": "The suspect was carrying a small glass vial in her handbag",
+  "villain.nasreen.3": "The suspect asked about local medicinal herbs at the souq",
+
+  "villain.jalal.0": "The museum director said a charming visitor offered to double the endowment",
+  "villain.jalal.1": "The suspect made promises that sounded too good to be true",
+  "villain.jalal.2": "The suspect was wearing an expensive suit and a signet ring",
+  "villain.jalal.3": "A forged donation receipt was left on the administrator's desk",
+
+  "villain.zubayr.0": "The security system was bypassed -- no alarms, no logs",
+  "villain.zubayr.1": "He was seen sketching geometric star patterns on a napkin",
+  "villain.zubayr.2": "The suspect left a sequence of numbers scratched into the glass",
+  "villain.zubayr.3": "A USB device was found plugged into the back of the ticket kiosk",
+
+  "villain.ivory.0": "The suspect was overheard negotiating a price in three languages",
+  "villain.ivory.1": "He had callused hands -- the hands of someone who packs crates",
+  "villain.ivory.2": "A shipping manifest for Zanzibar was found in the trash",
+  "villain.ivory.3": "An antique ivory-handled knife was used to pry open the case",
+
+  "villain.rumi.0": "A riddle in Ottoman script was left pinned to the empty frame",
+  "villain.rumi.1": "He was muttering couplets to himself as he left",
+  "villain.rumi.2": "The suspect quoted Hafez to a bewildered security guard",
+  "villain.rumi.3": "A handwritten verse was tucked inside the broken display",
+
+  "ui.title": "CARMEN: THE MODERN MUSLIM TRAVELER",
+  "ui.intel": "A FITNA operative has been sighted.",
+  "ui.instruction": "Gather clues and identify the suspect.",
+  "ui.found": "The suspect was found hiding here!",
+  "ui.closed": "Case closed.",
+  "ui.clues_point": "The clues point toward",
+  "ui.route": "Route:"
+}

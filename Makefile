@@ -1,6 +1,6 @@
 CC       = cc
 CFLAGS   = -std=c17 -Wall -Wextra -pedantic -O2
-INCLUDES = -Iinclude -Ivendor/stb -Ivendor/utf8
+INCLUDES = -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson
 
 BUILD_DIR = build
 VERSION   = 0.1.0
@@ -23,8 +23,10 @@ endif
 # --------------------------------------------------------------------------- #
 
 LIB_SRCS = src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
-           src/seed_data.c src/seed_data_islamic.c src/villain.c
-LIB_OBJS = $(LIB_SRCS:src/%.c=$(BUILD_DIR)/%.o)
+           src/seed_data.c src/seed_data_islamic.c src/villain.c src/i18n.c \
+           vendor/cjson/cJSON.c
+LIB_OBJS = $(patsubst src/%.c,$(BUILD_DIR)/%.o,$(filter src/%.c,$(LIB_SRCS))) \
+           $(BUILD_DIR)/cJSON.o
 
 # Library artifacts
 STATIC_LIB = $(BUILD_DIR)/libcarmen.a
@@ -75,6 +77,9 @@ $(TRAIL_DEMO_OBJ): examples/trail_demo.c | $(BUILD_DIR)
 $(BUILD_DIR)/%.o: src/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
+$(BUILD_DIR)/cJSON.o: vendor/cjson/cJSON.c | $(BUILD_DIR)
+	$(CC) -std=c17 -O2 -Ivendor/cjson -c -o $@ $<
+
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
@@ -100,7 +105,8 @@ PUBLIC_HEADERS = include/carmen/carmen.h include/carmen/carmen_export.h \
                  include/carmen/connection.h include/carmen/city.h \
                  include/carmen/game_world.h include/carmen/seed_data.h \
                  include/carmen/seed_data_islamic.h \
-                 include/carmen/villain.h
+                 include/carmen/villain.h \
+                 include/carmen/i18n.h
 
 INCLUDEDIR   = $(PREFIX)/include/carmen
 LIBDIR       = $(PREFIX)/lib

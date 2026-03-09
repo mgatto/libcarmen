@@ -8,6 +8,7 @@
 #define FITNA_VILLAIN_COUNT 16
 
 typedef struct {
+    const char *id;
     const char *name;
     const char *alias;
     char        gender;   /* 'M' or 'F' */

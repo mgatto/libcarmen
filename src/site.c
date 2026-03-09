@@ -20,10 +20,12 @@ int carmen_random(void)
     return rand();
 }
 
-void carmen_site_init(CarmenSite *s, const char *name, const char *site_type)
+void carmen_site_init(CarmenSite *s, const char *id,
+                      const char *name, const char *site_type)
 {
-    if (!s || !name || !site_type) return;
+    if (!s || !id || !name || !site_type) return;
     memset(s, 0, sizeof(*s));
+    carmen_utf8_copy(s->id, CARMEN_MAX_NAME_LEN, id);
     carmen_utf8_copy(s->name, CARMEN_MAX_NAME_LEN, name);
     carmen_utf8_copy(s->site_type, CARMEN_MAX_NAME_LEN, site_type);
 }

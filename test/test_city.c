@@ -46,7 +46,7 @@ static void test_city_add_site_increments_count(void)
 {
     CarmenCity c = make_test_city();
     CarmenSite s;
-    carmen_site_init(&s, "Louvre", "museum");
+    carmen_site_init(&s, "louvre", "Louvre", "museum");
     carmen_city_add_site(&c, &s);
     TEST_ASSERT_EQUAL_INT(1, c.site_count);
     TEST_ASSERT_EQUAL_STRING("Louvre", c.sites[0].name);
@@ -56,7 +56,7 @@ static void test_city_add_site_copies_data(void)
 {
     CarmenCity c = make_test_city();
     CarmenSite s;
-    carmen_site_init(&s, "Tower", "landmark");
+    carmen_site_init(&s, "tower", "Tower", "landmark");
     carmen_site_add_clue(&s, "A test clue", "london", CARMEN_CLUE_POSITIVE);
     carmen_city_add_site(&c, &s);
 
@@ -70,7 +70,7 @@ static void test_city_add_site_respects_max(void)
 {
     CarmenCity c = make_test_city();
     CarmenSite s;
-    carmen_site_init(&s, "S", "landmark");
+    carmen_site_init(&s, "s", "S", "landmark");
     for (int i = 0; i < CARMEN_MAX_SITES + 3; i++)
         carmen_city_add_site(&c, &s);
     TEST_ASSERT_EQUAL_INT(CARMEN_MAX_SITES, c.site_count);
@@ -134,9 +134,9 @@ static void test_city_sites_of_type_filters_correctly(void)
 {
     CarmenCity c = make_test_city();
     CarmenSite s1, s2, s3;
-    carmen_site_init(&s1, "Louvre", "museum");
-    carmen_site_init(&s2, "Eiffel Tower", "landmark");
-    carmen_site_init(&s3, "Orsay", "museum");
+    carmen_site_init(&s1, "louvre", "Louvre", "museum");
+    carmen_site_init(&s2, "eiffel", "Eiffel Tower", "landmark");
+    carmen_site_init(&s3, "orsay", "Orsay", "museum");
     carmen_city_add_site(&c, &s1);
     carmen_city_add_site(&c, &s2);
     carmen_city_add_site(&c, &s3);
@@ -152,7 +152,7 @@ static void test_city_sites_of_type_returns_zero_when_none(void)
 {
     CarmenCity c = make_test_city();
     CarmenSite s;
-    carmen_site_init(&s, "Eiffel Tower", "landmark");
+    carmen_site_init(&s, "eiffel", "Eiffel Tower", "landmark");
     carmen_city_add_site(&c, &s);
 
     const CarmenSite *museums[CARMEN_MAX_SITES];
@@ -165,7 +165,7 @@ static void test_city_sites_of_type_respects_max_out(void)
     CarmenCity c = make_test_city();
     for (int i = 0; i < 5; i++) {
         CarmenSite s;
-        carmen_site_init(&s, "Museum", "museum");
+        carmen_site_init(&s, "museum", "Museum", "museum");
         carmen_city_add_site(&c, &s);
     }
 
@@ -186,7 +186,7 @@ static void test_city_random_clue_returns_null_when_sites_have_no_clues(void)
 {
     CarmenCity c = make_test_city();
     CarmenSite s;
-    carmen_site_init(&s, "Empty Site", "landmark");
+    carmen_site_init(&s, "empty_site", "Empty Site", "landmark");
     carmen_city_add_site(&c, &s);
     TEST_ASSERT_NULL(carmen_city_random_clue(&c));
 }
@@ -196,10 +196,10 @@ static void test_city_random_clue_returns_valid_clue_with_target(void)
     srand(42);
     CarmenCity c = make_test_city();
     CarmenSite s1, s2;
-    carmen_site_init(&s1, "Museum", "museum");
+    carmen_site_init(&s1, "museum", "Museum", "museum");
     carmen_site_add_clue(&s1, "Clue A", "cairo", CARMEN_CLUE_POSITIVE);
     carmen_site_add_clue(&s1, "Clue B", "london", CARMEN_CLUE_POSITIVE);
-    carmen_site_init(&s2, "Airport", "airport");
+    carmen_site_init(&s2, "airport", "Airport", "airport");
     carmen_site_add_clue(&s2, "Clue C", "rome", CARMEN_CLUE_POSITIVE);
     carmen_city_add_site(&c, &s1);
     carmen_city_add_site(&c, &s2);

@@ -81,7 +81,7 @@ const FitnaVillain FITNA_VILLAINS[FITNA_VILLAIN_COUNT] = {
      {"A riddle in Ottoman script was left pinned to the empty frame",
       "He was muttering couplets to himself as he left",
       "The suspect quoted Hafez to a bewildered security guard",
-      "A handwritten verse was tucked inside the broken display"}},
+      "A handwritten verse was tucked inside the broken display"}},Explain how Dynamic arrays (pointer + realloc) instead of fixed arrays would work for optimizing and exactly what would change and include String interning pool.
 };
 
 void fitna_expand_clue(const char *tmpl, char gender, char *out, size_t size)

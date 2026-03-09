@@ -4,13 +4,15 @@
 #include "carmen/clue.h"
 
 typedef struct {
+    char       id[CARMEN_MAX_NAME_LEN];
     char       name[CARMEN_MAX_NAME_LEN];
     char       site_type[CARMEN_MAX_NAME_LEN];
     CarmenClue clues[CARMEN_MAX_CLUES];
     int        clue_count;
 } CarmenSite;
 
-CARMEN_API void              carmen_site_init(CarmenSite *s, const char *name,
+CARMEN_API void              carmen_site_init(CarmenSite *s, const char *id,
+                                              const char *name,
                                               const char *site_type);
 CARMEN_API void              carmen_site_add_clue(CarmenSite *s,
                                                   const char *text,

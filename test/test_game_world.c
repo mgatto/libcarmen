@@ -305,7 +305,7 @@ static void test_random_clue_from_valid_city(void)
     carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
     CarmenCity *a = carmen_world_find(&world, "a");
     CarmenSite s;
-    carmen_site_init(&s, "Museum", "museum");
+    carmen_site_init(&s, "museum", "Museum", "museum");
     carmen_site_add_clue(&s, "The suspect fled east", "tokyo", CARMEN_CLUE_POSITIVE);
     carmen_city_add_site(a, &s);
 

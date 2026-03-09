@@ -11,7 +11,8 @@ void tearDown(void) {}
 static void test_site_init_sets_fields(void)
 {
     CarmenSite s;
-    carmen_site_init(&s, "Louvre Museum", "museum");
+    carmen_site_init(&s, "louvre", "Louvre Museum", "museum");
+    TEST_ASSERT_EQUAL_STRING("louvre", s.id);
     TEST_ASSERT_EQUAL_STRING("Louvre Museum", s.name);
     TEST_ASSERT_EQUAL_STRING("museum", s.site_type);
     TEST_ASSERT_EQUAL_INT(0, s.clue_count);
@@ -21,7 +22,7 @@ static void test_site_init_zeroes_clue_array(void)
 {
     CarmenSite s;
     memset(&s, 0xFF, sizeof(s));
-    carmen_site_init(&s, "Eiffel Tower", "landmark");
+    carmen_site_init(&s, "eiffel", "Eiffel Tower", "landmark");
     TEST_ASSERT_EQUAL_INT(0, s.clue_count);
     TEST_ASSERT_EQUAL_UINT8(0, s.clues[0].text[0]);
 }
@@ -33,7 +34,7 @@ static void test_site_init_truncates_long_name(void)
     long_name[sizeof(long_name) - 1] = '\0';
 
     CarmenSite s;
-    carmen_site_init(&s, long_name, "landmark");
+    carmen_site_init(&s, "long_name", long_name, "landmark");
     TEST_ASSERT_EQUAL_INT(CARMEN_MAX_NAME_LEN - 1, (int)strlen(s.name));
 }
 
@@ -42,7 +43,7 @@ static void test_site_init_truncates_long_name(void)
 static void test_site_add_clue_increments_count(void)
 {
     CarmenSite s;
-    carmen_site_init(&s, "Test", "landmark");
+    carmen_site_init(&s, "test_site", "Test", "landmark");
     carmen_site_add_clue(&s, "Clue one", "cairo", CARMEN_CLUE_POSITIVE);
     TEST_ASSERT_EQUAL_INT(1, s.clue_count);
     TEST_ASSERT_EQUAL_STRING("Clue one", s.clues[0].text);
@@ -52,7 +53,7 @@ static void test_site_add_clue_increments_count(void)
 static void test_site_add_clue_null_target(void)
 {
     CarmenSite s;
-    carmen_site_init(&s, "Test", "landmark");
+    carmen_site_init(&s, "test_site", "Test", "landmark");
     carmen_site_add_clue(&s, "Red herring clue", NULL, CARMEN_CLUE_POSITIVE);
     TEST_ASSERT_EQUAL_INT(1, s.clue_count);
     TEST_ASSERT_EQUAL_STRING("Red herring clue", s.clues[0].text);
@@ -62,7 +63,7 @@ static void test_site_add_clue_null_target(void)
 static void test_site_add_multiple_clues(void)
 {
     CarmenSite s;
-    carmen_site_init(&s, "Test", "museum");
+    carmen_site_init(&s, "test_site", "Test", "museum");
     for (int i = 0; i < 4; i++) {
         char buf[32];
         snprintf(buf, sizeof(buf), "Clue %d", i);
@@ -76,7 +77,7 @@ static void test_site_add_multiple_clues(void)
 static void test_site_add_clue_respects_max(void)
 {
     CarmenSite s;
-    carmen_site_init(&s, "Test", "landmark");
+    carmen_site_init(&s, "test_site", "Test", "landmark");
     for (int i = 0; i < CARMEN_MAX_CLUES + 5; i++)
         carmen_site_add_clue(&s, "overflow", "x", CARMEN_CLUE_POSITIVE);
     TEST_ASSERT_EQUAL_INT(CARMEN_MAX_CLUES, s.clue_count);
@@ -89,7 +90,7 @@ static void test_site_add_clue_truncates_long_clue(void)
     long_clue[sizeof(long_clue) - 1] = '\0';
 
     CarmenSite s;
-    carmen_site_init(&s, "Test", "landmark");
+    carmen_site_init(&s, "test_site", "Test", "landmark");
     carmen_site_add_clue(&s, long_clue, "target", CARMEN_CLUE_POSITIVE);
     TEST_ASSERT_EQUAL_INT(1, s.clue_count);
     TEST_ASSERT_EQUAL_INT(CARMEN_MAX_CLUE_LEN - 1,
@@ -101,14 +102,14 @@ static void test_site_add_clue_truncates_long_clue(void)
 static void test_site_random_clue_returns_null_when_empty(void)
 {
     CarmenSite s;
-    carmen_site_init(&s, "Empty", "landmark");
+    carmen_site_init(&s, "empty", "Empty", "landmark");
     TEST_ASSERT_NULL(carmen_site_random_clue(&s));
 }
 
 static void test_site_random_clue_returns_valid_clue(void)
 {
     CarmenSite s;
-    carmen_site_init(&s, "Test", "landmark");
+    carmen_site_init(&s, "test_site", "Test", "landmark");
     carmen_site_add_clue(&s, "Only clue", "paris", CARMEN_CLUE_POSITIVE);
     const CarmenClue *clue = carmen_site_random_clue(&s);
     TEST_ASSERT_NOT_NULL(clue);
@@ -120,7 +121,7 @@ static void test_site_random_clue_is_among_added_clues(void)
 {
     srand(42);
     CarmenSite s;
-    carmen_site_init(&s, "Test", "museum");
+    carmen_site_init(&s, "test_site", "Test", "museum");
     carmen_site_add_clue(&s, "Alpha", "a", CARMEN_CLUE_POSITIVE);
     carmen_site_add_clue(&s, "Beta", "b", CARMEN_CLUE_POSITIVE);
     carmen_site_add_clue(&s, "Gamma", "c", CARMEN_CLUE_POSITIVE);

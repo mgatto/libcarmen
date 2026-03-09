@@ -11,14 +11,15 @@ typedef struct {
 } ClueData;
 
 static inline void add_site(CarmenWorld *w, const char *city_id,
-                             const char *name, const char *type,
+                             const char *site_id, const char *name,
+                             const char *type,
                              const ClueData *clues, int clue_count)
 {
-    if (!w || !city_id || !name || !type || !clues || clue_count <= 0) return;
+    if (!w || !city_id || !site_id || !name || !type || !clues || clue_count <= 0) return;
     CarmenCity *c = carmen_world_find(w, city_id);
     if (!c) return;
     CarmenSite s;
-    carmen_site_init(&s, name, type);
+    carmen_site_init(&s, site_id, name, type);
     for (int i = 0; i < clue_count; i++)
         carmen_site_add_clue(&s, clues[i].text, clues[i].target, clues[i].type);
     carmen_city_add_site(c, &s);
