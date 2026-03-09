@@ -23,7 +23,7 @@ endif
 # --------------------------------------------------------------------------- #
 
 LIB_SRCS = src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
-           src/seed_data.c src/seed_data_islamic.c src/villain.c src/i18n.c \
+           src/seed_data_islamic.c src/villain.c src/i18n.c \
            vendor/cjson/cJSON.c
 LIB_OBJS = $(patsubst src/%.c,$(BUILD_DIR)/%.o,$(filter src/%.c,$(LIB_SRCS))) \
            $(BUILD_DIR)/cJSON.o
@@ -32,10 +32,7 @@ LIB_OBJS = $(patsubst src/%.c,$(BUILD_DIR)/%.o,$(filter src/%.c,$(LIB_SRCS))) \
 STATIC_LIB = $(BUILD_DIR)/libcarmen.a
 SHARED_LIB = $(BUILD_DIR)/libcarmen.$(SHARED_EXT)
 
-# Demo binaries (link against the static lib)
-TARGET     = $(BUILD_DIR)/carmen
-TARGET_OBJ = $(BUILD_DIR)/carmen.o
-
+# Demo binary (link against the static lib)
 TRAIL_DEMO     = $(BUILD_DIR)/trail_demo
 TRAIL_DEMO_OBJ = $(BUILD_DIR)/trail_demo.o
 
@@ -43,7 +40,7 @@ TRAIL_DEMO_OBJ = $(BUILD_DIR)/trail_demo.o
 #  Default: build the static library and the demo binary
 # --------------------------------------------------------------------------- #
 
-all: $(STATIC_LIB) $(TARGET) $(TRAIL_DEMO)
+all: $(STATIC_LIB) $(TRAIL_DEMO)
 
 # --------------------------------------------------------------------------- #
 #  Library targets
@@ -59,14 +56,8 @@ $(SHARED_LIB): $(LIB_SRCS) | $(BUILD_DIR)
 lib: $(STATIC_LIB) $(SHARED_LIB)
 
 # --------------------------------------------------------------------------- #
-#  Demo binaries
+#  Demo binary
 # --------------------------------------------------------------------------- #
-
-$(TARGET): $(TARGET_OBJ) $(STATIC_LIB)
-	$(CC) $(CFLAGS) -o $@ $(TARGET_OBJ) $(STATIC_LIB)
-
-$(TARGET_OBJ): examples/carmen.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(TRAIL_DEMO): $(TRAIL_DEMO_OBJ) $(STATIC_LIB)
 	$(CC) $(CFLAGS) -o $@ $(TRAIL_DEMO_OBJ) $(STATIC_LIB)
@@ -103,7 +94,7 @@ PUBLIC_HEADERS = include/carmen/carmen.h include/carmen/carmen_export.h \
                  include/carmen/carmen_version.h include/carmen/utf8.h \
                  include/carmen/clue.h include/carmen/site.h \
                  include/carmen/connection.h include/carmen/city.h \
-                 include/carmen/game_world.h include/carmen/seed_data.h \
+                 include/carmen/game_world.h \
                  include/carmen/seed_data_islamic.h \
                  include/carmen/villain.h \
                  include/carmen/i18n.h

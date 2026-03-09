@@ -9,7 +9,6 @@
 #include "carmen/connection.h"
 #include "carmen/city.h"
 #include "carmen/game_world.h"
-#include "carmen/seed_data.h"
 #include "carmen/seed_data_islamic.h"
 #include "carmen/villain.h"
 #include "carmen/i18n.h"
