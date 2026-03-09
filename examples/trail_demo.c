@@ -291,7 +291,9 @@ int main(int argc, char *argv[]) {
 
     printf("%s\n", LINE);
     printf("  %s\n", carmen_i18n_get(i18n, "ui.closed"));
-    printf("  (It was %s, a.k.a. \"%s\")\n", villain->name, villain->alias);
+    printf("  (It was %s, a.k.a. \"%s\")\n",
+           carmen_i18n_get(i18n, villain->name),
+           carmen_i18n_get(i18n, villain->alias));
     printf("%s\n\n", LINE);
 
     carmen_world_free(world);

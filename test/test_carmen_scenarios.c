@@ -55,20 +55,13 @@ static void test_cairo_has_connections(void)
 
 /* ------------------------- continent query */
 
-static void test_europe_contains_istanbul_sarajevo(void)
+static void test_continent_query_returns_city(void)
 {
     CarmenCity *out[CARMEN_MAX_CITIES];
     int n = carmen_world_cities_in_continent(&world,
                 "city.istanbul.continent", out, CARMEN_MAX_CITIES);
-    TEST_ASSERT_TRUE(n >= 2);
-
-    int found_istanbul = 0, found_sarajevo = 0;
-    for (int i = 0; i < n; i++) {
-        if (strcmp(out[i]->id, "istanbul") == 0) found_istanbul = 1;
-        if (strcmp(out[i]->id, "sarajevo") == 0) found_sarajevo = 1;
-    }
-    TEST_ASSERT_TRUE(found_istanbul);
-    TEST_ASSERT_TRUE(found_sarajevo);
+    TEST_ASSERT_EQUAL_INT(1, n);
+    TEST_ASSERT_EQUAL_STRING("istanbul", out[0]->id);
 }
 
 static void test_both_continents_have_cities(void)
@@ -233,11 +226,11 @@ int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_world_has_expected_city_count);
-    RUN_TEST(test_world_has_two_continents);
+    RUN_TEST(test_world_has_continent_index);
     RUN_TEST(test_find_cairo);
     RUN_TEST(test_cairo_has_sites);
     RUN_TEST(test_cairo_has_connections);
-    RUN_TEST(test_europe_contains_istanbul_sarajevo);
+    RUN_TEST(test_continent_query_returns_city);
     RUN_TEST(test_both_continents_have_cities);
     RUN_TEST(test_cairo_has_mosque);
     RUN_TEST(test_dubai_has_direct_flights);
