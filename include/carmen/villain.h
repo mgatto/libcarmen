@@ -26,7 +26,7 @@ CARMEN_API extern const FitnaVillain FITNA_VILLAINS[FITNA_VILLAIN_COUNT];
  * Replaced with He/She (etc.) based on `gender` ('M' or 'F').
  * Result is written to `out` (at most `size` bytes including NUL).
  */
-CARMEN_API void fitna_expand_clue(const char *tmpl, char gender,
+CARMEN_API void carmen_villain_expand_clue(const char *tmpl, char gender,
                                   char *out, size_t size);
 
 #endif

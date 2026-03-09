@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < ns; j++) {
             const char *clue_text = carmen_i18n_get(i18n, slots[j].clue->text);
             char expanded[EXPAND_BUF];
-            fitna_expand_clue(clue_text, villain->gender, expanded,
+            carmen_villain_expand_clue(clue_text, villain->gender, expanded,
                               sizeof expanded);
             printf("  * %s (%s)\n",
                    carmen_i18n_get(i18n, slots[j].site->name),

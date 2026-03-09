@@ -52,7 +52,7 @@ const FitnaVillain FITNA_VILLAINS[FITNA_VILLAIN_COUNT] = {
       "villain.rumi.2", "villain.rumi.3"}},
 };
 
-void fitna_expand_clue(const char *tmpl, char gender, char *out, size_t size)
+void carmen_villain_expand_clue(const char *tmpl, char gender, char *out, size_t size)
 {
     int male = (gender == 'M');
     const char *r = tmpl;
