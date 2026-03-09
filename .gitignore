@@ -1,5 +1,7 @@
 # Build output
 build/
+cmake-build*/
+CMakeUserPresets.json
 
 # Object files
 *.o
