@@ -20,4 +20,11 @@ CARMEN_API int  carmen_connection_to_string(const CarmenConnection *c,
                                             char *buf, int buf_size);
 CARMEN_API void carmen_connection_print(const CarmenConnection *c);
 
+/* Nominal speed in km/h for a transport mode string.
+   "flight" = 800, "train" = 200, "boat" = 60, unknown = 800. */
+CARMEN_API int  carmen_transport_speed_kph(const char *mode);
+
+/* Estimated travel time in hours for this connection (rounded up). */
+CARMEN_API int  carmen_connection_travel_hrs(const CarmenConnection *c);
+
 #endif

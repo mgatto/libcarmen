@@ -32,3 +32,19 @@ void carmen_connection_print(const CarmenConnection *c)
     carmen_connection_to_string(c, buf, (int)sizeof(buf));
     fputs(buf, stdout);
 }
+
+int carmen_transport_speed_kph(const char *mode)
+{
+    if (mode) {
+        if (strcmp(mode, "train") == 0) return 200;
+        if (strcmp(mode, "boat")  == 0) return  60;
+    }
+    return 800;
+}
+
+int carmen_connection_travel_hrs(const CarmenConnection *c)
+{
+    if (!c || c->distance_km <= 0) return 0;
+    int speed = carmen_transport_speed_kph(c->transport_mode);
+    return (c->distance_km + speed - 1) / speed;
+}
