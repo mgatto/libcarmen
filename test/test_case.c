@@ -159,42 +159,37 @@ static void test_time_budget_is_positive(void)
     }
 }
 
-/* -------------------------------------------------- max_trail_hops */
+/* ---------------------------------------- trail stop clue assignment */
 
-static void test_default_hops_easy_is_1(void)
+static void test_trail_stops_have_sites(void)
 {
     srand(42);
     CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
     CarmenCase c;
-    carmen_case_generate(&c, world, &s);
-    TEST_ASSERT_EQUAL_INT(1, c.max_trail_hops);
+    int ok = carmen_case_generate(&c, world, &s);
+    if (!ok) { TEST_IGNORE_MESSAGE("generation failed"); return; }
+    for (int i = 0; i < c.trail_len; i++)
+        TEST_ASSERT_GREATER_THAN(0, c.stops[i].site_count);
 }
 
-static void test_default_hops_medium_is_2(void)
-{
-    srand(99);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_MEDIUM, 0 };
-    CarmenCase c;
-    carmen_case_generate(&c, world, &s);
-    TEST_ASSERT_EQUAL_INT(2, c.max_trail_hops);
-}
-
-static void test_default_hops_hard_is_3(void)
-{
-    srand(17);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_HARD, 0 };
-    CarmenCase c;
-    carmen_case_generate(&c, world, &s);
-    TEST_ASSERT_EQUAL_INT(3, c.max_trail_hops);
-}
-
-static void test_explicit_hops_override(void)
+static void test_non_hideout_stops_have_two_positives(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 3 };
+    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
     CarmenCase c;
-    carmen_case_generate(&c, world, &s);
-    TEST_ASSERT_EQUAL_INT(3, c.max_trail_hops);
+    int ok = carmen_case_generate(&c, world, &s);
+    if (!ok) { TEST_IGNORE_MESSAGE("generation failed"); return; }
+    for (int i = 0; i < c.trail_len - 1; i++) {
+        int pos = 0;
+        for (int j = 0; j < c.stops[i].site_count && j < 2; j++) {
+            if (c.stops[i].sites[j].clue.type == CARMEN_CLUE_POSITIVE &&
+                strcmp(c.stops[i].sites[j].clue.target_city_id,
+                       c.trail[i + 1]) == 0)
+                pos++;
+        }
+        TEST_ASSERT_EQUAL_INT_MESSAGE(2, pos,
+            "first 2 sites should have positive clues to next trail city");
+    }
 }
 
 /* -------------------------------------------------- difficulty stored */
@@ -247,10 +242,8 @@ int main(void)
     RUN_TEST(test_villain_is_set);
     RUN_TEST(test_artifact_is_set);
     RUN_TEST(test_time_budget_is_positive);
-    RUN_TEST(test_default_hops_easy_is_1);
-    RUN_TEST(test_default_hops_medium_is_2);
-    RUN_TEST(test_default_hops_hard_is_3);
-    RUN_TEST(test_explicit_hops_override);
+    RUN_TEST(test_trail_stops_have_sites);
+    RUN_TEST(test_non_hideout_stops_have_two_positives);
     RUN_TEST(test_difficulty_stored_in_case);
     RUN_TEST(test_generate_null_case_returns_0);
     RUN_TEST(test_generate_null_world_returns_0);

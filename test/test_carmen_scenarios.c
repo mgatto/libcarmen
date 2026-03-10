@@ -204,7 +204,7 @@ static void test_every_city_has_sites_and_clues(void)
         CarmenCity *c = &world.storage[i];
         TEST_ASSERT_TRUE_MESSAGE(c->site_count >= 3, c->id);
         for (int s = 0; s < c->site_count; s++)
-            TEST_ASSERT_TRUE_MESSAGE(c->sites[s].clue_count == 3, c->id);
+            TEST_ASSERT_TRUE_MESSAGE(c->sites[s].clue_count >= 3, c->id);
     }
 }
 

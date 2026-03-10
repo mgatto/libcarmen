@@ -45,6 +45,16 @@ CARMEN_API int carmen_session_time_remaining(const CarmenSession *s);
 CARMEN_API int carmen_session_moves(const CarmenSession *s);
 
 /*
+ * Return the active site indices for the current city.
+ *
+ * On-trail cities have up to CARMEN_TRAIL_SITES (3) active sites chosen
+ * at case-generation time.  Off-trail cities return 0.
+ * Writes site indices into out_indices and returns the count.
+ */
+CARMEN_API int carmen_session_active_sites(const CarmenSession *s,
+                                           int *out_indices, int max_out);
+
+/*
  * Travel to a connected city.
  *
  * Deducts time based on the connection's transport mode and distance.
@@ -56,17 +66,19 @@ CARMEN_API int carmen_session_travel(CarmenSession *s, const char *dest_id);
 /*
  * Investigate a site in the current city.
  *
- * Returns a clue from site at site_idx, applying difficulty-based clue
- * selection: on-trail cities yield positive clues pointing to the next
- * trail stop (probability scales with difficulty), otherwise a negative
- * or misleading clue is returned. The clue is appended to the notebook.
- *
+ * On-trail cities return a deterministic clue assigned at case-
+ * generation time (2 of 3 active sites give a positive clue pointing
+ * to the next trail city, 1 gives a herring or negative).
+ * Off-trail cities always return a negative clue.
  * At the villain's hideout, also collects villain identity evidence.
+ *
+ * site_idx must be one of the active site indices returned by
+ * carmen_session_active_sites, or a valid site index if off-trail.
  *
  * The returned pointer points into the session's notebook and remains
  * valid for the lifetime of the session.
  *
- * Returns NULL if site_idx is out of range, notebook is full, or
+ * Returns NULL if site_idx is not active, notebook is full, or
  * session is not PLAYING.
  */
 CARMEN_API const CarmenClue *carmen_session_investigate(CarmenSession *s,

@@ -13,25 +13,12 @@ static const CarmenConnection *find_connection(const CarmenCity *city,
     return NULL;
 }
 
-/* Returns the trail index of city_id in the active case, or -1. */
 static int trail_index_of(const CarmenCase *c, const char *city_id)
 {
     for (int i = 0; i < c->trail_len; i++)
         if (strcmp(c->trail[i], city_id) == 0)
             return i;
     return -1;
-}
-
-/* Probability (out of 100) that investigation yields the "good" clue
-   pointing to the next trail city. */
-static int positive_clue_chance(CarmenDifficulty d)
-{
-    switch (d) {
-        case CARMEN_DIFFICULTY_EASY:   return 90;
-        case CARMEN_DIFFICULTY_MEDIUM: return 60;
-        case CARMEN_DIFFICULTY_HARD:   return 35;
-    }
-    return 60;
 }
 
 /* --------------------------------------------------------- lifecycle */
@@ -96,6 +83,22 @@ int carmen_session_moves(const CarmenSession *s)
     return s->moves;
 }
 
+int carmen_session_active_sites(const CarmenSession *s,
+                                int *out_indices, int max_out)
+{
+    if (!s || !out_indices || max_out <= 0) return 0;
+
+    const CarmenCase *cas = &s->active_case;
+    int tidx = trail_index_of(cas, s->current_city_id);
+    if (tidx < 0) return 0;
+
+    const CarmenTrailStop *stop = &cas->stops[tidx];
+    int count = stop->site_count < max_out ? stop->site_count : max_out;
+    for (int i = 0; i < count; i++)
+        out_indices[i] = stop->sites[i].site_idx;
+    return count;
+}
+
 /* ----------------------------------------------------------- actions */
 
 int carmen_session_travel(CarmenSession *s, const char *dest_id)
@@ -129,81 +132,61 @@ const CarmenClue *carmen_session_investigate(CarmenSession *s, int site_idx)
     if (!s || s->status != CARMEN_STATUS_PLAYING) return NULL;
 
     const CarmenCity *city = carmen_session_current_city(s);
-    if (!city || site_idx < 0 || site_idx >= city->site_count) return NULL;
+    if (!city) return NULL;
 
-    const CarmenSite *site = &city->sites[site_idx];
-    const CarmenCase *cas  = &s->active_case;
-
-    /* At the hideout, collect villain identity evidence (once per site) */
-    unsigned int site_bit = 1u << site_idx;
-    if (strcmp(s->current_city_id, cas->hideout_id) == 0 &&
-        cas->villain && s->evidence_count < FITNA_MAX_ID_CLUES &&
-        !(s->hideout_investigated_sites & site_bit)) {
-        s->hideout_investigated_sites |= site_bit;
-        carmen_utf8_copy(
-            s->evidence[s->evidence_count], CARMEN_MAX_CLUE_LEN,
-            cas->villain->id_clues[s->evidence_count]);
-        s->evidence_count++;
-    }
-
-    /* Determine the "correct" next trail city (if we're on the trail) */
+    const CarmenCase *cas = &s->active_case;
     int tidx = trail_index_of(cas, s->current_city_id);
-    const char *next_trail_id = NULL;
-    if (tidx >= 0 && tidx < cas->trail_len - 1)
-        next_trail_id = cas->trail[tidx + 1];
 
-    const CarmenClue *chosen = NULL;
-
-    if (next_trail_id) {
-        /* Look for a positive clue pointing to the next trail city */
-        const CarmenClue *good = NULL;
-        for (int c = 0; c < site->clue_count; c++) {
-            if (site->clues[c].type == CARMEN_CLUE_POSITIVE &&
-                strcmp(site->clues[c].target_city_id, next_trail_id) == 0) {
-                good = &site->clues[c];
-                break;
-            }
-        }
-
-        if (good && (carmen_random() % 100) < positive_clue_chance(cas->difficulty)) {
-            chosen = good;
-        }
+    /* Off-trail: always return a negative clue */
+    if (tidx < 0) {
+        if (site_idx < 0 || site_idx >= city->site_count) return NULL;
+        if (s->notebook_count >= CARMEN_MAX_NOTEBOOK) return NULL;
+        CarmenClue neg;
+        memset(&neg, 0, sizeof(neg));
+        carmen_utf8_copy(neg.text, CARMEN_MAX_CLUE_LEN,
+                         "clue.generic.negative");
+        neg.type = CARMEN_CLUE_NEGATIVE;
+        s->notebook[s->notebook_count] = neg;
+        return &s->notebook[s->notebook_count++];
     }
 
-    if (!chosen) {
-        const CarmenClue *negatives[CARMEN_MAX_CLUES];
-        const CarmenClue *herrings[CARMEN_MAX_CLUES];
-        int nn = 0, nh = 0;
+    /* On-trail: look up the pre-assigned clue for this site */
+    const CarmenTrailStop *stop = &cas->stops[tidx];
 
-        for (int c = 0; c < site->clue_count; c++) {
-            if (site->clues[c].type == CARMEN_CLUE_NEGATIVE) {
-                negatives[nn++] = &site->clues[c];
-            } else if (site->clues[c].type == CARMEN_CLUE_POSITIVE &&
-                       (!next_trail_id ||
-                        strcmp(site->clues[c].target_city_id, next_trail_id) != 0)) {
-                herrings[nh++] = &site->clues[c];
-            }
+    int active_idx = -1;
+    for (int i = 0; i < stop->site_count; i++) {
+        if (stop->sites[i].site_idx == site_idx) {
+            active_idx = i;
+            break;
         }
+    }
+    if (active_idx < 0) return NULL;
 
-        if (nn > 0 && nh > 0)
-            chosen = (carmen_random() % 2)
-                   ? herrings[carmen_random() % nh]
-                   : negatives[carmen_random() % nn];
-        else if (nn > 0)
-            chosen = negatives[carmen_random() % nn];
-        else if (nh > 0)
-            chosen = herrings[carmen_random() % nh];
-        else if (site->clue_count > 0)
-            chosen = &site->clues[carmen_random() % site->clue_count];
+    /* Hideout: collect evidence, return negative */
+    if (tidx == cas->trail_len - 1) {
+        unsigned int bit = 1u << active_idx;
+        if (cas->villain && s->evidence_count < FITNA_MAX_ID_CLUES &&
+            !(s->hideout_investigated_sites & bit)) {
+            s->hideout_investigated_sites |= bit;
+            carmen_utf8_copy(
+                s->evidence[s->evidence_count], CARMEN_MAX_CLUE_LEN,
+                cas->villain->id_clues[s->evidence_count]);
+            s->evidence_count++;
+        }
+        if (s->notebook_count >= CARMEN_MAX_NOTEBOOK) return NULL;
+        CarmenClue neg;
+        memset(&neg, 0, sizeof(neg));
+        carmen_utf8_copy(neg.text, CARMEN_MAX_CLUE_LEN,
+                         "clue.generic.negative");
+        neg.type = CARMEN_CLUE_NEGATIVE;
+        s->notebook[s->notebook_count] = neg;
+        return &s->notebook[s->notebook_count++];
     }
 
-    if (!chosen) return NULL;
-
+    /* Normal trail stop: return the deterministic pre-assigned clue */
     if (s->notebook_count >= CARMEN_MAX_NOTEBOOK) return NULL;
-
-    s->notebook[s->notebook_count] = *chosen;
-    s->notebook_count++;
-    return &s->notebook[s->notebook_count - 1];
+    s->notebook[s->notebook_count] = stop->sites[active_idx].clue;
+    return &s->notebook[s->notebook_count++];
 }
 
 int carmen_session_issue_warrant(CarmenSession *s, int villain_idx)

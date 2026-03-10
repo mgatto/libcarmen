@@ -26,19 +26,19 @@ static inline void add_site(CarmenWorld *w, const char *city_id,
 }
 
 static inline void add_route(CarmenWorld *w, const char *from,
-                              const char *to, int km)
+                              const char *to, int km, const char *mode)
 {
-    if (!w || !from || !to) return;
+    if (!w || !from || !to || !mode) return;
     CarmenCity *fc = carmen_world_find(w, from);
     CarmenCity *tc = carmen_world_find(w, to);
     if (!fc || !tc) return;
 
     CarmenConnection conn;
-    carmen_connection_init(&conn, to, km, "flight");
+    carmen_connection_init(&conn, to, km, mode);
     carmen_city_add_connection(fc, &conn);
 
     if (!carmen_city_has_connection_to(tc, from)) {
-        carmen_connection_init(&conn, from, km, "flight");
+        carmen_connection_init(&conn, from, km, mode);
         carmen_city_add_connection(tc, &conn);
     }
 }

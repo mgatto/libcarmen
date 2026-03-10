@@ -5,7 +5,7 @@
 
 #define CARMEN_MAX_NAME_LEN 48
 #define CARMEN_MAX_CLUE_LEN 48
-#define CARMEN_MAX_CLUES    4
+#define CARMEN_MAX_CLUES    8
 
 typedef enum {
     CARMEN_CLUE_POSITIVE,   /* 0 -- points toward the correct next city */

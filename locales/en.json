@@ -230,50 +230,70 @@
 
   "clue.istanbul.suleymaniye.0": "The suspect was googling Bosnian coffee recipes",
   "clue.istanbul.suleymaniye.1": "{They} was comparing Ottoman tile patterns to Mamluk ones along the Nile",
+  "clue.istanbul.suleymaniye.3": "{They} said the Whirling Dervishes' home in central Anatolia is {their} next pilgrimage",
   "clue.istanbul.suleymaniye.2": "The muezzin shook his head -- no strangers at today's prayer",
 
   "clue.istanbul.istanbul_modern.0": "{They} kept staring at a Nile River postcard pinned to the gallery wall",
   "clue.istanbul.istanbul_modern.1": "{They} mentioned the Whirling Dervishes' hometown as {their} next cultural stop",
+  "clue.istanbul.istanbul_modern.3": "{They} was pricing flights to a Mediterranean city known for its nightlife and street art",
   "clue.istanbul.istanbul_modern.2": "The gallery staff haven't noticed anyone matching that description",
 
   "clue.istanbul.kadikoy.0": "The suspect ordered a ferry ticket and asked about the Whirling Dervishes",
   "clue.istanbul.kadikoy.1": "{They} was raving about the food scene in a city where church bells mix with the adhan",
+  "clue.istanbul.kadikoy.3": "{They} was reading about the coppersmiths of a Balkan city with Ottoman bridges",
   "clue.istanbul.kadikoy.2": "The fish vendor hasn't seen anyone unusual today",
 
   "clue.istanbul.camlica.0": "{They} mentioned a city where you can ski in the morning and swim the Mediterranean by noon",
   "clue.istanbul.camlica.1": "{They} was reading about Ottoman bridges in a Balkan city known for its coppersmiths",
+  "clue.istanbul.camlica.3": "{They} was comparing these minarets to the great mosques along the Nile",
   "clue.istanbul.camlica.2": "The imam has not seen any unfamiliar faces at today's prayers",
 
   "clue.dubai.museum_future.0": "{They} said the world's best collection of Islamic calligraphy is just a short flight south",
   "clue.dubai.museum_future.1": "{They} mentioned pearl diving traditions across the Gulf to the southeast",
+  "clue.dubai.museum_future.3": "{They} said the Louvre branch in the neighboring emirate is {their} next stop",
+  "clue.dubai.museum_future.4": "{They} was researching Persian bridge tea houses in a city called half the world",
+  "clue.dubai.museum_future.5": "{They} mentioned the Mughal fort and gardens in Pakistan's cultural capital",
   "clue.dubai.museum_future.2": "The receptionist hasn't seen anyone matching that description",
 
   "clue.dubai.al_fahidi.0": "{They} mentioned old dhow routes along the Omani coast",
   "clue.dubai.al_fahidi.1": "{They} had a PIA boarding pass tucked in {their} passport",
+  "clue.dubai.al_fahidi.3": "{They} mentioned the grand presidential palace just down the coast",
+  "clue.dubai.al_fahidi.4": "{They} was sketching tile patterns and said a Persian oasis city has the originals",
+  "clue.dubai.al_fahidi.5": "{They} was checking flights to a Levantine capital with Roman ruins",
   "clue.dubai.al_fahidi.2": "The guide said no foreigners have visited this week",
 
   "clue.dubai.dubai_mall.0": "{They} was dreaming aloud about Mughal gardens and Wazir Khan's tilework",
   "clue.dubai.dubai_mall.1": "{They} asked the imam about Persian tile patterns and dome geometry",
+  "clue.dubai.dubai_mall.3": "{They} said the I.M. Pei museum in the nearby Gulf capital is worth the drive",
+  "clue.dubai.dubai_mall.4": "{They} was researching the Sheikh Zayed Mosque that seats 40,000",
+  "clue.dubai.dubai_mall.5": "{They} was exchanging dirhams for Jordanian dinars at the bureau",
   "clue.dubai.dubai_mall.2": "The concierge hasn't seen anyone matching that description",
 
   "clue.dubai.jumeirah.0": "{They} was studying Farsi on {their} phone and comparing dome geometry",
   "clue.dubai.jumeirah.1": "{They} was checking flight times to a nearby Gulf peninsula capital",
+  "clue.dubai.jumeirah.3": "{They} said the Sultan's Grand Mosque on the Omani coast is even more serene",
+  "clue.dubai.jumeirah.4": "{They} mentioned the Badshahi Mosque as the ultimate comparison for domes",
+  "clue.dubai.jumeirah.5": "{They} was reading about Nabataean ruins near a Levantine hilltop capital",
   "clue.dubai.jumeirah.2": "The mosque attendant has not noticed any unfamiliar visitors",
 
   "clue.kuala_lumpur.petronas.0": "{They} was raving about volcanic highland coffee from Java's most artistic city",
   "clue.kuala_lumpur.petronas.1": "{They} was researching Charminar and biryani in India's Nizam city",
+  "clue.kuala_lumpur.petronas.3": "{They} mentioned visiting the world's largest mosque across the strait in Indonesia's capital",
   "clue.kuala_lumpur.petronas.2": "The observation deck staff haven't noticed anyone unusual today",
 
   "clue.kuala_lumpur.islamic_arts.0": "{They} wanted to see the largest mosque in the world's most populous Muslim-majority country",
   "clue.kuala_lumpur.islamic_arts.1": "The suspect was craving kacchi biryani from Bengal",
+  "clue.kuala_lumpur.islamic_arts.3": "{They} was researching the Charminar and Nizam treasures in India's pearl city",
   "clue.kuala_lumpur.islamic_arts.2": "The curator said no one has asked about travel lately",
 
   "clue.kuala_lumpur.jalan_alor.0": "{They} mentioned flying to Bangladesh for a friend's wedding",
   "clue.kuala_lumpur.jalan_alor.1": "{They} said the Laad Bazaar bangles in India's pearl city are even prettier",
+  "clue.kuala_lumpur.jalan_alor.3": "{They} was comparing the food here to a Javanese highland city known for its coffee",
   "clue.kuala_lumpur.jalan_alor.2": "The hawker stall owner shrugged -- too busy to notice anyone",
 
   "clue.kuala_lumpur.masjid_negara.0": "{They} said the mihrab here can't match the one inside Istiqlal across the strait",
   "clue.kuala_lumpur.masjid_negara.1": "{They} compared the batik here to the highland city in Java where it's made by hand",
+  "clue.kuala_lumpur.masjid_negara.3": "{They} mentioned flying east to the world's most densely populated river capital",
   "clue.kuala_lumpur.masjid_negara.2": "The worshippers here don't recall seeing a stranger",
 
   "clue.doha.islamic_art.0": "{They} mentioned wanting to see the white marble mosque that seats 40,000 worshippers",
@@ -306,18 +326,22 @@
 
   "clue.casablanca.hassan_ii.0": "The suspect mentioned the Atlas Mountains are just a train ride away",
   "clue.casablanca.hassan_ii.1": "{They} was studying a map of West Africa with a city on the Atlantic coast circled",
+  "clue.casablanca.hassan_ii.3": "{They} mentioned heading to the land of the Pharaohs to compare mosque architecture",
   "clue.casablanca.hassan_ii.2": "The mosque caretaker has not seen any unusual visitors",
 
   "clue.casablanca.habous.0": "{They} was asking about flights to Senegal at a travel agency",
   "clue.casablanca.habous.1": "{They} had a guidebook for the Egyptian pyramids in {their} shopping bag",
+  "clue.casablanca.habous.3": "{They} said the world's oldest university in Morocco's oldest imperial city is a must-see",
   "clue.casablanca.habous.2": "The shopkeeper hasn't seen any strangers today",
 
   "clue.casablanca.morocco_mall.0": "{They} was exchanging dirhams for Egyptian currency at the bureau de change",
   "clue.casablanca.morocco_mall.1": "{They} said the city with the world's oldest university has finer examples of this style",
+  "clue.casablanca.morocco_mall.3": "{They} had a riad reservation in the Red City at the foot of the Atlas Mountains",
   "clue.casablanca.morocco_mall.2": "The mall security hasn't flagged anyone matching that description",
 
   "clue.casablanca.art_deco.0": "{They} said the medina in Morocco's oldest imperial city makes this look modern",
   "clue.casablanca.art_deco.1": "{They} had a riad reservation in the Red City",
+  "clue.casablanca.art_deco.3": "{They} mentioned flying south to a West African capital on the Atlantic coast",
   "clue.casablanca.art_deco.2": "No one in the cafe recalls a traveler asking for directions",
 
   "clue.jakarta.istiqlal.0": "{They} said even the world's largest mosque can't match the Islamic arts collection across the strait",
@@ -366,18 +390,27 @@
 
   "clue.cairo.azhar_park.0": "{They} said this park's view rivals the ancient Citadel perched over a Levantine capital",
   "clue.cairo.azhar_park.1": "{They} mentioned connecting through the Moroccan city that shares its name with a famous film",
+  "clue.cairo.azhar_park.3": "{They} was comparing these gardens to the gleaming mangroves in the Emirates' capital",
+  "clue.cairo.azhar_park.4": "{They} mentioned the trans-Saharan gold routes leading to a West African port",
   "clue.cairo.azhar_park.2": "The park gardener hasn't noticed anyone out of place",
 
   "clue.cairo.tahrir.0": "{They} was checking Royal Air Maroc flights on {their} laptop",
   "clue.cairo.tahrir.1": "{They} was comparing the massive scale here to a grand mosque in the Emirates' capital",
+  "clue.cairo.tahrir.3": "{They} had a Jordanian visa application and was circling the Citadel on a map",
+  "clue.cairo.tahrir.4": "{They} mentioned an island off East Africa where Omani traders once ruled",
   "clue.cairo.tahrir.2": "The street vendors haven't noticed anyone asking about flights",
 
   "clue.cairo.khan_khalili.0": "{They} was sketching the muqarnas and comparing them to the white marble mosque that seats 40,000",
   "clue.cairo.khan_khalili.1": "{They} was checking visa requirements for Jordan",
+  "clue.cairo.khan_khalili.3": "{They} mentioned booking a flight to a spice island with carved Omani doors",
+  "clue.cairo.khan_khalili.4": "{They} was reading about the Goree Island slave trade and its Egyptian connections",
   "clue.cairo.khan_khalili.2": "The merchants say business has been slow -- no new faces",
 
   "clue.cairo.sultan_hassan.0": "The suspect was exchanging Egyptian pounds for Jordanian dinars",
   "clue.cairo.sultan_hassan.1": "{They} mentioned heading west to Morocco before flying home",
+  "clue.cairo.sultan_hassan.3": "{They} was comparing Mamluk stonework to the white marble mosque in the Emirates' capital",
+  "clue.cairo.sultan_hassan.4": "{They} mentioned a dhow voyage to the Swahili coast from this very port",
+  "clue.cairo.sultan_hassan.5": "{They} was studying a map of West Africa with a city on the Atlantic coast marked",
   "clue.cairo.sultan_hassan.2": "The prayer attendants say no tourists have been around today",
 
   "clue.beirut.al_amin.0": "{They} was reading about Nabataean ruins and a Roman amphitheater in a Levantine capital",
@@ -406,18 +439,22 @@
 
   "clue.lahore.badshahi.0": "{They} was comparing this mosque to one in a Bengali river capital surrounded by waterways",
   "clue.lahore.badshahi.1": "{They} was reading about Timurid architecture in a city famous for its Soviet-era metro",
+  "clue.lahore.badshahi.3": "{They} was checking Emirates flights from this Mughal city to the Gulf",
   "clue.lahore.badshahi.2": "The prayer hall attendant says no foreigners have visited today",
 
   "clue.lahore.lahore_fort.0": "{They} mentioned comparing these Mughal walls to Silk Road forts in Central Asia's largest city",
   "clue.lahore.lahore_fort.1": "{They} was reading restaurant reviews from the Gulf city with the world's tallest building",
+  "clue.lahore.lahore_fort.3": "{They} mentioned comparing these Mughal walls to the Charminar across the border",
   "clue.lahore.lahore_fort.2": "The fort guard has not seen any suspicious visitors",
 
   "clue.lahore.food_street.0": "{They} said the Pakistani restaurants in the Gulf's glitziest city can't compare to the real thing",
   "clue.lahore.food_street.1": "{They} was comparing the biryani here to the famous Hyderabadi dum style across the border",
+  "clue.lahore.food_street.3": "{They} said the river boats in Bengal's capital remind {them} of the Ravi ferries",
   "clue.lahore.food_street.2": "The waiter doesn't recall anyone unusual this week",
 
   "clue.lahore.anarkali.0": "{They} mentioned shipping a box of silk fabric to a friend near the Charminar",
   "clue.lahore.anarkali.1": "{They} mentioned visiting relatives in Bangladesh next",
+  "clue.lahore.anarkali.3": "{They} mentioned following the Silk Road north to Central Asia's largest city",
   "clue.lahore.anarkali.2": "The bazaar shopkeepers haven't seen anyone out of the ordinary",
 
   "clue.konya.mevlana.0": "{They} was reading Rumi and said {they}'d follow the poet's path to Persia's city of bridges",
@@ -434,30 +471,37 @@
 
   "clue.abu_dhabi.sheikh_zayed.0": "{They} said the Sultan's Grand Mosque on the Arabian Sea coast has comparable grandeur",
   "clue.abu_dhabi.sheikh_zayed.1": "{They} said {they} prefers the I.M. Pei-designed museum on the peninsula for Islamic art",
+  "clue.abu_dhabi.sheikh_zayed.3": "{They} was comparing this mosque's grandeur to the great mosques of the Nile",
   "clue.abu_dhabi.sheikh_zayed.2": "The mosque attendant has not noticed anyone unfamiliar",
 
   "clue.abu_dhabi.louvre_ad.0": "{They} said a nearby Gulf capital's collection of Islamic art is even deeper",
   "clue.abu_dhabi.louvre_ad.1": "{They} was reading about Saladin's Citadel on the Nile and comparing palaces",
+  "clue.abu_dhabi.louvre_ad.3": "{They} said the Museum of the Future in the Gulf's glitziest city is next on {their} list",
   "clue.abu_dhabi.louvre_ad.2": "The ticket desk has no record of anyone matching that description",
 
   "clue.abu_dhabi.mangrove_park.0": "{They} was exchanging dirhams for Egyptian pounds at the park gift shop",
   "clue.abu_dhabi.mangrove_park.1": "{They} said the Museum of the Future in the Gulf's glitziest city is next on {their} list",
+  "clue.abu_dhabi.mangrove_park.3": "{They} mentioned kayaking along the Omani coast to a frankincense port",
   "clue.abu_dhabi.mangrove_park.2": "The park ranger says it's been quiet all day",
 
   "clue.abu_dhabi.qasr_watan.0": "{They} was checking Emirates flights to the mega-mall across the Gulf",
   "clue.abu_dhabi.qasr_watan.1": "{They} mentioned kayaking near a port city where frankincense ships once sailed",
+  "clue.abu_dhabi.qasr_watan.3": "{They} said the I.M. Pei museum in the nearby Gulf peninsula capital is {their} next stop",
   "clue.abu_dhabi.qasr_watan.2": "The palace staff say no visitors have asked about flights today",
 
   "clue.muscat.sultan_qaboos.0": "{They} was reading about the old Omani stone houses on a spice island off East Africa",
   "clue.muscat.sultan_qaboos.1": "{They} said a desert city's cultural scene rivals this one -- its opera season is next month",
+  "clue.muscat.sultan_qaboos.3": "{They} said the Sheikh Zayed Mosque in the Emirates' capital rivals this one",
   "clue.muscat.sultan_qaboos.2": "The mosque guide hasn't seen anyone asking for directions lately",
 
   "clue.muscat.bimmah.0": "{They} mentioned visiting the world's most densely populated city where rickshaws outnumber cars",
   "clue.muscat.bimmah.1": "{They} had a documentary about Swahili trading ports bookmarked on {their} tablet",
+  "clue.muscat.bimmah.3": "{They} mentioned the mangrove kayaking in the neighboring emirate's capital",
   "clue.muscat.bimmah.2": "The swimmers here haven't seen any strangers",
 
   "clue.muscat.royal_opera.0": "{They} was checking Emirates airline schedules heading west across the Gulf",
   "clue.muscat.royal_opera.1": "{They} said {they}'s heading east to a river delta capital in South Asia",
+  "clue.muscat.royal_opera.3": "{They} was comparing this opera house to the cultural scene in the Emirates' capital",
   "clue.muscat.royal_opera.2": "The box office has no record of tickets sold to anyone matching that description",
 
   "clue.dakar.grande_mosquee.0": "{They} said the Art Deco of a Moroccan coastal city reminded {them} of home",
@@ -498,18 +542,22 @@
 
   "clue.dhaka.baitul_mukarram.0": "{They} said the world's tallest twin towers are calling {their} name",
   "clue.dhaka.baitul_mukarram.1": "{They} photographed the star-shaped tiles and said a Pakistani city's are even finer",
+  "clue.dhaka.baitul_mukarram.3": "{They} mentioned sailing across the Indian Ocean to a frankincense port",
   "clue.dhaka.baitul_mukarram.2": "The mosque guard says no strangers have attended prayers today",
 
   "clue.dhaka.star_mosque.0": "{They} said the Wazir Khan Mosque in the Mughal heartland has even more intricate tiles",
   "clue.dhaka.star_mosque.1": "{They} was haggling for a rickshaw and talking about frankincense merchants across the ocean",
+  "clue.dhaka.star_mosque.3": "{They} said the Charminar's tilework in India's pearl city rivals these stars",
   "clue.dhaka.star_mosque.2": "The caretaker says only locals have visited today",
 
   "clue.dhaka.lalbagh.0": "{They} mentioned sailing to a port city on the Arabian Sea along an old trade route",
   "clue.dhaka.lalbagh.1": "{They} was buying bangles and said the Charminar city has them even cheaper",
+  "clue.dhaka.lalbagh.3": "{They} was checking Malaysia Airlines flights to the city with the twin towers",
   "clue.dhaka.lalbagh.2": "The rickshaw drivers haven't taken any foreigners to the fort",
 
   "clue.dhaka.sadarghat.0": "{They} was comparing the river chaos to nothing -- India's Nizam city is calmer",
   "clue.dhaka.sadarghat.1": "{They} was checking Malaysia Airlines prices on {their} phone",
+  "clue.dhaka.sadarghat.3": "{They} mentioned boarding a flight to Pakistan's Mughal capital city",
   "clue.dhaka.sadarghat.2": "The ferry ticket sellers haven't seen any foreigners today",
 
   "clue.fez.qarawiyyin.0": "{They} bragged about the world's oldest university and said a Balkan city with minarets and church bells is next",
@@ -526,34 +574,42 @@
 
   "clue.zanzibar.stone_town.0": "{They} mentioned the Omani sultans who once ruled this island",
   "clue.zanzibar.stone_town.1": "{They} had a printout of flights to a West African city where Sufi brotherhoods lead prayers",
+  "clue.zanzibar.stone_town.3": "{They} mentioned the pyramids and Mamluk mosques waiting for {them} up the coast",
   "clue.zanzibar.stone_town.2": "The shopkeeper in the narrow lanes hasn't seen anyone unusual",
 
   "clue.zanzibar.hamamni.0": "{They} mentioned wanting to visit Senegal's Atlantic coast next",
   "clue.zanzibar.hamamni.1": "{They} said the great Mamluk mosques by the pyramids put this island to shame",
+  "clue.zanzibar.hamamni.3": "{They} was reading about the old Omani sultan's palace across the Indian Ocean",
   "clue.zanzibar.hamamni.2": "The old bath-house guide has not noticed any strangers",
 
   "clue.zanzibar.malindi.0": "{They} was reading about parks along the Nile on {their} phone",
   "clue.zanzibar.malindi.1": "{They} was reading about Swahili coast trade routes to a frankincense port on the Arabian Sea",
+  "clue.zanzibar.malindi.3": "{They} mentioned a West African port city where Sufi brotherhoods lead prayers",
   "clue.zanzibar.malindi.2": "The imam has not seen any foreigners at prayers this week",
 
   "clue.zanzibar.forodhani.0": "{They} was comparing the old Omani fort here to the Sultan's palace across the sea",
   "clue.zanzibar.forodhani.1": "{They} was eating Zanzibar pizza and said the street food by the pyramids is even better",
+  "clue.zanzibar.forodhani.3": "{They} was researching trans-African flights to Senegal's Atlantic coast capital",
   "clue.zanzibar.forodhani.2": "The food vendors say no tourists have been asking questions tonight",
 
   "clue.hyderabad.charminar.0": "{They} was comparing the four minarets to the great Badshahi Mosque in Pakistan's Mughal city",
   "clue.hyderabad.charminar.1": "{They} was checking Emirates flights to the Gulf on {their} phone",
+  "clue.hyderabad.charminar.3": "{They} was comparing these bangles to the river markets of Bengal's capital",
   "clue.hyderabad.charminar.2": "The monument guard hasn't noticed anyone matching that description",
 
   "clue.hyderabad.mecca_masjid.0": "{They} said this mosque is beautiful but the one in the Gulf city with the tallest tower is more famous",
   "clue.hyderabad.mecca_masjid.1": "{They} was researching street food near the twin towers across the Indian Ocean",
+  "clue.hyderabad.mecca_masjid.3": "{They} said the Badshahi Mosque in Pakistan's cultural capital is {their} next pilgrimage",
   "clue.hyderabad.mecca_masjid.2": "The prayer attendant has not seen any strangers today",
 
   "clue.hyderabad.salar_jung.0": "{They} said Malaysia's capital has even more impressive Islamic art collections",
   "clue.hyderabad.salar_jung.1": "{They} mentioned shipping a box of lac bangles to a friend in Bangladesh",
+  "clue.hyderabad.salar_jung.3": "{They} mentioned the Museum of the Future in a Gulf city with the world's tallest tower",
   "clue.hyderabad.salar_jung.2": "The security staff have not logged any unusual visitors",
 
   "clue.hyderabad.laad_bazaar.0": "{They} was buying bangles and said the river capital of Bengal has them even cheaper",
   "clue.hyderabad.laad_bazaar.1": "{They} mentioned flying to Pakistan next to see the Badshahi Mosque",
+  "clue.hyderabad.laad_bazaar.3": "{They} was checking flights to the city with the world's tallest twin towers in Malaysia",
   "clue.hyderabad.laad_bazaar.2": "The bazaar merchants haven't noticed anyone unusual today",
 
   "villain.qamar.name": "Qamar Samarkandi",
@@ -753,5 +809,8 @@
   "ui.lost_time": "Time's up! The suspect has escaped.",
   "ui.difficulty_easy": "Easy",
   "ui.difficulty_medium": "Medium",
-  "ui.difficulty_hard": "Hard"
+  "ui.difficulty_hard": "Hard",
+
+  "clue.generic.positive": "Someone matching that description was seen heading out of town",
+  "clue.generic.negative": "Nobody here has seen anyone matching that description"
 }
