@@ -2,7 +2,7 @@
 #define CARMEN_I18N_H
 
 #include <stddef.h>
-#include "carmen/carmen_export.h"
+#include "carmen_export.h"
 
 #define CARMEN_I18N_MAX_FILE_SIZE  (1 << 20)   /* 1 MB */
 #define CARMEN_I18N_MAX_KEY_LEN   64

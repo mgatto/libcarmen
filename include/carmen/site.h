@@ -1,7 +1,7 @@
 #ifndef CARMEN_SITE_H
 #define CARMEN_SITE_H
 
-#include "carmen/clue.h"
+#include "clue.h"
 
 typedef struct {
     char       id[CARMEN_MAX_NAME_LEN];

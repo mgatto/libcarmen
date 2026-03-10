@@ -2,7 +2,7 @@
 #define CARMEN_VILLAIN_H
 
 #include <stddef.h>
-#include "carmen/carmen_export.h"
+#include "carmen_export.h"
 
 #define FITNA_MAX_ID_CLUES   4
 #define FITNA_VILLAIN_COUNT 16

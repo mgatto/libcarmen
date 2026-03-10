@@ -1,10 +1,10 @@
 #ifndef CARMEN_CASE_H
 #define CARMEN_CASE_H
 
-#include "carmen/carmen_export.h"
-#include "carmen/artifact.h"
-#include "carmen/villain.h"
-#include "carmen/game_world.h"
+#include "carmen_export.h"
+#include "artifact.h"
+#include "villain.h"
+#include "game_world.h"
 
 typedef enum {
     CARMEN_DIFFICULTY_EASY,

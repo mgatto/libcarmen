@@ -1,7 +1,7 @@
 #ifndef CARMEN_ARTIFACT_H
 #define CARMEN_ARTIFACT_H
 
-#include "carmen/carmen_export.h"
+#include "carmen_export.h"
 
 #define CARMEN_ARTIFACT_COUNT 18
 

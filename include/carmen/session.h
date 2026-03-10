@@ -1,8 +1,8 @@
 #ifndef CARMEN_SESSION_H
 #define CARMEN_SESSION_H
 
-#include "carmen/carmen_export.h"
-#include "carmen/case.h"
+#include "carmen_export.h"
+#include "case.h"
 
 #define CARMEN_MAX_NOTEBOOK 64
 

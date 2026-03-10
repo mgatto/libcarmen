@@ -1,19 +1,19 @@
 #ifndef CARMEN_H
 #define CARMEN_H
 
-#include "carmen/carmen_version.h"
-#include "carmen/carmen_export.h"
-#include "carmen/utf8.h"
-#include "carmen/clue.h"
-#include "carmen/site.h"
-#include "carmen/connection.h"
-#include "carmen/city.h"
-#include "carmen/game_world.h"
-#include "carmen/seed_data_islamic.h"
-#include "carmen/villain.h"
-#include "carmen/artifact.h"
-#include "carmen/case.h"
-#include "carmen/session.h"
-#include "carmen/i18n.h"
+#include "carmen_version.h"
+#include "carmen_export.h"
+#include "utf8.h"
+#include "clue.h"
+#include "site.h"
+#include "connection.h"
+#include "city.h"
+#include "game_world.h"
+#include "seed_data_islamic.h"
+#include "villain.h"
+#include "artifact.h"
+#include "case.h"
+#include "session.h"
+#include "i18n.h"
 
 #endif

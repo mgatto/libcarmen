@@ -1,7 +1,7 @@
 #ifndef CARMEN_UTF8_H
 #define CARMEN_UTF8_H
 
-#include "carmen/carmen_export.h"
+#include "carmen_export.h"
 #include <stddef.h>
 
 /* Copy src into dst (at most dst_size bytes including NUL).

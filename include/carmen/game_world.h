@@ -1,8 +1,8 @@
 #ifndef CARMEN_GAME_WORLD_H
 #define CARMEN_GAME_WORLD_H
 
-#include "carmen/carmen_export.h"
-#include "carmen/city.h"
+#include "carmen_export.h"
+#include "city.h"
 
 #define CARMEN_MAX_CITIES         32
 #define CARMEN_MAX_INDEX_ENTRIES   32

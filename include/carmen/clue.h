@@ -1,7 +1,7 @@
 #ifndef CARMEN_CLUE_H
 #define CARMEN_CLUE_H
 
-#include "carmen/carmen_export.h"
+#include "carmen_export.h"
 
 #define CARMEN_MAX_NAME_LEN 48
 #define CARMEN_MAX_CLUE_LEN 48

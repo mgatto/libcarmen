@@ -66,6 +66,11 @@
   },
   {
     "directory": "/Users/michaelgatto/Development/libcarmen-c",
+    "command": "cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -c -o build/trail_demo.o examples/trail_demo.c",
+    "file": "examples/trail_demo.c"
+  },
+  {
+    "directory": "/Users/michaelgatto/Development/libcarmen-c",
     "command": "cc -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/unity -c test/test_artifact.c",
     "file": "test/test_artifact.c"
   },

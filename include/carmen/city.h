@@ -1,9 +1,9 @@
 #ifndef CARMEN_CITY_H
 #define CARMEN_CITY_H
 
-#include "carmen/carmen_export.h"
-#include "carmen/site.h"
-#include "carmen/connection.h"
+#include "carmen_export.h"
+#include "site.h"
+#include "connection.h"
 
 #define CARMEN_MAX_SITES       6
 #define CARMEN_MAX_CONNECTIONS 10

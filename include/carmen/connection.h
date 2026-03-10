@@ -1,7 +1,7 @@
 #ifndef CARMEN_CONNECTION_H
 #define CARMEN_CONNECTION_H
 
-#include "carmen/clue.h" /* for CARMEN_MAX_NAME_LEN */
+#include "clue.h" /* for CARMEN_MAX_NAME_LEN */
 
 typedef struct {
     char destination_id[CARMEN_MAX_NAME_LEN];
