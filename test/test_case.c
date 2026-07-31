@@ -201,7 +201,8 @@ static void test_trail_stops_have_sites(void)
 static void test_non_hideout_stops_have_two_positives(void)
 {
     srand(42);
-    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
+    /* MEDIUM difficulty derives the 2-positive / 1-herring ratio. */
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_MEDIUM);
     CarmenCase c;
     int ok = carmen_case_generate(&c, world, &s);
     if (!ok) { TEST_IGNORE_MESSAGE("generation failed"); return; }

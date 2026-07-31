@@ -28,8 +28,8 @@ typedef struct {
     CarmenDifficulty difficulty;
     int  trail_length;            /* 0 = derive from difficulty; else clamped to [2, CARMEN_MAX_TRAIL] */
     int  time_budget_hrs;         /* 0 = derive from difficulty + trail travel time */
-    int  active_sites_per_city;   /* clamped to [1, CARMEN_TRAIL_SITES] */
-    int  positive_clues_per_stop; /* clamped to [1, active_sites_per_city] */
+    int  active_sites_per_city;   /* 0 = derive from difficulty; else clamped to [1, CARMEN_TRAIL_SITES] */
+    int  positive_clues_per_stop; /* 0 = derive from difficulty; else clamped to [1, active_sites_per_city] */
     int  move_limit;              /* 0 = unlimited */
     int  visited_history_size;    /* 0 = use full CARMEN_MAX_VISITED; else clamped to [1, CARMEN_MAX_VISITED] */
 } CarmenCaseSettings;
@@ -64,9 +64,10 @@ typedef struct {
  * origin_id) matches the case briefing. Builds a trail of directly-
  * connected cities whose length is determined by difficulty
  * (EASY=3, MEDIUM=5, HARD=7), picks a random villain, assigns
- * deterministic clues to 3 sites per trail stop (2 correct + 1
- * herring/negative), and sets a time budget based on difficulty and
- * total trail travel time.
+ * deterministic clues to 3 sites per trail stop where the number of
+ * correct positive clues is derived from difficulty (EASY=3, MEDIUM=2,
+ * HARD=1; the rest are herrings/negatives), and sets a time budget
+ * based on difficulty and total trail travel time.
  *
  * In worlds that contain none of the artifact origin cities, generation
  * falls back to a random start city and a random artifact (narrative may

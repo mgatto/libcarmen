@@ -16,6 +16,21 @@ static int trail_length_for(CarmenDifficulty d)
     return 5;
 }
 
+/*
+ * Correct positive clues per non-hideout stop, derived from difficulty.
+ * The remaining active sites carry herrings/negatives, so this also sets
+ * the herring ratio: EASY 3/0, MEDIUM 2/1, HARD 1/2 (with 3 active sites).
+ */
+static int positive_clues_for(CarmenDifficulty d)
+{
+    switch (d) {
+        case CARMEN_DIFFICULTY_EASY:   return 3;
+        case CARMEN_DIFFICULTY_MEDIUM: return 2;
+        case CARMEN_DIFFICULTY_HARD:   return 1;
+    }
+    return 2;
+}
+
 static int time_budget_hrs_for(CarmenDifficulty d, int trail_travel_hrs)
 {
     int base;
@@ -315,7 +330,8 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
     if (active_sites > CARMEN_TRAIL_SITES)
         active_sites = CARMEN_TRAIL_SITES;
     int positive_clues = settings->positive_clues_per_stop > 0
-                       ? settings->positive_clues_per_stop : 2;
+                       ? settings->positive_clues_per_stop
+                       : positive_clues_for(diff);
     if (positive_clues > active_sites)
         positive_clues = active_sites;
 

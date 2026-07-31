@@ -38,8 +38,8 @@ static void test_defaults_are_valid(void)
     TEST_ASSERT_EQUAL_INT(CARMEN_DIFFICULTY_MEDIUM, s.difficulty);
     TEST_ASSERT_EQUAL_INT(0, s.trail_length);
     TEST_ASSERT_EQUAL_INT(0, s.time_budget_hrs);
-    TEST_ASSERT_EQUAL_INT(CARMEN_TRAIL_SITES, s.active_sites_per_city);
-    TEST_ASSERT_EQUAL_INT(2, s.positive_clues_per_stop);
+    TEST_ASSERT_EQUAL_INT(0, s.active_sites_per_city);
+    TEST_ASSERT_EQUAL_INT(0, s.positive_clues_per_stop);
     TEST_ASSERT_EQUAL_INT(0, s.move_limit);
     TEST_ASSERT_EQUAL_INT(CARMEN_MAX_VISITED, s.visited_history_size);
 }
@@ -96,8 +96,8 @@ static void test_load_partial_keeps_defaults(void)
     TEST_ASSERT_EQUAL_INT(9, s.move_limit);
     /* untouched keys keep defaults */
     TEST_ASSERT_EQUAL_INT(CARMEN_DIFFICULTY_MEDIUM, s.difficulty);
-    TEST_ASSERT_EQUAL_INT(CARMEN_TRAIL_SITES, s.active_sites_per_city);
-    TEST_ASSERT_EQUAL_INT(2, s.positive_clues_per_stop);
+    TEST_ASSERT_EQUAL_INT(0, s.active_sites_per_city);
+    TEST_ASSERT_EQUAL_INT(0, s.positive_clues_per_stop);
 }
 
 static void test_load_clamps_out_of_range(void)
@@ -213,6 +213,43 @@ static void test_active_sites_and_positive_clues_override(void)
     }
 }
 
+/* Count correct positive clues (pointing to the next trail city) at a stop. */
+static int count_correct_positives(const CarmenCase *c, int stop)
+{
+    int pos = 0;
+    for (int j = 0; j < c->stops[stop].site_count; j++) {
+        if (c->stops[stop].sites[j].clue.type == CARMEN_CLUE_POSITIVE &&
+            strcmp(c->stops[stop].sites[j].clue.target_city_id,
+                   c->trail[stop + 1]) == 0)
+            pos++;
+    }
+    return pos;
+}
+
+static void test_clue_ratio_scales_with_difficulty(void)
+{
+    CarmenDifficulty diffs[] = {
+        CARMEN_DIFFICULTY_EASY, CARMEN_DIFFICULTY_MEDIUM, CARMEN_DIFFICULTY_HARD
+    };
+    int expected[] = {3, 2, 1};
+    unsigned seeds[] = {42, 99, 17};
+
+    for (int d = 0; d < 3; d++) {
+        srand(seeds[d]);
+        CarmenCaseSettings s = carmen_case_settings_default();
+        s.difficulty = diffs[d];
+
+        CarmenCase c;
+        int ok = carmen_case_generate(&c, world, &s);
+        TEST_ASSERT_EQUAL_INT(1, ok);
+
+        for (int i = 0; i < c.trail_len - 1; i++)
+            TEST_ASSERT_EQUAL_INT_MESSAGE(
+                expected[d], count_correct_positives(&c, i),
+                "positive clue count should match the difficulty ratio");
+    }
+}
+
 static void test_move_limit_triggers_loss(void)
 {
     srand(42);
@@ -275,6 +312,7 @@ int main(void)
     RUN_TEST(test_trail_length_override);
     RUN_TEST(test_time_budget_override);
     RUN_TEST(test_active_sites_and_positive_clues_override);
+    RUN_TEST(test_clue_ratio_scales_with_difficulty);
     RUN_TEST(test_move_limit_triggers_loss);
     RUN_TEST(test_no_move_limit_allows_travel);
     return UNITY_END();

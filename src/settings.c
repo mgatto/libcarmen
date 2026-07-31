@@ -58,13 +58,19 @@ static void settings_clamp(CarmenCaseSettings *s)
         s->time_budget_hrs = 0;
     }
 
-    s->active_sites_per_city = clamp_warn("active_sites_per_city",
-                                          s->active_sites_per_city,
-                                          1, CARMEN_TRAIL_SITES);
+    /* 0 means "derive from difficulty"; any other value is clamped. */
+    if (s->active_sites_per_city != 0)
+        s->active_sites_per_city = clamp_warn("active_sites_per_city",
+                                              s->active_sites_per_city,
+                                              1, CARMEN_TRAIL_SITES);
 
-    s->positive_clues_per_stop = clamp_warn("positive_clues_per_stop",
-                                            s->positive_clues_per_stop,
-                                            1, s->active_sites_per_city);
+    if (s->positive_clues_per_stop != 0) {
+        int hi = s->active_sites_per_city != 0
+               ? s->active_sites_per_city : CARMEN_TRAIL_SITES;
+        s->positive_clues_per_stop = clamp_warn("positive_clues_per_stop",
+                                                s->positive_clues_per_stop,
+                                                1, hi);
+    }
 
     /* 0 means "unlimited"; negatives are meaningless and reset to 0. */
     if (s->move_limit < 0) {
@@ -86,8 +92,8 @@ CarmenCaseSettings carmen_case_settings_default(void)
     s.difficulty             = CARMEN_DIFFICULTY_MEDIUM;
     s.trail_length           = 0;                  /* derive from difficulty */
     s.time_budget_hrs        = 0;                  /* derive from difficulty */
-    s.active_sites_per_city  = CARMEN_TRAIL_SITES; /* 3 */
-    s.positive_clues_per_stop = 2;
+    s.active_sites_per_city  = 0;                  /* derive from difficulty */
+    s.positive_clues_per_stop = 0;                 /* derive from difficulty */
     s.move_limit             = 0;                  /* unlimited */
     s.visited_history_size   = CARMEN_MAX_VISITED; /* 24 */
     return s;

@@ -400,8 +400,13 @@ static void test_investigate_same_site_twice_returns_same_clue(void)
 
 static void test_investigate_two_positive_one_other(void)
 {
+    /* Explicit 2-positive / 1-other ratio; EASY keeps the trail to the
+       3-city test world (difficulty-derived EASY would give 3 positives). */
+    CarmenCaseSettings settings = carmen_case_settings_default();
+    settings.difficulty = CARMEN_DIFFICULTY_EASY;
+    settings.positive_clues_per_stop = 2;
     CarmenSession s;
-    start_easy(&s);
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_start(&s, world, &settings));
 
     const CarmenCase *cas = carmen_session_case(&s);
     TEST_ASSERT_EQUAL_STRING("a", cas->origin_id);
