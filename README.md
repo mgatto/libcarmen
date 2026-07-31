@@ -29,12 +29,33 @@ build on top of this core rather than reimplement it.
 
 ## Data Model
 
+The static world (built once, read-only during play):
+
 ```
-GameWorld          -- stb_ds string hash map (city id -> City*) with secondary index arrays
-  City             -- struct: id, name, country, continent, lat/lon, sites[], connections[]
+GameWorld          -- stb_ds string hash map (city id -> slot) with secondary index arrays
+  City             -- struct: id, name, local_name, country, continent, lat/lon, sites[], connections[]
     Site           -- struct: name, site_type, clues[]
     Connection     -- struct: destination_id, distance_km, transport_mode
 ```
+
+The scenario and play state (generated per game from the world plus settings):
+
+```
+CaseSettings       -- difficulty + optional overrides (trail length, time budget, move limit, ...)
+Case               -- one generated scenario, built from the world + settings
+  Villain          -- culprit picked from the FITNA_VILLAINS[] catalog (id clues, alias, gender)
+  Artifact         -- stolen item from the CARMEN_ARTIFACTS[] catalog (origin city = crime scene)
+  trail[]          -- ordered chain of connected cities from origin to hideout
+  stops[]          -- per-city active sites and their assigned clues
+Session            -- live play state over a Case
+  current city, visited history, time/moves remaining
+  notebook[]       -- clues gathered by investigating sites
+  evidence[]       -- villain identity clues collected at the hideout
+  warrant          -- issued villain index (gates a valid arrest)
+  status           -- PLAYING / WON / LOST_* outcome
+```
+
+The core exposes read-only queries for rendering (current city, connections, active sites, notebook, evidence, time/moves) and discrete actions for input (`travel`, `investigate`, `issue_warrant`, `arrest`).
 
 ## Key Design Decisions
 
@@ -58,14 +79,19 @@ GameWorld          -- stb_ds string hash map (city id -> City*) with secondary i
 
 ## Dependencies
 
-- **stb_ds.h** (vendored in `vendor/stb/`, MIT / public domain)
-- No other external dependencies
+All third-party code is vendored under `vendor/` -- there are no external dependencies to install.
+
+- **stb_ds.h** (`vendor/stb/`, MIT / public domain) -- string hash map / dynamic arrays
+- **cJSON** (`vendor/cjson/`, MIT) -- parses the locale JSON files
+- **toml-c** (`vendor/toml-c/`, MIT) -- parses optional case settings files
+- **utf8.h** (`vendor/utf8/`, public domain) -- UTF-8 helpers
+- **Unity** (`vendor/unity/`, MIT) -- unit test framework (test builds only)
 - Any C17-compliant compiler (GCC 8+, Clang 7+, MSVC 2019+)
 
 ## Building
 
 ```sh
-make            # static library + demo binary
+make            # static library + demo binary (build/trail_demo)
 make lib        # static + shared library
 make test       # run all unit tests
 make coverage   # test coverage report (requires lcov)
@@ -74,15 +100,22 @@ make coverage   # test coverage report (requires lcov)
 Or manually:
 
 ```sh
-cc -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/stb \
-   src/site.c src/connection.c src/city.c src/game_world.c \
-   src/seed_data.c examples/carmen.c -o carmen
+cc -std=c17 -Wall -Wextra -pedantic -O2 \
+   -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c \
+   src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
+   src/seed_data_islamic.c src/villain.c src/artifact.c src/case.c \
+   src/session.c src/settings.c src/i18n.c vendor/cjson/cJSON.c \
+   examples/trail_demo.c -o trail_demo
 ```
 
 ## Running
 
+Run from the repository root -- the demo loads its locale file via the relative path `locales/<locale>.json`:
+
 ```sh
-./build/carmen
+./build/trail_demo              # default locale "en"
+./build/trail_demo es           # use locales/es.json
+./build/trail_demo en case.toml # optional case settings file
 ```
 
 ## Installing
@@ -115,25 +148,47 @@ include/carmen/
   carmen.h                 Umbrella header (includes everything below)
   carmen_version.h         Version macros (CARMEN_VERSION_MAJOR/MINOR/PATCH)
   carmen_export.h          Symbol visibility / DLL export macros
+  utf8.h                   UTF-8 helper API
+  clue.h                   Clue struct
   site.h                   Site struct and API
   connection.h             Connection struct and API
   city.h                   City composite struct and API
   game_world.h             GameWorld hash map + indices + BFS API
-  seed_data.h              World builder API
+  seed_data_islamic.h      World builder API
+  villain.h                Villain roster and API
+  artifact.h               Stolen artifact struct and API
+  case.h                   Case (villain + trail + settings) API
+  session.h                Play session state and actions
+  settings.h               Case settings (difficulty, TOML loading)
+  i18n.h                   Locale loading and string lookup
 src/
+  utf8.c                   UTF-8 helpers
   site.c                   Site implementation
   connection.c             Connection implementation
   city.c                   City implementation
   game_world.c             Hash map, secondary indices, BFS, shortest path
-  seed_data.c              22 cities, ~75 sites, ~60 clues, ~30 routes
+  seed_data_islamic.c      World builder (cities, sites, clues, routes)
+  villain.c                Villain roster
+  artifact.c               Stolen artifact implementation
+  case.c                   Case generation (villain, trail, briefing)
+  session.c                Session state and actions (travel/investigate/warrant/arrest)
+  settings.c               Case settings + TOML loading
+  i18n.c                   Locale JSON loading and string lookup
 examples/
-  carmen.c                 main() demo driver
+  trail_demo.c             main() demo driver (interactive terminal game)
+locales/
+  en.json                  English locale strings
 test/
   test_site.c              Site unit tests
   test_connection.c        Connection unit tests
   test_city.c              City unit tests
   test_game_world.c        GameWorld unit tests
-  test_carmen_scenarios.c   Full-world integration tests
+  test_carmen_scenarios.c  Full-world integration tests
+  test_artifact.c          Artifact unit tests
+  test_case.c              Case unit tests
+  test_session.c           Session unit tests
+  test_settings.c          Settings unit tests
+  test_villain.c           Villain unit tests
 vendor/
   stb/stb_ds.h             Hash map / dynamic array library (vendored)
   unity/                   Unity test framework (vendored)
