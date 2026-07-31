@@ -787,6 +787,7 @@
   "ui.route": "Route:",
   "ui.stolen": "STOLEN:",
   "ui.from": "from",
+  "ui.briefing": "Someone stole the {artifact} from {city}.",
   "ui.time_left": "Time remaining:",
   "ui.hours": "hours",
   "ui.moves": "Moves:",

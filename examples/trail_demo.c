@@ -132,16 +132,9 @@ int main(int argc, char *argv[]) {
   printf("  %s\n", carmen_i18n_get(i18n, "ui.title"));
   printf("  %s\n", carmen_i18n_get(i18n, "ui.intel"));
   printf("  %s\n", carmen_i18n_get(i18n, "ui.instruction"));
-  const CarmenArtifact *artifact = carmen_case_artifact(cas);
-  printf("\n  %s %s\n", carmen_i18n_get(i18n, "ui.stolen"),
-         carmen_i18n_get(i18n, artifact->name));
-  const CarmenCity *origin =
-      carmen_world_find(world, artifact->origin_city_id);
-  if (origin) {
-    printf("  %s ", carmen_i18n_get(i18n, "ui.from"));
-    print_city_name(i18n, origin);
-    printf("\n");
-  }
+  char briefing[EXPAND_BUF];
+  carmen_case_briefing_text(cas, world, i18n, briefing, sizeof briefing);
+  printf("\n  %s\n", briefing);
   printf("  [%s]\n",
          carmen_i18n_get(i18n, cas->difficulty == CARMEN_DIFFICULTY_EASY
                                    ? "ui.difficulty_easy"

@@ -218,6 +218,74 @@ static void test_non_hideout_stops_have_two_positives(void)
     }
 }
 
+/* -------------------------------------------------- briefing text */
+
+/*
+ * With no i18n context, the briefing echoes the raw keys/ids but still
+ * follows the default sentence template.
+ */
+static void test_briefing_default_template_no_i18n(void)
+{
+    srand(42);
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
+    CarmenCase c;
+    carmen_case_generate(&c, world, &s);
+
+    char buf[256];
+    int n = carmen_case_briefing_text(&c, world, NULL, buf, sizeof buf);
+    TEST_ASSERT_GREATER_THAN(0, n);
+    TEST_ASSERT_EQUAL_INT((int)strlen(buf), n);
+    /* Template surrounds the substituted artifact/city. */
+    TEST_ASSERT_NOT_NULL(strstr(buf, "Someone stole the "));
+    TEST_ASSERT_NOT_NULL(strstr(buf, " from "));
+    /* Tokens must be fully substituted, never left in the output. */
+    TEST_ASSERT_NULL(strstr(buf, "{artifact}"));
+    TEST_ASSERT_NULL(strstr(buf, "{city}"));
+    /* The stolen artifact's name key appears (no i18n to translate it). */
+    TEST_ASSERT_NOT_NULL(strstr(buf, c.artifact.name));
+}
+
+/* Passing a length-query (NULL buf) returns the full length. */
+static void test_briefing_length_query(void)
+{
+    srand(42);
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
+    CarmenCase c;
+    carmen_case_generate(&c, world, &s);
+
+    int needed = carmen_case_briefing_text(&c, world, NULL, NULL, 0);
+    TEST_ASSERT_GREATER_THAN(0, needed);
+
+    char buf[256];
+    int n = carmen_case_briefing_text(&c, world, NULL, buf, sizeof buf);
+    TEST_ASSERT_EQUAL_INT(needed, n);
+}
+
+/* Output is truncated but always NUL-terminated when the buffer is small. */
+static void test_briefing_truncates_and_nul_terminates(void)
+{
+    srand(42);
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
+    CarmenCase c;
+    carmen_case_generate(&c, world, &s);
+
+    char buf[8];
+    memset(buf, 'X', sizeof buf);
+    int n = carmen_case_briefing_text(&c, world, NULL, buf, (int)sizeof buf);
+    /* Return value reflects the full (untruncated) length. */
+    TEST_ASSERT_GREATER_THAN((int)sizeof buf, n);
+    TEST_ASSERT_EQUAL_CHAR('\0', buf[sizeof buf - 1]);
+    TEST_ASSERT_TRUE(strlen(buf) < sizeof buf);
+}
+
+/* NULL case returns 0 and does not crash. */
+static void test_briefing_null_case_returns_0(void)
+{
+    char buf[64];
+    TEST_ASSERT_EQUAL_INT(0, carmen_case_briefing_text(NULL, world, NULL,
+                                                       buf, sizeof buf));
+}
+
 /* -------------------------------------------------- difficulty stored */
 
 static void test_difficulty_stored_in_case(void)
@@ -271,6 +339,10 @@ int main(void)
     RUN_TEST(test_time_budget_is_positive);
     RUN_TEST(test_trail_stops_have_sites);
     RUN_TEST(test_non_hideout_stops_have_two_positives);
+    RUN_TEST(test_briefing_default_template_no_i18n);
+    RUN_TEST(test_briefing_length_query);
+    RUN_TEST(test_briefing_truncates_and_nul_terminates);
+    RUN_TEST(test_briefing_null_case_returns_0);
     RUN_TEST(test_difficulty_stored_in_case);
     RUN_TEST(test_generate_null_case_returns_0);
     RUN_TEST(test_generate_null_world_returns_0);

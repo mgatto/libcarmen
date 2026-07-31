@@ -5,6 +5,7 @@
 #include "artifact.h"
 #include "villain.h"
 #include "game_world.h"
+#include "i18n.h"
 
 typedef enum {
     CARMEN_DIFFICULTY_EASY,
@@ -87,5 +88,29 @@ CARMEN_API const FitnaVillain *carmen_case_villain(const CarmenCase *c);
  * clients read the loot without reaching into c->artifact directly.
  */
 CARMEN_API const CarmenArtifact *carmen_case_artifact(const CarmenCase *c);
+
+/*
+ * Compose a human-readable, localized case briefing such as
+ * "Someone stole the Astrolabe of Isfahan from Isfahan." into buf, so
+ * clients (UI, bindings, the demo) don't each reinvent the sentence.
+ *
+ * The artifact name and origin-city name are resolved through i18n; the
+ * sentence structure comes from the "ui.briefing" locale key when present,
+ * otherwise from a built-in English template. The template may contain the
+ * tokens {artifact} and {city}, in any order, so translations can reorder
+ * subject and object.
+ *
+ * If i18n is NULL, raw i18n keys are emitted (no translation). If w is
+ * non-NULL it is used to resolve the origin city's display name; otherwise
+ * the origin city id is used.
+ *
+ * Follows the snprintf/carmen_*_to_string convention: writes at most
+ * buf_size bytes (always NUL-terminating when buf and buf_size > 0) and
+ * returns the number of bytes that would have been written excluding the
+ * NUL, or 0 if c is NULL.
+ */
+CARMEN_API int carmen_case_briefing_text(const CarmenCase *c, CarmenWorld *w,
+                                         const CarmenI18n *i18n,
+                                         char *buf, int buf_size);
 
 #endif

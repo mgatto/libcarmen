@@ -2,6 +2,7 @@
 #include <string.h>
 #include "carmen/case.h"
 #include "carmen/utf8.h"
+#include "carmen/i18n.h"
 
 #define CASE_MAX_RETRIES 20
 
@@ -340,4 +341,62 @@ const CarmenArtifact *carmen_case_artifact(const CarmenCase *c)
 {
     if (!c) return NULL;
     return &c->artifact;
+}
+
+/*
+ * Append src to buf using snprintf-style bounds: only write while a byte
+ * (plus room for the terminating NUL) fits, but always advance total so the
+ * caller learns the full length that would have been produced.
+ */
+static int briefing_append(char *buf, int buf_size, int total, const char *src)
+{
+    for (; *src; src++, total++)
+        if (buf && total < buf_size - 1)
+            buf[total] = *src;
+    return total;
+}
+
+#define CARMEN_BRIEFING_DEFAULT "Someone stole the {artifact} from {city}."
+
+int carmen_case_briefing_text(const CarmenCase *c, CarmenWorld *w,
+                              const CarmenI18n *i18n, char *buf, int buf_size)
+{
+    if (!c) return 0;
+
+    const char *artifact = carmen_i18n_get(i18n, c->artifact.name);
+
+    const char *city_key = c->origin_id;
+    if (w) {
+        const CarmenCity *origin = carmen_world_find(w, c->origin_id);
+        if (origin)
+            city_key = origin->name;
+    }
+    const char *city = carmen_i18n_get(i18n, city_key);
+
+    /*
+     * carmen_i18n_get() echoes the key back when it is missing, so fall
+     * back to the built-in template unless a real one (with tokens) loaded.
+     */
+    const char *tmpl = carmen_i18n_get(i18n, "ui.briefing");
+    if (!tmpl || !strstr(tmpl, "{artifact}"))
+        tmpl = CARMEN_BRIEFING_DEFAULT;
+
+    int total = 0;
+    for (const char *r = tmpl; *r; ) {
+        if (strncmp(r, "{artifact}", 10) == 0) {
+            total = briefing_append(buf, buf_size, total, artifact);
+            r += 10;
+        } else if (strncmp(r, "{city}", 6) == 0) {
+            total = briefing_append(buf, buf_size, total, city);
+            r += 6;
+        } else {
+            if (buf && total < buf_size - 1)
+                buf[total] = *r;
+            total++;
+            r++;
+        }
+    }
+    if (buf && buf_size > 0)
+        buf[total < buf_size ? total : buf_size - 1] = '\0';
+    return total;
 }
