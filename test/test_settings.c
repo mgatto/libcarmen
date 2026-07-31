@@ -41,6 +41,7 @@ static void test_defaults_are_valid(void)
     TEST_ASSERT_EQUAL_INT(CARMEN_TRAIL_SITES, s.active_sites_per_city);
     TEST_ASSERT_EQUAL_INT(2, s.positive_clues_per_stop);
     TEST_ASSERT_EQUAL_INT(0, s.move_limit);
+    TEST_ASSERT_EQUAL_INT(CARMEN_MAX_VISITED, s.visited_history_size);
 }
 
 /* ---------------------------------------------------------- load */
@@ -124,6 +125,35 @@ static void test_load_unknown_difficulty_uses_default(void)
     CarmenCaseSettings s;
     TEST_ASSERT_EQUAL_INT(1, carmen_case_settings_load(&s, TMP));
     TEST_ASSERT_EQUAL_INT(CARMEN_DIFFICULTY_MEDIUM, s.difficulty);
+}
+
+static void test_load_visited_history_size(void)
+{
+    write_tmp("visited_history_size = 10\n");
+
+    CarmenCaseSettings s;
+    TEST_ASSERT_EQUAL_INT(1, carmen_case_settings_load(&s, TMP));
+    TEST_ASSERT_EQUAL_INT(10, s.visited_history_size);
+}
+
+static void test_load_visited_history_size_zero_means_full(void)
+{
+    write_tmp("visited_history_size = 0\n");
+
+    CarmenCaseSettings s;
+    TEST_ASSERT_EQUAL_INT(1, carmen_case_settings_load(&s, TMP));
+    /* 0 is preserved as "derive/full"; record_visit() treats it as the
+       compile-time ceiling. */
+    TEST_ASSERT_EQUAL_INT(0, s.visited_history_size);
+}
+
+static void test_load_visited_history_size_clamps(void)
+{
+    write_tmp("visited_history_size = 999\n");
+
+    CarmenCaseSettings s;
+    TEST_ASSERT_EQUAL_INT(1, carmen_case_settings_load(&s, TMP));
+    TEST_ASSERT_EQUAL_INT(CARMEN_MAX_VISITED, s.visited_history_size);
 }
 
 /* ----------------------------------------------- behavioral wiring */
@@ -239,6 +269,9 @@ int main(void)
     RUN_TEST(test_load_partial_keeps_defaults);
     RUN_TEST(test_load_clamps_out_of_range);
     RUN_TEST(test_load_unknown_difficulty_uses_default);
+    RUN_TEST(test_load_visited_history_size);
+    RUN_TEST(test_load_visited_history_size_zero_means_full);
+    RUN_TEST(test_load_visited_history_size_clamps);
     RUN_TEST(test_trail_length_override);
     RUN_TEST(test_time_budget_override);
     RUN_TEST(test_active_sites_and_positive_clues_override);

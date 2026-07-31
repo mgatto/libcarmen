@@ -72,6 +72,12 @@ static void settings_clamp(CarmenCaseSettings *s)
                 s->move_limit);
         s->move_limit = 0;
     }
+
+    /* 0 means "use full CARMEN_MAX_VISITED"; any other value is clamped. */
+    if (s->visited_history_size != 0)
+        s->visited_history_size = clamp_warn("visited_history_size",
+                                             s->visited_history_size,
+                                             1, CARMEN_MAX_VISITED);
 }
 
 CarmenCaseSettings carmen_case_settings_default(void)
@@ -83,6 +89,7 @@ CarmenCaseSettings carmen_case_settings_default(void)
     s.active_sites_per_city  = CARMEN_TRAIL_SITES; /* 3 */
     s.positive_clues_per_stop = 2;
     s.move_limit             = 0;                  /* unlimited */
+    s.visited_history_size   = CARMEN_MAX_VISITED; /* 24 */
     return s;
 }
 
@@ -131,6 +138,9 @@ int carmen_case_settings_load(CarmenCaseSettings *out, const char *toml_path)
 
     v = toml_table_int(tbl, "move_limit");
     if (v.ok) s.move_limit = (int)v.u.i;
+
+    v = toml_table_int(tbl, "visited_history_size");
+    if (v.ok) s.visited_history_size = (int)v.u.i;
 
     toml_free(tbl);
 

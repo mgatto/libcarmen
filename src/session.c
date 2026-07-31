@@ -21,6 +21,15 @@ static int trail_index_of(const CarmenCase *c, const char *city_id)
     return -1;
 }
 
+static void record_visit(CarmenSession *s, const char *city_id)
+{
+    int cap = s->settings.visited_history_size;
+    if (cap <= 0 || cap > CARMEN_MAX_VISITED) cap = CARMEN_MAX_VISITED;
+    if (s->visited_count >= cap) return;
+    carmen_utf8_copy(s->visited[s->visited_count++], CARMEN_MAX_NAME_LEN,
+                     city_id);
+}
+
 /* --------------------------------------------------------- lifecycle */
 
 int carmen_session_start(CarmenSession *s, CarmenWorld *w,
@@ -40,6 +49,7 @@ int carmen_session_start(CarmenSession *s, CarmenWorld *w,
     s->time_remaining_hrs = s->active_case.time_budget_hrs;
     carmen_utf8_copy(s->current_city_id, CARMEN_MAX_NAME_LEN,
                      s->active_case.origin_id);
+    record_visit(s, s->active_case.origin_id);
     return 1;
 }
 
@@ -102,6 +112,57 @@ int carmen_session_active_sites(const CarmenSession *s,
     return count;
 }
 
+int carmen_session_visited_count(const CarmenSession *s)
+{
+    if (!s) return 0;
+    return s->visited_count;
+}
+
+const char *carmen_session_visited_at(const CarmenSession *s, int index)
+{
+    if (!s || index < 0 || index >= s->visited_count) return NULL;
+    return s->visited[index];
+}
+
+int carmen_session_notebook_count(const CarmenSession *s)
+{
+    if (!s) return 0;
+    return s->notebook_count;
+}
+
+const CarmenClue *carmen_session_notebook_at(const CarmenSession *s, int index)
+{
+    if (!s || index < 0 || index >= s->notebook_count) return NULL;
+    return &s->notebook[index];
+}
+
+int carmen_session_evidence_count(const CarmenSession *s)
+{
+    if (!s) return 0;
+    return s->evidence_count;
+}
+
+const char *carmen_session_evidence_at(const CarmenSession *s, int index)
+{
+    if (!s || index < 0 || index >= s->evidence_count) return NULL;
+    return s->evidence[index];
+}
+
+int carmen_session_connections(const CarmenSession *s,
+                               const CarmenConnection **out, int max_out)
+{
+    if (!s || !out || max_out <= 0) return 0;
+
+    const CarmenCity *city = carmen_session_current_city(s);
+    if (!city) return 0;
+
+    int count = city->connection_count < max_out ? city->connection_count
+                                                  : max_out;
+    for (int i = 0; i < count; i++)
+        out[i] = &city->connections[i];
+    return count;
+}
+
 /* ----------------------------------------------------------- actions */
 
 int carmen_session_travel(CarmenSession *s, const char *dest_id)
@@ -122,6 +183,7 @@ int carmen_session_travel(CarmenSession *s, const char *dest_id)
     s->moves++;
 
     carmen_utf8_copy(s->current_city_id, CARMEN_MAX_NAME_LEN, dest_id);
+    record_visit(s, dest_id);
 
     if (s->time_remaining_hrs <= 0) {
         s->status = CARMEN_STATUS_LOST_TIME;

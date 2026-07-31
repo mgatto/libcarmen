@@ -22,6 +22,8 @@ typedef struct {
   CarmenCaseSettings settings;
   CarmenSessionStatus status;
   char current_city_id[CARMEN_MAX_NAME_LEN];
+  char visited[CARMEN_MAX_VISITED][CARMEN_MAX_NAME_LEN];
+  int visited_count;
   int time_remaining_hrs;
   int moves;
   CarmenClue notebook[CARMEN_MAX_NOTEBOOK];
@@ -45,6 +47,44 @@ carmen_session_current_city(const CarmenSession *s);
 CARMEN_API const CarmenCase *carmen_session_case(const CarmenSession *s);
 CARMEN_API int carmen_session_time_remaining(const CarmenSession *s);
 CARMEN_API int carmen_session_moves(const CarmenSession *s);
+
+/*
+ * Cities-visited history (chronological, includes the origin and any
+ * revisits). Capped at the session's visited_history_size setting.
+ * carmen_session_visited_at returns NULL for an out-of-range index.
+ */
+CARMEN_API int         carmen_session_visited_count(const CarmenSession *s);
+CARMEN_API const char *carmen_session_visited_at(const CarmenSession *s,
+                                                 int index);
+
+/*
+ * Clue notebook (clues dispensed by carmen_session_investigate, oldest
+ * first). carmen_session_notebook_at returns NULL for an out-of-range
+ * index.
+ */
+CARMEN_API int               carmen_session_notebook_count(
+                                 const CarmenSession *s);
+CARMEN_API const CarmenClue *carmen_session_notebook_at(
+                                 const CarmenSession *s, int index);
+
+/*
+ * Villain identity evidence collected at the hideout. Each entry is an
+ * i18n key for one id clue. carmen_session_evidence_at returns NULL for
+ * an out-of-range index.
+ */
+CARMEN_API int         carmen_session_evidence_count(const CarmenSession *s);
+CARMEN_API const char *carmen_session_evidence_at(const CarmenSession *s,
+                                                  int index);
+
+/*
+ * Connections leaving the current city. Writes up to max_out connection
+ * pointers into out and returns the count (0 if there is no current
+ * city). The pointers reference the world's city data and remain valid
+ * for the lifetime of the world.
+ */
+CARMEN_API int carmen_session_connections(const CarmenSession *s,
+                                          const CarmenConnection **out,
+                                          int max_out);
 
 /*
  * Return the active site indices for the current city.

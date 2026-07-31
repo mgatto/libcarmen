@@ -14,6 +14,7 @@ typedef enum {
 
 #define CARMEN_MAX_TRAIL  8
 #define CARMEN_TRAIL_SITES 3
+#define CARMEN_MAX_VISITED 24
 
 /*
  * The single knob for customizing game rules. Populate via
@@ -29,6 +30,7 @@ typedef struct {
     int  active_sites_per_city;   /* clamped to [1, CARMEN_TRAIL_SITES] */
     int  positive_clues_per_stop; /* clamped to [1, active_sites_per_city] */
     int  move_limit;              /* 0 = unlimited */
+    int  visited_history_size;    /* 0 = use full CARMEN_MAX_VISITED; else clamped to [1, CARMEN_MAX_VISITED] */
 } CarmenCaseSettings;
 
 typedef struct {

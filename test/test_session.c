@@ -646,6 +646,141 @@ static void test_actions_after_game_over_return_errors(void)
     TEST_ASSERT_EQUAL_INT(-1, carmen_session_issue_warrant(&s, 0));
 }
 
+/* ============================================== visited history tests */
+
+static void test_start_records_origin_as_first_visit(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_visited_count(&s));
+    TEST_ASSERT_EQUAL_STRING(s.active_case.origin_id,
+                             carmen_session_visited_at(&s, 0));
+}
+
+static void test_travel_appends_to_visited(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    const CarmenCity *ocity = carmen_session_current_city(&s);
+    const char *dest = ocity->connections[0].destination_id;
+    carmen_session_travel(&s, dest);
+
+    TEST_ASSERT_EQUAL_INT(2, carmen_session_visited_count(&s));
+    TEST_ASSERT_EQUAL_STRING(dest, carmen_session_visited_at(&s, 1));
+}
+
+static void test_revisit_is_recorded_again(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    /* Origin is 'a'; a<->b are connected both ways. A->B->A. */
+    TEST_ASSERT_EQUAL_STRING("a", s.current_city_id);
+    carmen_session_travel(&s, "b");
+    carmen_session_travel(&s, "a");
+
+    TEST_ASSERT_EQUAL_INT(3, carmen_session_visited_count(&s));
+    TEST_ASSERT_EQUAL_STRING("a", carmen_session_visited_at(&s, 0));
+    TEST_ASSERT_EQUAL_STRING("b", carmen_session_visited_at(&s, 1));
+    TEST_ASSERT_EQUAL_STRING("a", carmen_session_visited_at(&s, 2));
+}
+
+static void test_visited_at_out_of_range_returns_null(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    TEST_ASSERT_NULL(carmen_session_visited_at(&s, -1));
+    TEST_ASSERT_NULL(carmen_session_visited_at(&s,
+                                               carmen_session_visited_count(&s)));
+}
+
+static void test_visited_history_respects_settings_cap(void)
+{
+    CarmenSession s;
+    CarmenCaseSettings settings = carmen_case_settings_default();
+    settings.difficulty = CARMEN_DIFFICULTY_EASY;
+    settings.visited_history_size = 2;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_start(&s, world, &settings));
+
+    /* Origin recorded (count 1). One hop fills the cap of 2; further
+       hops are silently dropped. */
+    carmen_session_travel(&s, "b");
+    TEST_ASSERT_EQUAL_INT(2, carmen_session_visited_count(&s));
+    carmen_session_travel(&s, "a");
+    TEST_ASSERT_EQUAL_INT(2, carmen_session_visited_count(&s));
+}
+
+/* ================================================= notebook getters */
+
+static void test_notebook_count_and_at_match_investigations(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    int indices[CARMEN_TRAIL_SITES];
+    carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
+
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_notebook_count(&s));
+    const CarmenClue *dispensed = carmen_session_investigate(&s, indices[0]);
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_notebook_count(&s));
+
+    const CarmenClue *fetched = carmen_session_notebook_at(&s, 0);
+    TEST_ASSERT_EQUAL_PTR(dispensed, fetched);
+    TEST_ASSERT_EQUAL_STRING(dispensed->text, fetched->text);
+}
+
+static void test_notebook_at_out_of_range_returns_null(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    TEST_ASSERT_NULL(carmen_session_notebook_at(&s, -1));
+    TEST_ASSERT_NULL(carmen_session_notebook_at(&s, 0));
+}
+
+/* ================================================= evidence getters */
+
+static void test_evidence_count_and_at_at_hideout(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    carmen_utf8_copy(s.current_city_id, CARMEN_MAX_NAME_LEN,
+                     s.active_case.hideout_id);
+
+    int indices[CARMEN_TRAIL_SITES];
+    int n = carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
+    if (n == 0) {
+        TEST_IGNORE_MESSAGE("hideout has no active sites");
+        return;
+    }
+
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_evidence_count(&s));
+    carmen_session_investigate(&s, indices[0]);
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_evidence_count(&s));
+
+    const char *ev = carmen_session_evidence_at(&s, 0);
+    TEST_ASSERT_NOT_NULL(ev);
+    TEST_ASSERT_GREATER_THAN(0, (int)strlen(ev));
+    TEST_ASSERT_NULL(carmen_session_evidence_at(&s, 1));
+}
+
+/* =============================================== connections getter */
+
+static void test_connections_returns_current_city_edges(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    const CarmenCity *city = carmen_session_current_city(&s);
+    const CarmenConnection *conns[CARMEN_MAX_CONNECTIONS];
+    int n = carmen_session_connections(&s, conns, CARMEN_MAX_CONNECTIONS);
+
+    TEST_ASSERT_EQUAL_INT(city->connection_count, n);
+    for (int i = 0; i < n; i++)
+        TEST_ASSERT_EQUAL_PTR(&city->connections[i], conns[i]);
+}
+
 /* ================================================ query null safety */
 
 static void test_queries_null_session(void)
@@ -657,6 +792,15 @@ static void test_queries_null_session(void)
     TEST_ASSERT_EQUAL_INT(0, carmen_session_moves(NULL));
     int idx;
     TEST_ASSERT_EQUAL_INT(0, carmen_session_active_sites(NULL, &idx, 1));
+
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_visited_count(NULL));
+    TEST_ASSERT_NULL(carmen_session_visited_at(NULL, 0));
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_notebook_count(NULL));
+    TEST_ASSERT_NULL(carmen_session_notebook_at(NULL, 0));
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_evidence_count(NULL));
+    TEST_ASSERT_NULL(carmen_session_evidence_at(NULL, 0));
+    const CarmenConnection *conns[1];
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_connections(NULL, conns, 1));
 }
 
 /* ================================================================= runner */
@@ -710,6 +854,19 @@ int main(void)
     RUN_TEST(test_arrest_no_warrant_loses);
     RUN_TEST(test_arrest_not_at_hideout_returns_not_at_hideout);
     RUN_TEST(test_actions_after_game_over_return_errors);
+
+    /* Visited history */
+    RUN_TEST(test_start_records_origin_as_first_visit);
+    RUN_TEST(test_travel_appends_to_visited);
+    RUN_TEST(test_revisit_is_recorded_again);
+    RUN_TEST(test_visited_at_out_of_range_returns_null);
+    RUN_TEST(test_visited_history_respects_settings_cap);
+
+    /* Notebook / evidence / connections getters */
+    RUN_TEST(test_notebook_count_and_at_match_investigations);
+    RUN_TEST(test_notebook_at_out_of_range_returns_null);
+    RUN_TEST(test_evidence_count_and_at_at_hideout);
+    RUN_TEST(test_connections_returns_current_city_edges);
 
     /* Null safety */
     RUN_TEST(test_queries_null_session);

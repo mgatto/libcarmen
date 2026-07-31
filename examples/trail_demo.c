@@ -34,30 +34,33 @@ static void print_status_bar(const CarmenI18n *i18n, const CarmenSession *s) {
 }
 
 static void print_evidence(const CarmenI18n *i18n, const CarmenSession *s) {
-  if (s->evidence_count == 0)
+  int count = carmen_session_evidence_count(s);
+  if (count == 0)
     return;
   printf("\n  %s\n", carmen_i18n_get(i18n, "ui.evidence_header"));
-  for (int i = 0; i < s->evidence_count; i++) {
+  for (int i = 0; i < count; i++) {
     char expanded[EXPAND_BUF];
-    carmen_villain_expand_clue(carmen_i18n_get(i18n, s->evidence[i]),
-                               s->active_case.villain->gender, expanded,
-                               sizeof expanded);
+    carmen_villain_expand_clue(
+        carmen_i18n_get(i18n, carmen_session_evidence_at(s, i)),
+        s->active_case.villain->gender, expanded, sizeof expanded);
     printf("    %d. %s\n", i + 1, expanded);
   }
 }
 
 static void print_notebook(const CarmenI18n *i18n, const CarmenSession *s,
                            char villain_gender) {
-  if (s->notebook_count == 0)
+  int count = carmen_session_notebook_count(s);
+  if (count == 0)
     return;
-  int start = s->notebook_count > 5 ? s->notebook_count - 5 : 0;
+  int start = count > 5 ? count - 5 : 0;
   printf("\n  %s (last %d)\n", carmen_i18n_get(i18n, "ui.notebook_header"),
-         s->notebook_count - start);
-  for (int i = start; i < s->notebook_count; i++) {
-    const char *raw = carmen_i18n_get(i18n, s->notebook[i].text);
+         count - start);
+  for (int i = start; i < count; i++) {
+    const CarmenClue *clue = carmen_session_notebook_at(s, i);
+    const char *raw = carmen_i18n_get(i18n, clue->text);
     char expanded[EXPAND_BUF];
     carmen_villain_expand_clue(raw, villain_gender, expanded, sizeof expanded);
-    const char *tag = s->notebook[i].type == CARMEN_CLUE_POSITIVE ? "+" : "-";
+    const char *tag = clue->type == CARMEN_CLUE_POSITIVE ? "+" : "-";
     printf("    [%s] \"%s\"\n", tag, expanded);
   }
 }
@@ -177,15 +180,17 @@ int main(int argc, char *argv[]) {
 
     /* Show connections */
     printf("\n  Connections:\n");
-    for (int c = 0; c < city->connection_count; c++) {
-      CarmenCity *dest =
-          carmen_world_find(world, city->connections[c].destination_id);
+    const CarmenConnection *conns[CARMEN_MAX_CONNECTIONS];
+    int nconns = carmen_session_connections(&session, conns,
+                                            CARMEN_MAX_CONNECTIONS);
+    for (int c = 0; c < nconns; c++) {
+      CarmenCity *dest = carmen_world_find(world, conns[c]->destination_id);
       if (dest) {
         printf("    - ");
         print_city_name(i18n, dest);
         printf(" (%s, %d km)\n",
-               carmen_i18n_get(i18n, city->connections[c].transport_mode),
-               city->connections[c].distance_km);
+               carmen_i18n_get(i18n, conns[c]->transport_mode),
+               conns[c]->distance_km);
       }
     }
 
