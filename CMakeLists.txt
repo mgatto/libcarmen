@@ -108,6 +108,71 @@ endif()
 if(CARMEN_BUILD_EXAMPLES)
     add_executable(trail_demo examples/trail_demo.c)
     target_link_libraries(trail_demo PRIVATE carmen)
+
+    # Make the demo look for the shared lib next to itself at runtime, so the
+    # dist bundle is relocatable. Meaningless on Windows (DLLs resolve from the
+    # executable's directory) and for static builds, but harmless there.
+    if(APPLE)
+        set(_carmen_rpath "@loader_path")
+    else()
+        set(_carmen_rpath "$ORIGIN")
+    endif()
+    if(NOT WIN32)
+        # BUILD_WITH_INSTALL_RPATH bakes only INSTALL_RPATH into the built
+        # binary and skips CMake's automatic build-tree rpath, so the bundle
+        # stays relocatable (no absolute build path leaks in).
+        set_target_properties(trail_demo PROPERTIES
+            INSTALL_RPATH            "${_carmen_rpath}"
+            BUILD_WITH_INSTALL_RPATH TRUE
+        )
+    endif()
+
+    # ----------------------------------------------------------------------- #
+    #  Distributable bundle
+    #
+    #  Assemble a self-contained, runnable folder in the source tree that
+    #  survives cleaning the build directory: the demo, the carmen library it
+    #  links, the locales it reads from the CWD, and an editable settings file
+    #  (never clobbered on re-runs). Build it with:
+    #      cmake --build <build-dir> --target dist
+    #  For a bundle that actually loads the shipped shared lib at runtime,
+    #  configure with -DBUILD_SHARED_LIBS=ON.
+    # ----------------------------------------------------------------------- #
+
+    set(CARMEN_DIST_DIR "${CMAKE_SOURCE_DIR}/dist")
+
+    set(_dist_commands
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CARMEN_DIST_DIR}/locales"
+        COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE:trail_demo> "${CARMEN_DIST_DIR}/"
+        COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE:carmen> "${CARMEN_DIST_DIR}/"
+    )
+    # On Unix shared builds the demo's load command names the soname
+    # (e.g. libcarmen.0.dylib / libcarmen.so.0), so ship that name too.
+    if(BUILD_SHARED_LIBS AND NOT WIN32)
+        list(APPEND _dist_commands
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    $<TARGET_SONAME_FILE:carmen> "${CARMEN_DIST_DIR}/"
+        )
+    endif()
+    list(APPEND _dist_commands
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/locales" "${CARMEN_DIST_DIR}/locales"
+        COMMAND ${CMAKE_COMMAND}
+                -DSRC=${CMAKE_SOURCE_DIR}/examples/settings.default.toml
+                -DDST=${CARMEN_DIST_DIR}/settings.toml
+                -P ${CMAKE_SOURCE_DIR}/cmake/copy_if_absent.cmake
+        COMMAND ${CMAKE_COMMAND} -E echo
+                "Bundle ready: cd ${CARMEN_DIST_DIR} && ./trail_demo en settings.toml"
+    )
+
+    add_custom_target(dist
+        ${_dist_commands}
+        DEPENDS trail_demo carmen
+        COMMENT "Assembling runnable dist bundle in ${CARMEN_DIST_DIR}"
+        VERBATIM
+    )
 endif()
 
 # --------------------------------------------------------------------------- #

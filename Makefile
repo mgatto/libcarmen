@@ -3,6 +3,7 @@ CFLAGS   = -std=c17 -Wall -Wextra -pedantic -O2
 INCLUDES = -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c
 
 BUILD_DIR = build
+DIST_DIR  = dist
 VERSION   = 0.1.0
 
 # --------------------------------------------------------------------------- #
@@ -13,9 +14,11 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)
   SHARED_EXT   = dylib
   SHARED_FLAGS = -dynamiclib -install_name @rpath/libcarmen.dylib
+  RPATH_FLAGS  = -Wl,-rpath,@loader_path
 else
   SHARED_EXT   = so
   SHARED_FLAGS = -shared -Wl,-soname,libcarmen.so.0
+  RPATH_FLAGS  = -Wl,-rpath,\$$ORIGIN
 endif
 
 # --------------------------------------------------------------------------- #
@@ -75,8 +78,33 @@ $(BUILD_DIR)/cJSON.o: vendor/cjson/cJSON.c | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
+# --------------------------------------------------------------------------- #
+#  Distributable bundle
+#
+#  Assemble a self-contained, runnable folder that survives `make clean`:
+#  a demo linked dynamically against the shipped shared lib (found at runtime
+#  via rpath), the locales it reads from the CWD, and an editable settings
+#  file. Re-running `make dist` never clobbers an edited settings.toml.
+# --------------------------------------------------------------------------- #
+
+DIST_DEMO = $(DIST_DIR)/trail_demo
+
+dist: $(SHARED_LIB) $(TRAIL_DEMO_OBJ)
+	mkdir -p $(DIST_DIR)/locales
+	$(CC) $(CFLAGS) -o $(DIST_DEMO) $(TRAIL_DEMO_OBJ) \
+	    -L$(BUILD_DIR) -lcarmen $(RPATH_FLAGS)
+	cp -f $(SHARED_LIB) $(DIST_DIR)/
+	cp -f locales/*.json $(DIST_DIR)/locales/
+	cp -n examples/settings.default.toml $(DIST_DIR)/settings.toml || true
+	@echo ""
+	@echo "Bundle ready: run it with"
+	@echo "  cd $(DIST_DIR) && ./trail_demo en settings.toml"
+
 clean:
 	rm -rf $(BUILD_DIR)
+
+distclean: clean
+	rm -rf $(DIST_DIR)
 
 # --------------------------------------------------------------------------- #
 #  pkg-config
@@ -273,4 +301,4 @@ $(COV_DIR)/test_settings: test/test_settings.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_
 $(COV_DIR)/test_villain: test/test_villain.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
 
-.PHONY: all lib clean test coverage install uninstall
+.PHONY: all lib dist clean distclean test coverage install uninstall
