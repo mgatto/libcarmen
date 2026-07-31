@@ -32,12 +32,16 @@ static int city_slot(const CarmenWorld *w, const CarmenCity *c)
     return (int)(c - w->storage);
 }
 
-/* Build a trail of directly-connected cities (max_hops = 1). */
-static int build_trail(CarmenWorld *w,
-                       char trail[][CARMEN_MAX_NAME_LEN],
-                       int target_len)
+/*
+ * Build a trail of directly-connected cities (max_hops = 1) starting at
+ * the given city slot.  Returns the number of cities placed (== target_len
+ * on full success, less if the walk dead-ended).
+ */
+static int build_trail_from(CarmenWorld *w,
+                            char trail[][CARMEN_MAX_NAME_LEN],
+                            int target_len,
+                            int start)
 {
-    int start = carmen_random() % w->city_count;
     CarmenCity *cur = &w->storage[start];
     carmen_utf8_copy(trail[0], CARMEN_MAX_NAME_LEN, cur->id);
 
@@ -244,14 +248,58 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
     if (target_len < 2)
         target_len = 2;
 
-    int built = 0;
-    for (int attempt = 0; attempt < CASE_MAX_RETRIES; attempt++) {
-        built = build_trail(w, c->trail, target_len);
-        if (built == target_len)
-            break;
+    /*
+     * World-aware artifact catalog: only artifacts whose origin city
+     * actually exists in this world can drive an artifact-first trail.
+     * Collect them up front so the intent is explicit -- an empty set is
+     * precisely the condition that forces the random fallback below.
+     */
+    int usable[CARMEN_ARTIFACT_COUNT];
+    int usable_count = 0;
+    for (int i = 0; i < CARMEN_ARTIFACT_COUNT; i++) {
+        if (carmen_world_find(w, CARMEN_ARTIFACTS[i].origin_city_id))
+            usable[usable_count++] = i;
     }
-    if (built < target_len)
-        return 0;
+
+    /*
+     * Artifact-driven trail: pick a usable stolen artifact and seed the
+     * trail at its origin city, so the crime scene the player starts in
+     * matches the case briefing.  Retry with fresh artifacts until one of
+     * their origin cities can seed a full-length trail.
+     */
+    int built = 0;
+    int have_artifact = 0;
+    for (int attempt = 0; usable_count > 0 && attempt < CASE_MAX_RETRIES;
+         attempt++) {
+        const CarmenArtifact *art =
+            &CARMEN_ARTIFACTS[usable[carmen_random() % usable_count]];
+        CarmenCity *origin = carmen_world_find(w, art->origin_city_id);
+        built = build_trail_from(w, c->trail, target_len,
+                                 city_slot(w, origin));
+        if (built == target_len) {
+            c->artifact = *art;
+            have_artifact = 1;
+            break;
+        }
+    }
+
+    /*
+     * Fallback for worlds that contain none of the artifact origin cities
+     * (usable_count == 0, e.g. synthetic test worlds): start from a random
+     * city and pick a random artifact.  Narrative may not match here, but
+     * generation still succeeds.
+     */
+    if (!have_artifact) {
+        for (int attempt = 0; attempt < CASE_MAX_RETRIES; attempt++) {
+            built = build_trail_from(w, c->trail, target_len,
+                                     carmen_random() % w->city_count);
+            if (built == target_len)
+                break;
+        }
+        if (built < target_len)
+            return 0;
+        c->artifact = CARMEN_ARTIFACTS[carmen_random() % CARMEN_ARTIFACT_COUNT];
+    }
 
     c->trail_len   = target_len;
     c->difficulty   = diff;
@@ -260,9 +308,6 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
                      c->trail[target_len - 1]);
 
     c->villain = &FITNA_VILLAINS[carmen_random() % FITNA_VILLAIN_COUNT];
-
-    int art_idx = carmen_random() % CARMEN_ARTIFACT_COUNT;
-    c->artifact = CARMEN_ARTIFACTS[art_idx];
 
     int active_sites = settings->active_sites_per_city > 0
                      ? settings->active_sites_per_city : CARMEN_TRAIL_SITES;

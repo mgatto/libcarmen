@@ -58,11 +58,18 @@ typedef struct {
 /*
  * Generate a new case scenario.
  *
- * Picks a random villain and artifact, builds a trail of directly-
+ * Picks a random stolen artifact and seeds the trail at that artifact's
+ * origin city, so the crime scene the player starts in (trail[0] ==
+ * origin_id) matches the case briefing. Builds a trail of directly-
  * connected cities whose length is determined by difficulty
- * (EASY=3, MEDIUM=5, HARD=7), assigns deterministic clues to 3 sites
- * per trail stop (2 correct + 1 herring/negative), and sets a time
- * budget based on difficulty and total trail travel time.
+ * (EASY=3, MEDIUM=5, HARD=7), picks a random villain, assigns
+ * deterministic clues to 3 sites per trail stop (2 correct + 1
+ * herring/negative), and sets a time budget based on difficulty and
+ * total trail travel time.
+ *
+ * In worlds that contain none of the artifact origin cities, generation
+ * falls back to a random start city and a random artifact (narrative may
+ * not match).
  *
  * Returns 1 on success, 0 if trail generation failed after retries.
  */

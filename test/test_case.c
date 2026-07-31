@@ -151,6 +151,24 @@ static void test_artifact_is_set(void)
     TEST_ASSERT_NOT_NULL(c.artifact.name);
 }
 
+/* The player must start at the city the artifact was stolen from. */
+static void test_artifact_origin_matches_trail_origin(void)
+{
+    CarmenDifficulty diffs[] = {
+        CARMEN_DIFFICULTY_EASY, CARMEN_DIFFICULTY_MEDIUM, CARMEN_DIFFICULTY_HARD
+    };
+    unsigned seeds[] = {42, 99, 17};
+    for (int d = 0; d < 3; d++) {
+        srand(seeds[d]);
+        CarmenCaseSettings s = mk(diffs[d]);
+        CarmenCase c;
+        int ok = carmen_case_generate(&c, world, &s);
+        TEST_ASSERT_EQUAL_INT(1, ok);
+        TEST_ASSERT_EQUAL_STRING(c.artifact.origin_city_id, c.origin_id);
+        TEST_ASSERT_EQUAL_STRING(c.artifact.origin_city_id, c.trail[0]);
+    }
+}
+
 /* -------------------------------------------------- time budget */
 
 static void test_time_budget_is_positive(void)
@@ -249,6 +267,7 @@ int main(void)
     RUN_TEST(test_hideout_is_last_trail_city);
     RUN_TEST(test_villain_is_set);
     RUN_TEST(test_artifact_is_set);
+    RUN_TEST(test_artifact_origin_matches_trail_origin);
     RUN_TEST(test_time_budget_is_positive);
     RUN_TEST(test_trail_stops_have_sites);
     RUN_TEST(test_non_hideout_stops_have_two_positives);
