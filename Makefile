@@ -2,6 +2,11 @@ CC       = cc
 CFLAGS   = -std=c17 -Wall -Wextra -pedantic -O2
 INCLUDES = -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c
 
+# Auto-generate header dependency files (.d) alongside each object so that
+# editing a header rebuilds exactly the objects that include it.  -MP adds
+# phony targets for each header so deleting one never breaks the build.
+DEPFLAGS = -MMD -MP
+
 BUILD_DIR = build
 DIST_DIR  = dist
 VERSION   = 0.1.0
@@ -67,13 +72,13 @@ $(TRAIL_DEMO): $(TRAIL_DEMO_OBJ) $(STATIC_LIB)
 	$(CC) $(CFLAGS) -o $@ $(TRAIL_DEMO_OBJ) $(STATIC_LIB)
 
 $(TRAIL_DEMO_OBJ): examples/trail_demo.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+	$(CC) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(BUILD_DIR)/%.o: src/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+	$(CC) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(BUILD_DIR)/cJSON.o: vendor/cjson/cJSON.c | $(BUILD_DIR)
-	$(CC) -std=c17 -O2 -Ivendor/cjson -c -o $@ $<
+	$(CC) -std=c17 -O2 $(DEPFLAGS) -Ivendor/cjson -c -o $@ $<
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -300,5 +305,17 @@ $(COV_DIR)/test_settings: test/test_settings.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_
 
 $(COV_DIR)/test_villain: test/test_villain.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+
+# --------------------------------------------------------------------------- #
+#  Header dependency tracking
+#
+#  Include the compiler-generated .d files so header edits invalidate the
+#  right objects.  The leading '-' silences the first build, before any
+#  .d files exist.  These live under $(BUILD_DIR), so `make clean` removes
+#  them along with the objects.
+# --------------------------------------------------------------------------- #
+
+DEPS = $(LIB_OBJS:.o=.d) $(TRAIL_DEMO_OBJ:.o=.d)
+-include $(DEPS)
 
 .PHONY: all lib dist clean distclean test coverage install uninstall
