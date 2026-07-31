@@ -5,7 +5,11 @@
 
 #define CARMEN_MAX_NAME_LEN 48
 #define CARMEN_MAX_CLUE_LEN 48
-#define CARMEN_MAX_CLUES    8
+
+/* Per-city pool of "inbound" descriptor clues -- targetless strings that
+   describe (point to) the city.  At case generation the engine draws from
+   the next trail city's pool and assigns target_city_id at runtime. */
+#define CARMEN_MAX_INBOUND_CLUES 6
 
 typedef enum {
     CARMEN_CLUE_POSITIVE,   /* 0 -- points toward the correct next city */

@@ -60,24 +60,21 @@ int carmen_city_sites_of_type(const CarmenCity *c, const char *type,
     return count;
 }
 
-const CarmenClue *carmen_city_random_clue(const CarmenCity *c)
+void carmen_city_add_inbound_clue(CarmenCity *c, const char *clue_text)
 {
-    if (!c || c->site_count == 0)
-        return NULL;
-
-    int total = 0;
-    for (int i = 0; i < c->site_count; i++)
-        total += c->sites[i].clue_count;
-    if (total == 0)
-        return NULL;
-
-    int pick = carmen_random() % total;
-    for (int i = 0; i < c->site_count; i++) {
-        if (pick < c->sites[i].clue_count)
-            return &c->sites[i].clues[pick];
-        pick -= c->sites[i].clue_count;
+    if (!c || !clue_text) return;
+    if (c->inbound_clue_count < CARMEN_MAX_INBOUND_CLUES) {
+        carmen_utf8_copy(c->inbound_clues[c->inbound_clue_count],
+                         CARMEN_MAX_CLUE_LEN, clue_text);
+        c->inbound_clue_count++;
     }
-    return NULL;
+}
+
+const char *carmen_city_random_inbound_clue(const CarmenCity *c)
+{
+    if (!c || c->inbound_clue_count == 0)
+        return NULL;
+    return c->inbound_clues[carmen_random() % c->inbound_clue_count];
 }
 
 int carmen_city_to_string(const CarmenCity *c, char *buf, int buf_size)

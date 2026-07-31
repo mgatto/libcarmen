@@ -286,17 +286,6 @@ int carmen_world_shortest_path(CarmenWorld *w, const char *from_id,
     return out_len - 1;
 }
 
-/* ----------------------------------------------------------- clue lookup */
-
-const CarmenClue *carmen_world_random_clue(CarmenWorld *w,
-                                           const char *city_id)
-{
-    if (!w || !city_id) return NULL;
-    CarmenCity *c = carmen_world_find(w, city_id);
-    if (!c) return NULL;
-    return carmen_city_random_clue(c);
-}
-
 /* -------------------------------------------------------------- utilities */
 
 int carmen_world_continent_count(const CarmenWorld *w)

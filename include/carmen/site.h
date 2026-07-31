@@ -3,22 +3,20 @@
 
 #include "clue.h"
 
+/*
+ * A site is just a place to investigate.  Clues no longer live on the
+ * site: they are drawn at case-generation time from the destination
+ * city's inbound clue pool (see city.h / clue.h).
+ */
 typedef struct {
     char       id[CARMEN_MAX_NAME_LEN];
     char       name[CARMEN_MAX_NAME_LEN];
     char       site_type[CARMEN_MAX_NAME_LEN];
-    CarmenClue clues[CARMEN_MAX_CLUES];
-    int        clue_count;
 } CarmenSite;
 
 CARMEN_API void              carmen_site_init(CarmenSite *s, const char *id,
                                               const char *name,
                                               const char *site_type);
-CARMEN_API void              carmen_site_add_clue(CarmenSite *s,
-                                                  const char *text,
-                                                  const char *target_city_id,
-                                                  CarmenClueType type);
-CARMEN_API const CarmenClue *carmen_site_random_clue(const CarmenSite *s);
 
 /* Write "Name (type)" into buf.  Returns the number of characters that
    would have been written (excluding '\0'), like snprintf. */

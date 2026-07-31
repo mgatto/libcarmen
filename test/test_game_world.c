@@ -337,35 +337,6 @@ static void test_continent_count_after_adds(void)
     TEST_ASSERT_EQUAL_INT(2, carmen_world_continent_count(&world));
 }
 
-/* ------------------------------------------- carmen_world_random_clue */
-
-static void test_random_clue_from_valid_city(void)
-{
-    srand(42);
-    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
-    CarmenCity *a = carmen_world_find(&world, "a");
-    CarmenSite s;
-    carmen_site_init(&s, "museum", "Museum", "museum");
-    carmen_site_add_clue(&s, "The suspect fled east", "tokyo", CARMEN_CLUE_POSITIVE);
-    carmen_city_add_site(a, &s);
-
-    const CarmenClue *clue = carmen_world_random_clue(&world, "a");
-    TEST_ASSERT_NOT_NULL(clue);
-    TEST_ASSERT_EQUAL_STRING("The suspect fled east", clue->text);
-    TEST_ASSERT_EQUAL_STRING("tokyo", clue->target_city_id);
-}
-
-static void test_random_clue_from_nonexistent_city(void)
-{
-    TEST_ASSERT_NULL(carmen_world_random_clue(&world, "ghost"));
-}
-
-static void test_random_clue_from_city_with_no_clues(void)
-{
-    carmen_world_add_city(&world, "a", "A", NULL, "C", "X", 0, 0);
-    TEST_ASSERT_NULL(carmen_world_random_clue(&world, "a"));
-}
-
 /* ------------------------------------------------------------------- runner */
 
 int main(void)
@@ -397,8 +368,5 @@ int main(void)
     RUN_TEST(test_shortest_path_nonexistent_destination);
     RUN_TEST(test_continent_count_empty);
     RUN_TEST(test_continent_count_after_adds);
-    RUN_TEST(test_random_clue_from_valid_city);
-    RUN_TEST(test_random_clue_from_nonexistent_city);
-    RUN_TEST(test_random_clue_from_city_with_no_clues);
     return UNITY_END();
 }

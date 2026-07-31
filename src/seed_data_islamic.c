@@ -2,9 +2,11 @@
 #include "seed_helpers.h"
 
 /* ---- world builder: Modern Muslim Traveler ---- */
-/* Clue design: each site has 2 positive clues pointing to 2 DIFFERENT
-   connected cities, plus 1 negative (dead end).  This lets the game
-   engine pick 2 sites that converge on the same destination. */
+/* Clue design: clues are no longer baked onto sites.  Each city owns an
+   inbound clue pool -- targetless descriptor strings that "point to it".
+   At case generation the engine draws positives from the next trail
+   city's pool and decoys from wrong neighbors' pools, assigning
+   target_city_id at runtime (see src/case.c). */
 
 void carmen_seed_build_islamic_world(CarmenWorld *w)
 {
@@ -36,474 +38,163 @@ void carmen_seed_build_islamic_world(CarmenWorld *w)
     carmen_world_add_city(w, "jakarta",      "city.jakarta.name",      "city.jakarta.local_name",      "city.jakarta.country",      "city.jakarta.continent",      -6.21,  106.85);
     carmen_world_add_city(w, "bandung",      "city.bandung.name",      "city.bandung.local_name",      "city.bandung.country",      "city.bandung.continent",      -6.91,  107.61);
 
-    /* -------------------------------------------------------- sites & clues */
-    /* Balanced clue design: each site covers N-1 of the city's N
-       connections (cyclic skip), guaranteeing that for any next-city
-       target at least 3 of 4 sites carry a matching positive clue. */
+    /* --------------------------------------------------------------- sites */
+    /* Sites are investigation locations only; they carry no clues. */
 
-    /* Istanbul  (connections: sarajevo, cairo, konya, beirut; 4 sites)
-       Each site covers 3 of 4 connections, skipping a different one.  */
-    { ClueData c[] = {{"clue.istanbul.suleymaniye.0",      "sarajevo", CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.suleymaniye.1",      "cairo",    CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.suleymaniye.3",      "konya",    CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.suleymaniye.2",      NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "istanbul", "suleymaniye", "site.istanbul.suleymaniye", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.istanbul.istanbul_modern.0",  "cairo",    CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.istanbul_modern.1",  "konya",    CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.istanbul_modern.3",  "beirut",   CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.istanbul_modern.2",  NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "istanbul", "istanbul_modern", "site.istanbul.istanbul_modern", "type.museum", c, 4); }
-    { ClueData c[] = {{"clue.istanbul.kadikoy.0",          "konya",    CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.kadikoy.1",          "beirut",   CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.kadikoy.3",          "sarajevo", CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.kadikoy.2",          NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "istanbul", "kadikoy", "site.istanbul.kadikoy", "type.market", c, 4); }
-    { ClueData c[] = {{"clue.istanbul.camlica.0",          "beirut",   CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.camlica.1",          "sarajevo", CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.camlica.3",          "cairo",    CARMEN_CLUE_POSITIVE},
-                      {"clue.istanbul.camlica.2",          NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "istanbul", "camlica", "site.istanbul.camlica", "type.mosque", c, 4); }
+    add_site(w, "istanbul", "suleymaniye",     "site.istanbul.suleymaniye",     "type.mosque");
+    add_site(w, "istanbul", "istanbul_modern", "site.istanbul.istanbul_modern", "type.museum");
+    add_site(w, "istanbul", "kadikoy",         "site.istanbul.kadikoy",         "type.market");
+    add_site(w, "istanbul", "camlica",         "site.istanbul.camlica",         "type.mosque");
 
-    /* Dubai  (connections: doha, muscat, abu_dhabi, isfahan, lahore, amman; 4 sites)
-       Each site covers 5 of 6 connections, skipping one cyclically.  */
-    { ClueData c[] = {{"clue.dubai.museum_future.0",       "doha",      CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.museum_future.1",       "muscat",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.museum_future.3",       "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.museum_future.4",       "isfahan",   CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.museum_future.5",       "lahore",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.museum_future.2",       NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dubai", "museum_future", "site.dubai.museum_future", "type.museum", c, 6); }
-    { ClueData c[] = {{"clue.dubai.al_fahidi.0",           "muscat",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.al_fahidi.1",           "lahore",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.al_fahidi.3",           "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.al_fahidi.4",           "isfahan",   CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.al_fahidi.5",           "amman",     CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.al_fahidi.2",           NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dubai", "al_fahidi", "site.dubai.al_fahidi", "type.landmark", c, 6); }
-    { ClueData c[] = {{"clue.dubai.dubai_mall.0",          "lahore",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.dubai_mall.1",          "isfahan",   CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.dubai_mall.3",          "doha",      CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.dubai_mall.4",          "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.dubai_mall.5",          "amman",     CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.dubai_mall.2",          NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dubai", "dubai_mall", "site.dubai.dubai_mall", "type.market", c, 6); }
-    { ClueData c[] = {{"clue.dubai.jumeirah.0",            "isfahan",   CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.jumeirah.1",            "doha",      CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.jumeirah.3",            "muscat",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.jumeirah.4",            "lahore",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.jumeirah.5",            "amman",     CARMEN_CLUE_POSITIVE},
-                      {"clue.dubai.jumeirah.2",            NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dubai", "jumeirah", "site.dubai.jumeirah", "type.mosque", c, 6); }
+    add_site(w, "dubai", "museum_future", "site.dubai.museum_future", "type.museum");
+    add_site(w, "dubai", "al_fahidi",     "site.dubai.al_fahidi",     "type.landmark");
+    add_site(w, "dubai", "dubai_mall",    "site.dubai.dubai_mall",    "type.market");
+    add_site(w, "dubai", "jumeirah",      "site.dubai.jumeirah",      "type.mosque");
 
-    /* Kuala Lumpur  (connections: bandung, jakarta, dhaka, hyderabad; 4 sites)
-       Each site covers 3 of 4 connections.  */
-    { ClueData c[] = {{"clue.kuala_lumpur.petronas.0",     "bandung",      CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.petronas.1",     "hyderabad",    CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.petronas.3",     "jakarta",      CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.petronas.2",     NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "kuala_lumpur", "petronas", "site.kuala_lumpur.petronas", "type.landmark", c, 4); }
-    { ClueData c[] = {{"clue.kuala_lumpur.islamic_arts.0", "jakarta",     CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.islamic_arts.1", "dhaka",       CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.islamic_arts.3", "hyderabad",   CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.islamic_arts.2", NULL,          CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "kuala_lumpur", "islamic_arts", "site.kuala_lumpur.islamic_arts", "type.museum", c, 4); }
-    { ClueData c[] = {{"clue.kuala_lumpur.jalan_alor.0",   "dhaka",       CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.jalan_alor.1",   "hyderabad",   CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.jalan_alor.3",   "bandung",     CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.jalan_alor.2",   NULL,          CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "kuala_lumpur", "jalan_alor", "site.kuala_lumpur.jalan_alor", "type.market", c, 4); }
-    { ClueData c[] = {{"clue.kuala_lumpur.masjid_negara.0", "jakarta",     CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.masjid_negara.1", "bandung",     CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.masjid_negara.3", "dhaka",       CARMEN_CLUE_POSITIVE},
-                      {"clue.kuala_lumpur.masjid_negara.2", NULL,          CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "kuala_lumpur", "masjid_negara", "site.kuala_lumpur.masjid_negara", "type.mosque", c, 4); }
+    add_site(w, "kuala_lumpur", "petronas",      "site.kuala_lumpur.petronas",      "type.landmark");
+    add_site(w, "kuala_lumpur", "islamic_arts",  "site.kuala_lumpur.islamic_arts",  "type.museum");
+    add_site(w, "kuala_lumpur", "jalan_alor",    "site.kuala_lumpur.jalan_alor",    "type.market");
+    add_site(w, "kuala_lumpur", "masjid_negara", "site.kuala_lumpur.masjid_negara", "type.mosque");
 
-    /* Doha  (connections: dubai, abu_dhabi)
-       Museum→abu_dhabi+dubai   Souq Waqif→dubai+abu_dhabi
-       Katara→abu_dhabi+dubai   Education→dubai+abu_dhabi      */
-    { ClueData c[] = {{"clue.doha.islamic_art.0",          "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.doha.islamic_art.1",          "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.doha.islamic_art.2",          NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "doha", "islamic_art", "site.doha.islamic_art", "type.museum", c, 3); }
-    { ClueData c[] = {{"clue.doha.souq_waqif.0",          "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.doha.souq_waqif.1",          "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.doha.souq_waqif.2",          NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "doha", "souq_waqif", "site.doha.souq_waqif", "type.market", c, 3); }
-    { ClueData c[] = {{"clue.doha.katara.0",              "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.doha.katara.1",              "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.doha.katara.2",              NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "doha", "katara", "site.doha.katara", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.doha.education_city.0",      "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.doha.education_city.1",      "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.doha.education_city.2",      NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "doha", "education_city", "site.doha.education_city", "type.landmark", c, 3); }
+    add_site(w, "doha", "islamic_art",    "site.doha.islamic_art",    "type.museum");
+    add_site(w, "doha", "souq_waqif",     "site.doha.souq_waqif",     "type.market");
+    add_site(w, "doha", "katara",         "site.doha.katara",         "type.landmark");
+    add_site(w, "doha", "education_city", "site.doha.education_city", "type.landmark");
 
-    /* Amman  (connections: cairo, beirut, dubai)
-       Citadel→cairo+beirut  Rainbow→beirut+dubai  King Abdullah→dubai+cairo */
-    { ClueData c[] = {{"clue.amman.citadel.0",            "cairo",  CARMEN_CLUE_POSITIVE},
-                      {"clue.amman.citadel.1",            "beirut", CARMEN_CLUE_POSITIVE},
-                      {"clue.amman.citadel.2",            NULL,     CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "amman", "citadel", "site.amman.citadel", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.amman.rainbow_street.0",     "beirut", CARMEN_CLUE_POSITIVE},
-                      {"clue.amman.rainbow_street.1",     "dubai",  CARMEN_CLUE_POSITIVE},
-                      {"clue.amman.rainbow_street.2",     NULL,     CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "amman", "rainbow_street", "site.amman.rainbow_street", "type.cafe", c, 3); }
-    { ClueData c[] = {{"clue.amman.king_abdullah.0",      "dubai",  CARMEN_CLUE_POSITIVE},
-                      {"clue.amman.king_abdullah.1",      "cairo",  CARMEN_CLUE_POSITIVE},
-                      {"clue.amman.king_abdullah.2",      NULL,     CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "amman", "king_abdullah", "site.amman.king_abdullah", "type.mosque", c, 3); }
+    add_site(w, "amman", "citadel",        "site.amman.citadel",        "type.landmark");
+    add_site(w, "amman", "rainbow_street", "site.amman.rainbow_street", "type.cafe");
+    add_site(w, "amman", "king_abdullah",  "site.amman.king_abdullah",  "type.mosque");
 
-    /* Casablanca  (connections: marrakech, fez, dakar, cairo; 4 sites)
-       Each site covers 3 of 4 connections.  */
-    { ClueData c[] = {{"clue.casablanca.hassan_ii.0",     "marrakech", CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.hassan_ii.1",     "dakar",     CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.hassan_ii.3",     "cairo",     CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.hassan_ii.2",     NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "casablanca", "hassan_ii", "site.casablanca.hassan_ii", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.casablanca.habous.0",        "dakar",     CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.habous.1",        "cairo",     CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.habous.3",        "fez",       CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.habous.2",        NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "casablanca", "habous", "site.casablanca.habous", "type.market", c, 4); }
-    { ClueData c[] = {{"clue.casablanca.morocco_mall.0",  "cairo",     CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.morocco_mall.1",  "fez",       CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.morocco_mall.3",  "marrakech", CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.morocco_mall.2",  NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "casablanca", "morocco_mall", "site.casablanca.morocco_mall", "type.market", c, 4); }
-    { ClueData c[] = {{"clue.casablanca.art_deco.0",      "fez",       CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.art_deco.1",      "marrakech", CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.art_deco.3",      "dakar",     CARMEN_CLUE_POSITIVE},
-                      {"clue.casablanca.art_deco.2",      NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "casablanca", "art_deco", "site.casablanca.art_deco", "type.landmark", c, 4); }
+    add_site(w, "casablanca", "hassan_ii",    "site.casablanca.hassan_ii",    "type.mosque");
+    add_site(w, "casablanca", "habous",       "site.casablanca.habous",       "type.market");
+    add_site(w, "casablanca", "morocco_mall", "site.casablanca.morocco_mall", "type.market");
+    add_site(w, "casablanca", "art_deco",     "site.casablanca.art_deco",     "type.landmark");
 
-    /* Jakarta  (connections: kuala_lumpur, bandung)
-       Istiqlal→kuala_lumpur+bandung  National Museum→bandung+kuala_lumpur
-       Kota Tua→kuala_lumpur+bandung  Menteng→bandung+kuala_lumpur  */
-    { ClueData c[] = {{"clue.jakarta.istiqlal.0",         "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.jakarta.istiqlal.1",         "bandung",      CARMEN_CLUE_POSITIVE},
-                      {"clue.jakarta.istiqlal.2",         NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "jakarta", "istiqlal", "site.jakarta.istiqlal", "type.mosque", c, 3); }
-    { ClueData c[] = {{"clue.jakarta.national_museum.0",  "bandung",      CARMEN_CLUE_POSITIVE},
-                      {"clue.jakarta.national_museum.1",  "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.jakarta.national_museum.2",  NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "jakarta", "national_museum", "site.jakarta.national_museum", "type.museum", c, 3); }
-    { ClueData c[] = {{"clue.jakarta.kota_tua.0",         "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.jakarta.kota_tua.1",         "bandung",      CARMEN_CLUE_POSITIVE},
-                      {"clue.jakarta.kota_tua.2",         NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "jakarta", "kota_tua", "site.jakarta.kota_tua", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.jakarta.menteng.0",          "bandung",      CARMEN_CLUE_POSITIVE},
-                      {"clue.jakarta.menteng.1",          "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.jakarta.menteng.2",          NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "jakarta", "menteng", "site.jakarta.menteng", "type.cafe", c, 3); }
+    add_site(w, "jakarta", "istiqlal",        "site.jakarta.istiqlal",        "type.mosque");
+    add_site(w, "jakarta", "national_museum", "site.jakarta.national_museum", "type.museum");
+    add_site(w, "jakarta", "kota_tua",        "site.jakarta.kota_tua",        "type.landmark");
+    add_site(w, "jakarta", "menteng",         "site.jakarta.menteng",         "type.cafe");
 
-    /* Sarajevo  (connections: istanbul, fez)
-       Bascarsija→istanbul+fez  Gazi Husrev-beg→fez+istanbul
-       War Tunnel→istanbul+fez                                 */
-    { ClueData c[] = {{"clue.sarajevo.bascarsija.0",      "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.sarajevo.bascarsija.1",      "fez",      CARMEN_CLUE_POSITIVE},
-                      {"clue.sarajevo.bascarsija.2",      NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "sarajevo", "bascarsija", "site.sarajevo.bascarsija", "type.market", c, 3); }
-    { ClueData c[] = {{"clue.sarajevo.gazi_husrev.0",     "fez",      CARMEN_CLUE_POSITIVE},
-                      {"clue.sarajevo.gazi_husrev.1",     "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.sarajevo.gazi_husrev.2",     NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "sarajevo", "gazi_husrev", "site.sarajevo.gazi_husrev", "type.mosque", c, 3); }
-    { ClueData c[] = {{"clue.sarajevo.war_tunnel.0",      "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.sarajevo.war_tunnel.1",      "fez",      CARMEN_CLUE_POSITIVE},
-                      {"clue.sarajevo.war_tunnel.2",      NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "sarajevo", "war_tunnel", "site.sarajevo.war_tunnel", "type.museum", c, 3); }
+    add_site(w, "sarajevo", "bascarsija",  "site.sarajevo.bascarsija",  "type.market");
+    add_site(w, "sarajevo", "gazi_husrev", "site.sarajevo.gazi_husrev", "type.mosque");
+    add_site(w, "sarajevo", "war_tunnel",  "site.sarajevo.war_tunnel",  "type.museum");
 
-    /* Tashkent  (connections: isfahan, lahore)
-       Khast Imam→isfahan+lahore  Chorsu→lahore+isfahan
-       Metro→lahore+isfahan       Minor→isfahan+lahore          */
-    { ClueData c[] = {{"clue.tashkent.khast_imam.0",      "isfahan", CARMEN_CLUE_POSITIVE},
-                      {"clue.tashkent.khast_imam.1",      "lahore",  CARMEN_CLUE_POSITIVE},
-                      {"clue.tashkent.khast_imam.2",      NULL,      CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "tashkent", "khast_imam", "site.tashkent.khast_imam", "type.mosque", c, 3); }
-    { ClueData c[] = {{"clue.tashkent.chorsu.0",          "lahore",  CARMEN_CLUE_POSITIVE},
-                      {"clue.tashkent.chorsu.1",          "isfahan", CARMEN_CLUE_POSITIVE},
-                      {"clue.tashkent.chorsu.2",          NULL,      CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "tashkent", "chorsu", "site.tashkent.chorsu", "type.market", c, 3); }
-    { ClueData c[] = {{"clue.tashkent.tashkent_metro.0",  "lahore",  CARMEN_CLUE_POSITIVE},
-                      {"clue.tashkent.tashkent_metro.1",  "isfahan", CARMEN_CLUE_POSITIVE},
-                      {"clue.tashkent.tashkent_metro.2",  NULL,      CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "tashkent", "tashkent_metro", "site.tashkent.tashkent_metro", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.tashkent.minor_mosque.0",    "isfahan", CARMEN_CLUE_POSITIVE},
-                      {"clue.tashkent.minor_mosque.1",    "lahore",  CARMEN_CLUE_POSITIVE},
-                      {"clue.tashkent.minor_mosque.2",    NULL,      CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "tashkent", "minor_mosque", "site.tashkent.minor_mosque", "type.mosque", c, 3); }
+    add_site(w, "tashkent", "khast_imam",     "site.tashkent.khast_imam",     "type.mosque");
+    add_site(w, "tashkent", "chorsu",         "site.tashkent.chorsu",         "type.market");
+    add_site(w, "tashkent", "tashkent_metro", "site.tashkent.tashkent_metro", "type.landmark");
+    add_site(w, "tashkent", "minor_mosque",   "site.tashkent.minor_mosque",   "type.mosque");
 
-    /* Cairo  (connections: amman, casablanca, abu_dhabi, zanzibar, dakar; 4 sites)
-       Each site covers 4 of 5 connections.  */
-    { ClueData c[] = {{"clue.cairo.azhar_park.0",         "amman",      CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.azhar_park.1",         "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.azhar_park.3",         "abu_dhabi",  CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.azhar_park.4",         "dakar",      CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.azhar_park.2",         NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "cairo", "azhar_park", "site.cairo.azhar_park", "type.park", c, 5); }
-    { ClueData c[] = {{"clue.cairo.tahrir.0",             "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.tahrir.1",             "abu_dhabi",  CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.tahrir.3",             "amman",      CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.tahrir.4",             "zanzibar",   CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.tahrir.2",             NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "cairo", "tahrir", "site.cairo.tahrir", "type.landmark", c, 5); }
-    { ClueData c[] = {{"clue.cairo.khan_khalili.0",       "abu_dhabi",  CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.khan_khalili.1",       "amman",      CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.khan_khalili.3",       "zanzibar",   CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.khan_khalili.4",       "dakar",      CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.khan_khalili.2",       NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "cairo", "khan_khalili", "site.cairo.khan_khalili", "type.market", c, 5); }
-    { ClueData c[] = {{"clue.cairo.sultan_hassan.0",      "amman",      CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.sultan_hassan.1",      "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.sultan_hassan.3",      "abu_dhabi",  CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.sultan_hassan.4",      "zanzibar",   CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.sultan_hassan.5",      "dakar",      CARMEN_CLUE_POSITIVE},
-                      {"clue.cairo.sultan_hassan.2",      NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "cairo", "sultan_hassan", "site.cairo.sultan_hassan", "type.mosque", c, 6); }
+    add_site(w, "cairo", "azhar_park",    "site.cairo.azhar_park",    "type.park");
+    add_site(w, "cairo", "tahrir",        "site.cairo.tahrir",        "type.landmark");
+    add_site(w, "cairo", "khan_khalili",  "site.cairo.khan_khalili",  "type.market");
+    add_site(w, "cairo", "sultan_hassan", "site.cairo.sultan_hassan", "type.mosque");
 
-    /* Beirut  (connections: amman, istanbul)
-       Mohammad Al-Amin→amman+istanbul  Gemmayzeh→istanbul+amman
-       National Museum→amman+istanbul                          */
-    { ClueData c[] = {{"clue.beirut.al_amin.0",           "amman",    CARMEN_CLUE_POSITIVE},
-                      {"clue.beirut.al_amin.1",           "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.beirut.al_amin.2",           NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "beirut", "al_amin", "site.beirut.al_amin", "type.mosque", c, 3); }
-    { ClueData c[] = {{"clue.beirut.gemmayzeh.0",         "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.beirut.gemmayzeh.1",         "amman",    CARMEN_CLUE_POSITIVE},
-                      {"clue.beirut.gemmayzeh.2",         NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "beirut", "gemmayzeh", "site.beirut.gemmayzeh", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.beirut.national_museum.0",   "amman",    CARMEN_CLUE_POSITIVE},
-                      {"clue.beirut.national_museum.1",   "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.beirut.national_museum.2",   NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "beirut", "national_museum", "site.beirut.national_museum", "type.museum", c, 3); }
+    add_site(w, "beirut", "al_amin",         "site.beirut.al_amin",         "type.mosque");
+    add_site(w, "beirut", "gemmayzeh",       "site.beirut.gemmayzeh",       "type.landmark");
+    add_site(w, "beirut", "national_museum", "site.beirut.national_museum", "type.museum");
 
-    /* Marrakech  (connections: casablanca, fez)
-       Jemaa→fez+casablanca  MACAAL→casablanca+fez
-       Le Jardin→fez+casablanca                                */
-    { ClueData c[] = {{"clue.marrakech.jemaa.0",          "fez",        CARMEN_CLUE_POSITIVE},
-                      {"clue.marrakech.jemaa.1",          "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.marrakech.jemaa.2",          NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "marrakech", "jemaa", "site.marrakech.jemaa", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.marrakech.macaal.0",         "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.marrakech.macaal.1",         "fez",        CARMEN_CLUE_POSITIVE},
-                      {"clue.marrakech.macaal.2",         NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "marrakech", "macaal", "site.marrakech.macaal", "type.museum", c, 3); }
-    { ClueData c[] = {{"clue.marrakech.le_jardin.0",      "fez",        CARMEN_CLUE_POSITIVE},
-                      {"clue.marrakech.le_jardin.1",      "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.marrakech.le_jardin.2",      NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "marrakech", "le_jardin", "site.marrakech.le_jardin", "type.park", c, 3); }
+    add_site(w, "marrakech", "jemaa",     "site.marrakech.jemaa",     "type.landmark");
+    add_site(w, "marrakech", "macaal",    "site.marrakech.macaal",    "type.museum");
+    add_site(w, "marrakech", "le_jardin", "site.marrakech.le_jardin", "type.park");
 
-    /* Lahore  (connections: dhaka, tashkent, dubai, hyderabad; 4 sites)
-       Each site covers 3 of 4 connections.  */
-    { ClueData c[] = {{"clue.lahore.badshahi.0",          "dhaka",     CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.badshahi.1",          "tashkent",  CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.badshahi.3",          "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.badshahi.2",          NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "lahore", "badshahi", "site.lahore.badshahi", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.lahore.lahore_fort.0",       "tashkent",  CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.lahore_fort.1",       "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.lahore_fort.3",       "hyderabad", CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.lahore_fort.2",       NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "lahore", "lahore_fort", "site.lahore.lahore_fort", "type.landmark", c, 4); }
-    { ClueData c[] = {{"clue.lahore.food_street.0",       "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.food_street.1",       "hyderabad", CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.food_street.3",       "dhaka",     CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.food_street.2",       NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "lahore", "food_street", "site.lahore.food_street", "type.market", c, 4); }
-    { ClueData c[] = {{"clue.lahore.anarkali.0",          "hyderabad", CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.anarkali.1",          "dhaka",     CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.anarkali.3",          "tashkent",  CARMEN_CLUE_POSITIVE},
-                      {"clue.lahore.anarkali.2",          NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "lahore", "anarkali", "site.lahore.anarkali", "type.market", c, 4); }
+    add_site(w, "lahore", "badshahi",    "site.lahore.badshahi",    "type.mosque");
+    add_site(w, "lahore", "lahore_fort", "site.lahore.lahore_fort", "type.landmark");
+    add_site(w, "lahore", "food_street", "site.lahore.food_street", "type.market");
+    add_site(w, "lahore", "anarkali",    "site.lahore.anarkali",    "type.market");
 
-    /* Konya  (connections: istanbul, isfahan)
-       Mevlana→isfahan+istanbul  Alaeddin→istanbul+isfahan
-       Sille→istanbul+isfahan                                  */
-    { ClueData c[] = {{"clue.konya.mevlana.0",            "isfahan",  CARMEN_CLUE_POSITIVE},
-                      {"clue.konya.mevlana.1",            "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.konya.mevlana.2",            NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "konya", "mevlana", "site.konya.mevlana", "type.museum", c, 3); }
-    { ClueData c[] = {{"clue.konya.alaeddin.0",           "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.konya.alaeddin.1",           "isfahan",  CARMEN_CLUE_POSITIVE},
-                      {"clue.konya.alaeddin.2",           NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "konya", "alaeddin", "site.konya.alaeddin", "type.mosque", c, 3); }
-    { ClueData c[] = {{"clue.konya.sille.0",              "istanbul", CARMEN_CLUE_POSITIVE},
-                      {"clue.konya.sille.1",              "isfahan",  CARMEN_CLUE_POSITIVE},
-                      {"clue.konya.sille.2",              NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "konya", "sille", "site.konya.sille", "type.landmark", c, 3); }
+    add_site(w, "konya", "mevlana",  "site.konya.mevlana",  "type.museum");
+    add_site(w, "konya", "alaeddin", "site.konya.alaeddin", "type.mosque");
+    add_site(w, "konya", "sille",    "site.konya.sille",    "type.landmark");
 
-    /* Abu Dhabi  (connections: dubai, doha, muscat, cairo; 4 sites)
-       Each site covers 3 of 4 connections.  */
-    { ClueData c[] = {{"clue.abu_dhabi.sheikh_zayed.0",   "muscat", CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.sheikh_zayed.1",   "doha",   CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.sheikh_zayed.3",   "cairo",  CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.sheikh_zayed.2",   NULL,     CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "abu_dhabi", "sheikh_zayed", "site.abu_dhabi.sheikh_zayed", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.abu_dhabi.louvre_ad.0",      "doha",   CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.louvre_ad.1",      "cairo",  CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.louvre_ad.3",      "dubai",  CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.louvre_ad.2",      NULL,     CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "abu_dhabi", "louvre_ad", "site.abu_dhabi.louvre_ad", "type.museum", c, 4); }
-    { ClueData c[] = {{"clue.abu_dhabi.mangrove_park.0",  "cairo",  CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.mangrove_park.1",  "dubai",  CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.mangrove_park.3",  "muscat", CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.mangrove_park.2",  NULL,     CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "abu_dhabi", "mangrove_park", "site.abu_dhabi.mangrove_park", "type.park", c, 4); }
-    { ClueData c[] = {{"clue.abu_dhabi.qasr_watan.0",     "dubai",  CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.qasr_watan.1",     "muscat", CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.qasr_watan.3",     "doha",   CARMEN_CLUE_POSITIVE},
-                      {"clue.abu_dhabi.qasr_watan.2",     NULL,     CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "abu_dhabi", "qasr_watan", "site.abu_dhabi.qasr_watan", "type.landmark", c, 4); }
+    add_site(w, "abu_dhabi", "sheikh_zayed",  "site.abu_dhabi.sheikh_zayed",  "type.mosque");
+    add_site(w, "abu_dhabi", "louvre_ad",     "site.abu_dhabi.louvre_ad",     "type.museum");
+    add_site(w, "abu_dhabi", "mangrove_park", "site.abu_dhabi.mangrove_park", "type.park");
+    add_site(w, "abu_dhabi", "qasr_watan",    "site.abu_dhabi.qasr_watan",    "type.landmark");
 
-    /* Muscat  (connections: dubai, abu_dhabi, dhaka, zanzibar; 3 sites)
-       Each site covers 3 of 4 connections.  */
-    { ClueData c[] = {{"clue.muscat.sultan_qaboos.0",     "zanzibar",  CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.sultan_qaboos.1",     "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.sultan_qaboos.3",     "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.sultan_qaboos.2",     NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "muscat", "sultan_qaboos", "site.muscat.sultan_qaboos", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.muscat.bimmah.0",            "dhaka",     CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.bimmah.1",            "zanzibar",  CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.bimmah.3",            "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.bimmah.2",            NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "muscat", "bimmah", "site.muscat.bimmah", "type.landmark", c, 4); }
-    { ClueData c[] = {{"clue.muscat.royal_opera.0",       "dubai",     CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.royal_opera.1",       "dhaka",     CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.royal_opera.3",       "abu_dhabi", CARMEN_CLUE_POSITIVE},
-                      {"clue.muscat.royal_opera.2",       NULL,        CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "muscat", "royal_opera", "site.muscat.royal_opera", "type.landmark", c, 4); }
+    add_site(w, "muscat", "sultan_qaboos", "site.muscat.sultan_qaboos", "type.mosque");
+    add_site(w, "muscat", "bimmah",        "site.muscat.bimmah",        "type.landmark");
+    add_site(w, "muscat", "royal_opera",   "site.muscat.royal_opera",   "type.landmark");
 
-    /* Dakar  (connections: casablanca, cairo, zanzibar)
-       Grande Mosquee→casablanca+cairo  Goree→cairo+zanzibar
-       African Renaissance→zanzibar+casablanca                 */
-    { ClueData c[] = {{"clue.dakar.grande_mosquee.0",     "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.dakar.grande_mosquee.1",     "cairo",      CARMEN_CLUE_POSITIVE},
-                      {"clue.dakar.grande_mosquee.2",     NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dakar", "grande_mosquee", "site.dakar.grande_mosquee", "type.mosque", c, 3); }
-    { ClueData c[] = {{"clue.dakar.goree.0",              "cairo",      CARMEN_CLUE_POSITIVE},
-                      {"clue.dakar.goree.1",              "zanzibar",   CARMEN_CLUE_POSITIVE},
-                      {"clue.dakar.goree.2",              NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dakar", "goree", "site.dakar.goree", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.dakar.african_renaissance.0", "zanzibar",   CARMEN_CLUE_POSITIVE},
-                      {"clue.dakar.african_renaissance.1", "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.dakar.african_renaissance.2", NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dakar", "african_renaissance", "site.dakar.african_renaissance", "type.landmark", c, 3); }
+    add_site(w, "dakar", "grande_mosquee",      "site.dakar.grande_mosquee",      "type.mosque");
+    add_site(w, "dakar", "goree",               "site.dakar.goree",               "type.landmark");
+    add_site(w, "dakar", "african_renaissance", "site.dakar.african_renaissance", "type.landmark");
 
-    /* Bandung  (connections: kuala_lumpur, jakarta)
-       Braga→kuala_lumpur+jakarta  Masjid Raya→jakarta+kuala_lumpur
-       Tangkuban→kuala_lumpur+jakarta                          */
-    { ClueData c[] = {{"clue.bandung.braga.0",            "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.bandung.braga.1",            "jakarta",      CARMEN_CLUE_POSITIVE},
-                      {"clue.bandung.braga.2",            NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "bandung", "braga", "site.bandung.braga", "type.cafe", c, 3); }
-    { ClueData c[] = {{"clue.bandung.masjid_raya.0",      "jakarta",      CARMEN_CLUE_POSITIVE},
-                      {"clue.bandung.masjid_raya.1",      "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.bandung.masjid_raya.2",      NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "bandung", "masjid_raya", "site.bandung.masjid_raya", "type.mosque", c, 3); }
-    { ClueData c[] = {{"clue.bandung.tangkuban.0",        "jakarta",      CARMEN_CLUE_POSITIVE},
-                      {"clue.bandung.tangkuban.1",        "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.bandung.tangkuban.2",        NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "bandung", "tangkuban", "site.bandung.tangkuban", "type.landmark", c, 3); }
+    add_site(w, "bandung", "braga",       "site.bandung.braga",       "type.cafe");
+    add_site(w, "bandung", "masjid_raya", "site.bandung.masjid_raya", "type.mosque");
+    add_site(w, "bandung", "tangkuban",   "site.bandung.tangkuban",   "type.landmark");
 
-    /* Isfahan  (connections: dubai, konya, tashkent)
-       Naqsh-e Jahan→dubai+konya  Vank→konya+tashkent
-       Si-o-se-pol→tashkent+dubai                              */
-    { ClueData c[] = {{"clue.isfahan.naqsh_e_jahan.0",    "dubai",    CARMEN_CLUE_POSITIVE},
-                      {"clue.isfahan.naqsh_e_jahan.1",    "konya",    CARMEN_CLUE_POSITIVE},
-                      {"clue.isfahan.naqsh_e_jahan.2",    NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "isfahan", "naqsh_e_jahan", "site.isfahan.naqsh_e_jahan", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.isfahan.vank.0",             "konya",    CARMEN_CLUE_POSITIVE},
-                      {"clue.isfahan.vank.1",             "tashkent", CARMEN_CLUE_POSITIVE},
-                      {"clue.isfahan.vank.2",             NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "isfahan", "vank", "site.isfahan.vank", "type.landmark", c, 3); }
-    { ClueData c[] = {{"clue.isfahan.si_o_se_pol.0",      "tashkent", CARMEN_CLUE_POSITIVE},
-                      {"clue.isfahan.si_o_se_pol.1",      "dubai",    CARMEN_CLUE_POSITIVE},
-                      {"clue.isfahan.si_o_se_pol.2",      NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "isfahan", "si_o_se_pol", "site.isfahan.si_o_se_pol", "type.cafe", c, 3); }
+    add_site(w, "isfahan", "naqsh_e_jahan", "site.isfahan.naqsh_e_jahan", "type.landmark");
+    add_site(w, "isfahan", "vank",          "site.isfahan.vank",          "type.landmark");
+    add_site(w, "isfahan", "si_o_se_pol",   "site.isfahan.si_o_se_pol",   "type.cafe");
 
-    /* Dhaka  (connections: lahore, kuala_lumpur, muscat, hyderabad; 4 sites)
-       Each site covers 3 of 4 connections.  */
-    { ClueData c[] = {{"clue.dhaka.baitul_mukarram.0",    "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.baitul_mukarram.1",    "lahore",       CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.baitul_mukarram.3",    "muscat",       CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.baitul_mukarram.2",    NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dhaka", "baitul_mukarram", "site.dhaka.baitul_mukarram", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.dhaka.star_mosque.0",        "lahore",       CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.star_mosque.1",        "muscat",       CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.star_mosque.3",        "hyderabad",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.star_mosque.2",        NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dhaka", "star_mosque", "site.dhaka.star_mosque", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.dhaka.lalbagh.0",            "muscat",       CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.lalbagh.1",            "hyderabad",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.lalbagh.3",            "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.lalbagh.2",            NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dhaka", "lalbagh", "site.dhaka.lalbagh", "type.landmark", c, 4); }
-    { ClueData c[] = {{"clue.dhaka.sadarghat.0",          "hyderabad",    CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.sadarghat.1",          "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.sadarghat.3",          "lahore",       CARMEN_CLUE_POSITIVE},
-                      {"clue.dhaka.sadarghat.2",          NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "dhaka", "sadarghat", "site.dhaka.sadarghat", "type.landmark", c, 4); }
+    add_site(w, "dhaka", "baitul_mukarram", "site.dhaka.baitul_mukarram", "type.mosque");
+    add_site(w, "dhaka", "star_mosque",     "site.dhaka.star_mosque",     "type.mosque");
+    add_site(w, "dhaka", "lalbagh",         "site.dhaka.lalbagh",         "type.landmark");
+    add_site(w, "dhaka", "sadarghat",       "site.dhaka.sadarghat",       "type.landmark");
 
-    /* Fez  (connections: casablanca, marrakech, sarajevo)
-       Al-Qarawiyyin→sarajevo+casablanca  Medina→marrakech+sarajevo
-       Borj Nord→casablanca+marrakech                          */
-    { ClueData c[] = {{"clue.fez.qarawiyyin.0",           "sarajevo",   CARMEN_CLUE_POSITIVE},
-                      {"clue.fez.qarawiyyin.1",           "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.fez.qarawiyyin.2",           NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "fez", "qarawiyyin", "site.fez.qarawiyyin", "type.mosque", c, 3); }
-    { ClueData c[] = {{"clue.fez.fez_medina.0",           "marrakech",  CARMEN_CLUE_POSITIVE},
-                      {"clue.fez.fez_medina.1",           "sarajevo",   CARMEN_CLUE_POSITIVE},
-                      {"clue.fez.fez_medina.2",           NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "fez", "fez_medina", "site.fez.fez_medina", "type.market", c, 3); }
-    { ClueData c[] = {{"clue.fez.borj_nord.0",            "casablanca", CARMEN_CLUE_POSITIVE},
-                      {"clue.fez.borj_nord.1",            "marrakech",  CARMEN_CLUE_POSITIVE},
-                      {"clue.fez.borj_nord.2",            NULL,         CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "fez", "borj_nord", "site.fez.borj_nord", "type.landmark", c, 3); }
+    add_site(w, "fez", "qarawiyyin", "site.fez.qarawiyyin", "type.mosque");
+    add_site(w, "fez", "fez_medina", "site.fez.fez_medina", "type.market");
+    add_site(w, "fez", "borj_nord",  "site.fez.borj_nord",  "type.landmark");
 
-    /* Zanzibar  (connections: cairo, muscat, dakar; 4 sites)
-       Each site covers all 3 connections for maximum coverage.  */
-    { ClueData c[] = {{"clue.zanzibar.stone_town.0",      "muscat",   CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.stone_town.1",      "dakar",    CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.stone_town.3",      "cairo",    CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.stone_town.2",      NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "zanzibar", "stone_town", "site.zanzibar.stone_town", "type.landmark", c, 4); }
-    { ClueData c[] = {{"clue.zanzibar.hamamni.0",         "dakar",    CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.hamamni.1",         "cairo",    CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.hamamni.3",         "muscat",   CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.hamamni.2",         NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "zanzibar", "hamamni", "site.zanzibar.hamamni", "type.landmark", c, 4); }
-    { ClueData c[] = {{"clue.zanzibar.malindi.0",         "cairo",    CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.malindi.1",         "muscat",   CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.malindi.3",         "dakar",    CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.malindi.2",         NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "zanzibar", "malindi", "site.zanzibar.malindi", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.zanzibar.forodhani.0",       "muscat",   CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.forodhani.1",       "cairo",    CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.forodhani.3",       "dakar",    CARMEN_CLUE_POSITIVE},
-                      {"clue.zanzibar.forodhani.2",       NULL,       CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "zanzibar", "forodhani", "site.zanzibar.forodhani", "type.market", c, 4); }
+    add_site(w, "zanzibar", "stone_town", "site.zanzibar.stone_town", "type.landmark");
+    add_site(w, "zanzibar", "hamamni",    "site.zanzibar.hamamni",    "type.landmark");
+    add_site(w, "zanzibar", "malindi",    "site.zanzibar.malindi",    "type.mosque");
+    add_site(w, "zanzibar", "forodhani",  "site.zanzibar.forodhani",  "type.market");
 
-    /* Hyderabad  (connections: dubai, lahore, dhaka, kuala_lumpur; 4 sites)
-       Each site covers 3 of 4 connections.  */
-    { ClueData c[] = {{"clue.hyderabad.charminar.0",      "lahore",       CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.charminar.1",      "dubai",        CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.charminar.3",      "dhaka",        CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.charminar.2",      NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "hyderabad", "charminar", "site.hyderabad.charminar", "type.landmark", c, 4); }
-    { ClueData c[] = {{"clue.hyderabad.mecca_masjid.0",   "dubai",        CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.mecca_masjid.1",   "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.mecca_masjid.3",   "lahore",       CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.mecca_masjid.2",   NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "hyderabad", "mecca_masjid", "site.hyderabad.mecca_masjid", "type.mosque", c, 4); }
-    { ClueData c[] = {{"clue.hyderabad.salar_jung.0",     "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.salar_jung.1",     "dhaka",        CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.salar_jung.3",     "dubai",        CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.salar_jung.2",     NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "hyderabad", "salar_jung", "site.hyderabad.salar_jung", "type.museum", c, 4); }
-    { ClueData c[] = {{"clue.hyderabad.laad_bazaar.0",    "dhaka",        CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.laad_bazaar.1",    "lahore",       CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.laad_bazaar.3",    "kuala_lumpur", CARMEN_CLUE_POSITIVE},
-                      {"clue.hyderabad.laad_bazaar.2",    NULL,           CARMEN_CLUE_NEGATIVE}};
-      add_site(w, "hyderabad", "laad_bazaar", "site.hyderabad.laad_bazaar", "type.market", c, 4); }
+    add_site(w, "hyderabad", "charminar",    "site.hyderabad.charminar",    "type.landmark");
+    add_site(w, "hyderabad", "mecca_masjid", "site.hyderabad.mecca_masjid", "type.mosque");
+    add_site(w, "hyderabad", "salar_jung",   "site.hyderabad.salar_jung",   "type.museum");
+    add_site(w, "hyderabad", "laad_bazaar",  "site.hyderabad.laad_bazaar",  "type.market");
+
+    /* --------------------------------------------------- inbound clue pools */
+    /* Targetless descriptor keys; each pool "points to" its own city. */
+
+    { const char *k[] = {"clue.istanbul.inbound.0", "clue.istanbul.inbound.1", "clue.istanbul.inbound.2", "clue.istanbul.inbound.3"};
+      add_inbound_clues(w, "istanbul", k, 4); }
+    { const char *k[] = {"clue.sarajevo.inbound.0", "clue.sarajevo.inbound.1", "clue.sarajevo.inbound.2", "clue.sarajevo.inbound.3"};
+      add_inbound_clues(w, "sarajevo", k, 4); }
+    { const char *k[] = {"clue.cairo.inbound.0", "clue.cairo.inbound.1", "clue.cairo.inbound.2", "clue.cairo.inbound.3"};
+      add_inbound_clues(w, "cairo", k, 4); }
+    { const char *k[] = {"clue.casablanca.inbound.0", "clue.casablanca.inbound.1", "clue.casablanca.inbound.2", "clue.casablanca.inbound.3"};
+      add_inbound_clues(w, "casablanca", k, 4); }
+    { const char *k[] = {"clue.marrakech.inbound.0", "clue.marrakech.inbound.1", "clue.marrakech.inbound.2", "clue.marrakech.inbound.3"};
+      add_inbound_clues(w, "marrakech", k, 4); }
+    { const char *k[] = {"clue.fez.inbound.0", "clue.fez.inbound.1", "clue.fez.inbound.2", "clue.fez.inbound.3"};
+      add_inbound_clues(w, "fez", k, 4); }
+    { const char *k[] = {"clue.dakar.inbound.0", "clue.dakar.inbound.1", "clue.dakar.inbound.2", "clue.dakar.inbound.3"};
+      add_inbound_clues(w, "dakar", k, 4); }
+    { const char *k[] = {"clue.dubai.inbound.0", "clue.dubai.inbound.1", "clue.dubai.inbound.2", "clue.dubai.inbound.3"};
+      add_inbound_clues(w, "dubai", k, 4); }
+    { const char *k[] = {"clue.doha.inbound.0", "clue.doha.inbound.1", "clue.doha.inbound.2", "clue.doha.inbound.3"};
+      add_inbound_clues(w, "doha", k, 4); }
+    { const char *k[] = {"clue.abu_dhabi.inbound.0", "clue.abu_dhabi.inbound.1", "clue.abu_dhabi.inbound.2", "clue.abu_dhabi.inbound.3"};
+      add_inbound_clues(w, "abu_dhabi", k, 4); }
+    { const char *k[] = {"clue.zanzibar.inbound.0", "clue.zanzibar.inbound.1", "clue.zanzibar.inbound.2", "clue.zanzibar.inbound.3"};
+      add_inbound_clues(w, "zanzibar", k, 4); }
+    { const char *k[] = {"clue.hyderabad.inbound.0", "clue.hyderabad.inbound.1", "clue.hyderabad.inbound.2", "clue.hyderabad.inbound.3"};
+      add_inbound_clues(w, "hyderabad", k, 4); }
+    { const char *k[] = {"clue.muscat.inbound.0", "clue.muscat.inbound.1", "clue.muscat.inbound.2", "clue.muscat.inbound.3"};
+      add_inbound_clues(w, "muscat", k, 4); }
+    { const char *k[] = {"clue.amman.inbound.0", "clue.amman.inbound.1", "clue.amman.inbound.2", "clue.amman.inbound.3"};
+      add_inbound_clues(w, "amman", k, 4); }
+    { const char *k[] = {"clue.beirut.inbound.0", "clue.beirut.inbound.1", "clue.beirut.inbound.2", "clue.beirut.inbound.3"};
+      add_inbound_clues(w, "beirut", k, 4); }
+    { const char *k[] = {"clue.isfahan.inbound.0", "clue.isfahan.inbound.1", "clue.isfahan.inbound.2", "clue.isfahan.inbound.3"};
+      add_inbound_clues(w, "isfahan", k, 4); }
+    { const char *k[] = {"clue.konya.inbound.0", "clue.konya.inbound.1", "clue.konya.inbound.2", "clue.konya.inbound.3"};
+      add_inbound_clues(w, "konya", k, 4); }
+    { const char *k[] = {"clue.tashkent.inbound.0", "clue.tashkent.inbound.1", "clue.tashkent.inbound.2", "clue.tashkent.inbound.3"};
+      add_inbound_clues(w, "tashkent", k, 4); }
+    { const char *k[] = {"clue.lahore.inbound.0", "clue.lahore.inbound.1", "clue.lahore.inbound.2", "clue.lahore.inbound.3"};
+      add_inbound_clues(w, "lahore", k, 4); }
+    { const char *k[] = {"clue.dhaka.inbound.0", "clue.dhaka.inbound.1", "clue.dhaka.inbound.2", "clue.dhaka.inbound.3"};
+      add_inbound_clues(w, "dhaka", k, 4); }
+    { const char *k[] = {"clue.kuala_lumpur.inbound.0", "clue.kuala_lumpur.inbound.1", "clue.kuala_lumpur.inbound.2", "clue.kuala_lumpur.inbound.3"};
+      add_inbound_clues(w, "kuala_lumpur", k, 4); }
+    { const char *k[] = {"clue.jakarta.inbound.0", "clue.jakarta.inbound.1", "clue.jakarta.inbound.2", "clue.jakarta.inbound.3"};
+      add_inbound_clues(w, "jakarta", k, 4); }
+    { const char *k[] = {"clue.bandung.inbound.0", "clue.bandung.inbound.1", "clue.bandung.inbound.2", "clue.bandung.inbound.3"};
+      add_inbound_clues(w, "bandung", k, 4); }
 
     /* ---------------------------------------------------------- connections */
     /* Europe */

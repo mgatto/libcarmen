@@ -125,45 +125,28 @@ static void test_shortest_path_istanbul_to_isfahan(void)
     TEST_ASSERT_EQUAL_STRING("isfahan", path[hops]);
 }
 
-/* -------- random clues */
+/* -------- inbound clue pools */
 
-static void test_istanbul_sites_have_clues(void)
+static void test_istanbul_has_inbound_pool(void)
 {
     CarmenCity *ist = carmen_world_find(&world, "istanbul");
     TEST_ASSERT_NOT_NULL(ist);
-    TEST_ASSERT_TRUE(ist->site_count > 0);
-
-    int total_clues = 0;
-    for (int i = 0; i < ist->site_count; i++)
-        total_clues += ist->sites[i].clue_count;
-    TEST_ASSERT_TRUE(total_clues > 0);
+    TEST_ASSERT_TRUE(ist->inbound_clue_count > 0);
 }
 
-static void test_istanbul_random_clues_have_keys(void)
+static void test_istanbul_inbound_clues_have_keys(void)
 {
     CarmenCity *ist = carmen_world_find(&world, "istanbul");
     TEST_ASSERT_NOT_NULL(ist);
-    for (int i = 0; i < ist->site_count; i++) {
-        const CarmenClue *clue = carmen_site_random_clue(&ist->sites[i]);
-        TEST_ASSERT_NOT_NULL(clue);
-        TEST_ASSERT_TRUE(strlen(clue->text) > 0);
-    }
+    for (int i = 0; i < ist->inbound_clue_count; i++)
+        TEST_ASSERT_TRUE(strlen(ist->inbound_clues[i]) > 0);
 }
 
-static void test_istanbul_suleymaniye_clues_have_targets(void)
+static void test_istanbul_first_site_is_suleymaniye(void)
 {
     CarmenCity *ist = carmen_world_find(&world, "istanbul");
     TEST_ASSERT_NOT_NULL(ist);
     TEST_ASSERT_EQUAL_STRING("site.istanbul.suleymaniye", ist->sites[0].name);
-
-    int pos_count = 0;
-    for (int i = 0; i < ist->sites[0].clue_count; i++) {
-        if (ist->sites[0].clues[i].type == CARMEN_CLUE_POSITIVE) {
-            TEST_ASSERT_TRUE(strlen(ist->sites[0].clues[i].target_city_id) > 0);
-            pos_count++;
-        }
-    }
-    TEST_ASSERT_TRUE(pos_count >= 2);
 }
 
 /* ---------------------- bidirectional routes */
@@ -180,31 +163,32 @@ static void test_routes_are_bidirectional(void)
 
 /* ---------------------- convenience clue API */
 
-static void test_world_random_clue_from_cairo(void)
+static void test_city_random_inbound_clue_from_cairo(void)
 {
-    const CarmenClue *clue = carmen_world_random_clue(&world, "cairo");
+    CarmenCity *cairo = carmen_world_find(&world, "cairo");
+    TEST_ASSERT_NOT_NULL(cairo);
+    const char *clue = carmen_city_random_inbound_clue(cairo);
     TEST_ASSERT_NOT_NULL(clue);
-    TEST_ASSERT_TRUE(strlen(clue->text) > 0);
+    TEST_ASSERT_TRUE(strlen(clue) > 0);
 }
 
-static void test_city_random_clue_from_istanbul(void)
+static void test_city_random_inbound_clue_from_istanbul(void)
 {
     CarmenCity *ist = carmen_world_find(&world, "istanbul");
     TEST_ASSERT_NOT_NULL(ist);
-    const CarmenClue *clue = carmen_city_random_clue(ist);
+    const char *clue = carmen_city_random_inbound_clue(ist);
     TEST_ASSERT_NOT_NULL(clue);
-    TEST_ASSERT_TRUE(strlen(clue->text) > 0);
+    TEST_ASSERT_TRUE(strlen(clue) > 0);
 }
 
-/* ---------------------- each city has 3+ sites with 3 clues each */
+/* ------------- each city has 3+ sites and a non-empty inbound pool */
 
-static void test_every_city_has_sites_and_clues(void)
+static void test_every_city_has_sites_and_inbound_clues(void)
 {
     for (int i = 0; i < world.city_count; i++) {
         CarmenCity *c = &world.storage[i];
         TEST_ASSERT_TRUE_MESSAGE(c->site_count >= 3, c->id);
-        for (int s = 0; s < c->site_count; s++)
-            TEST_ASSERT_TRUE_MESSAGE(c->sites[s].clue_count >= 3, c->id);
+        TEST_ASSERT_TRUE_MESSAGE(c->inbound_clue_count >= 2, c->id);
     }
 }
 
@@ -236,13 +220,13 @@ int main(void)
     RUN_TEST(test_dubai_has_direct_flights);
     RUN_TEST(test_istanbul_reachable_within_2_hops);
     RUN_TEST(test_shortest_path_istanbul_to_isfahan);
-    RUN_TEST(test_istanbul_sites_have_clues);
-    RUN_TEST(test_istanbul_random_clues_have_keys);
-    RUN_TEST(test_istanbul_suleymaniye_clues_have_targets);
+    RUN_TEST(test_istanbul_has_inbound_pool);
+    RUN_TEST(test_istanbul_inbound_clues_have_keys);
+    RUN_TEST(test_istanbul_first_site_is_suleymaniye);
     RUN_TEST(test_routes_are_bidirectional);
-    RUN_TEST(test_world_random_clue_from_cairo);
-    RUN_TEST(test_city_random_clue_from_istanbul);
-    RUN_TEST(test_every_city_has_sites_and_clues);
+    RUN_TEST(test_city_random_inbound_clue_from_cairo);
+    RUN_TEST(test_city_random_inbound_clue_from_istanbul);
+    RUN_TEST(test_every_city_has_sites_and_inbound_clues);
     RUN_TEST(test_destroy_and_reinit);
     return UNITY_END();
 }

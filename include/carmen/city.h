@@ -20,6 +20,11 @@ typedef struct {
     int              site_count;
     CarmenConnection connections[CARMEN_MAX_CONNECTIONS];
     int              connection_count;
+    /* Inbound clue pool: targetless descriptor strings that point to this
+       city.  Reused by any source city routing here; a random subset is
+       assigned at case generation with target_city_id set at runtime. */
+    char             inbound_clues[CARMEN_MAX_INBOUND_CLUES][CARMEN_MAX_CLUE_LEN];
+    int              inbound_clue_count;
 } CarmenCity;
 
 CARMEN_API void              carmen_city_init(CarmenCity *c, const char *id,
@@ -40,7 +45,13 @@ CARMEN_API int               carmen_city_has_connection_to(
 CARMEN_API int               carmen_city_sites_of_type(
                                   const CarmenCity *c, const char *type,
                                   const CarmenSite **out, int max_out);
-CARMEN_API const CarmenClue *carmen_city_random_clue(const CarmenCity *c);
+
+/* Append a targetless descriptor clue to this city's inbound pool. */
+CARMEN_API void              carmen_city_add_inbound_clue(CarmenCity *c,
+                                                          const char *clue_text);
+/* Return a random inbound descriptor string, or NULL if the pool is empty. */
+CARMEN_API const char       *carmen_city_random_inbound_clue(
+                                  const CarmenCity *c);
 
 /* Write "Name, Country (Continent)" into buf. */
 CARMEN_API int  carmen_city_to_string(const CarmenCity *c,

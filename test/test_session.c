@@ -65,60 +65,51 @@ static void build_test_world(void)
     carmen_connection_init(&conn, "b", 600, "boat");
     carmen_city_add_connection(c, &conn);
 
-    /* --- City A: 3 sites, each with positive→b + negative --- */
+    /* Clues no longer live on sites; each city is given 3 clue-free
+       investigation sites, and clues are drawn from the destination
+       city's inbound pool at generation time. */
+
+    /* --- City A: 3 sites --- */
     CarmenSite sa0;
     carmen_site_init(&sa0, "museum_a", "Museum A", "museum");
-    carmen_site_add_clue(&sa0, "Went to B", "b", CARMEN_CLUE_POSITIVE);
-    carmen_site_add_clue(&sa0, "Nobody here", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(a, &sa0);
-
     CarmenSite sa1;
     carmen_site_init(&sa1, "market_a", "Market A", "market");
-    carmen_site_add_clue(&sa1, "Headed to B", "b", CARMEN_CLUE_POSITIVE);
-    carmen_site_add_clue(&sa1, "Dead end", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(a, &sa1);
-
     CarmenSite sa2;
     carmen_site_init(&sa2, "mosque_a", "Mosque A", "mosque");
-    carmen_site_add_clue(&sa2, "Departed for B", "b", CARMEN_CLUE_POSITIVE);
-    carmen_site_add_clue(&sa2, "No trace", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(a, &sa2);
 
-    /* --- City B: 3 sites, positive→c + herring→a + negative --- */
+    /* --- City B: 3 sites --- */
     CarmenSite sb0;
     carmen_site_init(&sb0, "museum_b", "Museum B", "museum");
-    carmen_site_add_clue(&sb0, "Went to C", "c", CARMEN_CLUE_POSITIVE);
-    carmen_site_add_clue(&sb0, "Went to A", "a", CARMEN_CLUE_POSITIVE);
-    carmen_site_add_clue(&sb0, "Nobody here", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(b, &sb0);
-
     CarmenSite sb1;
     carmen_site_init(&sb1, "market_b", "Market B", "market");
-    carmen_site_add_clue(&sb1, "Headed to C", "c", CARMEN_CLUE_POSITIVE);
-    carmen_site_add_clue(&sb1, "Dead end", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(b, &sb1);
-
     CarmenSite sb2;
     carmen_site_init(&sb2, "mosque_b", "Mosque B", "mosque");
-    carmen_site_add_clue(&sb2, "Departed for C", "c", CARMEN_CLUE_POSITIVE);
-    carmen_site_add_clue(&sb2, "No trace", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(b, &sb2);
 
-    /* --- City C (hideout): 3 sites, negatives only --- */
+    /* --- City C (hideout): 3 sites --- */
     CarmenSite sc0;
     carmen_site_init(&sc0, "museum_c", "Museum C", "museum");
-    carmen_site_add_clue(&sc0, "No trace", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(c, &sc0);
-
     CarmenSite sc1;
     carmen_site_init(&sc1, "market_c", "Market C", "market");
-    carmen_site_add_clue(&sc1, "Nothing here", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(c, &sc1);
-
     CarmenSite sc2;
     carmen_site_init(&sc2, "mosque_c", "Mosque C", "mosque");
-    carmen_site_add_clue(&sc2, "Nobody seen", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(c, &sc2);
+
+    /* Inbound clue pools: positives at A point to B, positives at B point
+       to C.  B's only wrong neighbor (A) supplies decoy clues. */
+    carmen_city_add_inbound_clue(a, "clue.a.inbound.0");
+    carmen_city_add_inbound_clue(a, "clue.a.inbound.1");
+    carmen_city_add_inbound_clue(b, "clue.b.inbound.0");
+    carmen_city_add_inbound_clue(b, "clue.b.inbound.1");
+    carmen_city_add_inbound_clue(c, "clue.c.inbound.0");
+    carmen_city_add_inbound_clue(c, "clue.c.inbound.1");
 }
 
 void setUp(void)
@@ -453,7 +444,6 @@ static void test_investigate_off_trail_returns_negative(void)
     TEST_ASSERT_NOT_NULL(d);
     CarmenSite sd;
     carmen_site_init(&sd, "park_d", "Park D", "park");
-    carmen_site_add_clue(&sd, "Nobody", "", CARMEN_CLUE_NEGATIVE);
     carmen_city_add_site(d, &sd);
 
     carmen_utf8_copy(s.current_city_id, CARMEN_MAX_NAME_LEN, "d");

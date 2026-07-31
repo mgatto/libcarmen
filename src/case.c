@@ -90,15 +90,6 @@ static int build_trail_from(CarmenWorld *w,
     return target_len;
 }
 
-static int site_has_positive_to(const CarmenSite *s, const char *target)
-{
-    for (int k = 0; k < s->clue_count; k++)
-        if (s->clues[k].type == CARMEN_CLUE_POSITIVE &&
-            strcmp(s->clues[k].target_city_id, target) == 0)
-            return 1;
-    return 0;
-}
-
 static void shuffle(int *arr, int n)
 {
     for (int j = n - 1; j > 0; j--) {
@@ -108,10 +99,41 @@ static void shuffle(int *arr, int n)
 }
 
 /*
- * For each trail stop, select up to CARMEN_TRAIL_SITES sites and assign
- * one deterministic clue per site.  Non-hideout stops get 2 positive
- * clues pointing to the next trail city and 1 herring or negative.
- * Sites with matching clues are preferred for the positive slots.
+ * Build a positive clue whose text is drawn from the destination city's
+ * inbound pool (targetless in seed data) and whose target_city_id is
+ * assigned here, at runtime.  pool_pick indexes into the destination's
+ * pool (callers vary it to spread distinct descriptors across sites).
+ */
+static void positive_clue_from(CarmenClue *out, const CarmenCity *dest,
+                               const char *target_id, int pool_pick)
+{
+    memset(out, 0, sizeof(*out));
+    const char *text = NULL;
+    if (dest && dest->inbound_clue_count > 0)
+        text = dest->inbound_clues[pool_pick % dest->inbound_clue_count];
+    carmen_utf8_copy(out->text, CARMEN_MAX_CLUE_LEN,
+                     text ? text : "clue.generic.positive");
+    carmen_utf8_copy(out->target_city_id, CARMEN_MAX_NAME_LEN, target_id);
+    out->type = CARMEN_CLUE_POSITIVE;
+}
+
+static void negative_clue(CarmenClue *out)
+{
+    memset(out, 0, sizeof(*out));
+    carmen_utf8_copy(out->text, CARMEN_MAX_CLUE_LEN, "clue.generic.negative");
+    out->type = CARMEN_CLUE_NEGATIVE;
+}
+
+/*
+ * For each trail stop, select up to active_sites sites and assign one
+ * deterministic clue per site, sourced from destination cities' inbound
+ * clue pools (no seed-baked source-to-target clue pairs):
+ *   - positive_clues sites get a positive clue pointing to the next trail
+ *     city, drawn from that city's inbound pool.
+ *   - the remaining sites become decoy destinations, each pointing to a
+ *     distinct wrong (but directly connected) neighbor, drawn from that
+ *     neighbor's inbound pool.  When there are not enough distinct wrong
+ *     neighbors, the leftover sites get a generic negative.
  * The hideout stop stores site indices only (evidence, not clues).
  */
 static void assign_trail_clues(CarmenCase *c, CarmenWorld *w,
@@ -124,104 +146,58 @@ static void assign_trail_clues(CarmenCase *c, CarmenWorld *w,
         CarmenTrailStop *stop = &c->stops[i];
         int available = city->site_count;
 
-        if (i < c->trail_len - 1) {
-            const char *next_id = c->trail[i + 1];
+        /* Active sites are a shuffled subset of the city's sites. */
+        int sites[CARMEN_MAX_SITES];
+        for (int j = 0; j < available; j++) sites[j] = j;
+        shuffle(sites, available);
+        int ns = available < active_sites ? available : active_sites;
 
-            int match[CARMEN_MAX_SITES], nm = 0;
-            int other[CARMEN_MAX_SITES], no = 0;
-            for (int j = 0; j < available; j++) {
-                if (site_has_positive_to(&city->sites[j], next_id))
-                    match[nm++] = j;
-                else
-                    other[no++] = j;
-            }
-            shuffle(match, nm);
-            shuffle(other, no);
-
-            int sel[CARMEN_TRAIL_SITES], ns = 0;
-            int mi = 0, oi = 0;
-
-            /* Positive slots: prefer sites that point to the next city. */
-            while (ns < positive_clues && mi < nm) sel[ns++] = match[mi++];
-            while (ns < positive_clues && oi < no) sel[ns++] = other[oi++];
-
-            /* Remaining slots: prefer herrings/negatives, then leftovers. */
-            while (ns < active_sites && oi < no) sel[ns++] = other[oi++];
-            while (ns < active_sites && mi < nm) sel[ns++] = match[mi++];
-
+        if (i == c->trail_len - 1) {
+            /* Hideout: site indices only; evidence is gathered in-session. */
             stop->site_count = ns;
-
             for (int j = 0; j < ns; j++) {
-                stop->sites[j].site_idx = sel[j];
-                const CarmenSite *site = &city->sites[sel[j]];
-
-                if (j < positive_clues) {
-                    const CarmenClue *found = NULL;
-                    for (int k = 0; k < site->clue_count; k++) {
-                        if (site->clues[k].type == CARMEN_CLUE_POSITIVE &&
-                            strcmp(site->clues[k].target_city_id,
-                                   next_id) == 0) {
-                            found = &site->clues[k];
-                            break;
-                        }
-                    }
-                    if (found) {
-                        stop->sites[j].clue = *found;
-                    } else {
-                        CarmenClue synth;
-                        memset(&synth, 0, sizeof(synth));
-                        carmen_utf8_copy(synth.text, CARMEN_MAX_CLUE_LEN,
-                                         "clue.generic.positive");
-                        carmen_utf8_copy(synth.target_city_id,
-                                         CARMEN_MAX_NAME_LEN, next_id);
-                        synth.type = CARMEN_CLUE_POSITIVE;
-                        stop->sites[j].clue = synth;
-                    }
-                } else {
-                    const CarmenClue *neg = NULL;
-                    const CarmenClue *herring = NULL;
-                    for (int k = 0; k < site->clue_count; k++) {
-                        if (site->clues[k].type == CARMEN_CLUE_NEGATIVE
-                            && !neg)
-                            neg = &site->clues[k];
-                        else if (site->clues[k].type == CARMEN_CLUE_POSITIVE
-                                 && strcmp(site->clues[k].target_city_id,
-                                           next_id) != 0
-                                 && !herring)
-                            herring = &site->clues[k];
-                    }
-                    if (neg && herring)
-                        stop->sites[j].clue = (carmen_random() % 2)
-                                            ? *herring : *neg;
-                    else if (neg)
-                        stop->sites[j].clue = *neg;
-                    else if (herring)
-                        stop->sites[j].clue = *herring;
-                    else {
-                        CarmenClue synth;
-                        memset(&synth, 0, sizeof(synth));
-                        carmen_utf8_copy(synth.text, CARMEN_MAX_CLUE_LEN,
-                                         "clue.generic.negative");
-                        synth.type = CARMEN_CLUE_NEGATIVE;
-                        stop->sites[j].clue = synth;
-                    }
-                }
-            }
-        } else {
-            int indices[CARMEN_MAX_SITES];
-            for (int j = 0; j < available; j++) indices[j] = j;
-            int pick = available < active_sites
-                     ? available : active_sites;
-            for (int j = 0; j < pick; j++) {
-                int k = j + carmen_random() % (available - j);
-                int tmp = indices[j];
-                indices[j] = indices[k];
-                indices[k] = tmp;
-            }
-            stop->site_count = pick;
-            for (int j = 0; j < pick; j++) {
-                stop->sites[j].site_idx = indices[j];
+                stop->sites[j].site_idx = sites[j];
                 memset(&stop->sites[j].clue, 0, sizeof(CarmenClue));
+            }
+            continue;
+        }
+
+        const char *next_id = c->trail[i + 1];
+        CarmenCity *next_city = carmen_world_find(w, next_id);
+
+        /* Shuffled order over the next city's pool so multiple positive
+           sites tend to surface different descriptors of the same city. */
+        int pool_order[CARMEN_MAX_INBOUND_CLUES];
+        int pool_n = next_city ? next_city->inbound_clue_count : 0;
+        for (int j = 0; j < pool_n; j++) pool_order[j] = j;
+        shuffle(pool_order, pool_n);
+
+        /* Wrong-but-connected neighbors are the decoy destinations. */
+        int wrong[CARMEN_MAX_CONNECTIONS], nw = 0;
+        for (int k = 0; k < city->connection_count; k++)
+            if (strcmp(city->connections[k].destination_id, next_id) != 0)
+                wrong[nw++] = k;
+        shuffle(wrong, nw);
+
+        stop->site_count = ns;
+        for (int j = 0; j < ns; j++) {
+            stop->sites[j].site_idx = sites[j];
+
+            if (j < positive_clues) {
+                int pick = pool_n > 0 ? pool_order[j % pool_n] : 0;
+                positive_clue_from(&stop->sites[j].clue, next_city,
+                                   next_id, pick);
+            } else {
+                int d = j - positive_clues;
+                if (d < nw) {
+                    const char *wrong_id =
+                        city->connections[wrong[d]].destination_id;
+                    CarmenCity *wc = carmen_world_find(w, wrong_id);
+                    positive_clue_from(&stop->sites[j].clue, wc, wrong_id,
+                                       carmen_random());
+                } else {
+                    negative_clue(&stop->sites[j].clue);
+                }
             }
         }
     }

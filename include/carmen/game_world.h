@@ -67,11 +67,6 @@ CARMEN_API int   carmen_world_shortest_path(CarmenWorld *w,
                                             const char **out_path,
                                             int max_path);
 
-/* Find city by ID, pick a random site, return a clue.
-   Returns NULL if the city doesn't exist or has no clues. */
-CARMEN_API const CarmenClue *carmen_world_random_clue(CarmenWorld *w,
-                                                      const char *city_id);
-
 CARMEN_API int   carmen_world_continent_count(const CarmenWorld *w);
 
 /* Write one "  continent\n" line per continent into buf.  Returns the

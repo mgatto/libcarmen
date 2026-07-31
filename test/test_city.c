@@ -57,13 +57,11 @@ static void test_city_add_site_copies_data(void)
     CarmenCity c = make_test_city();
     CarmenSite s;
     carmen_site_init(&s, "tower", "Tower", "landmark");
-    carmen_site_add_clue(&s, "A test clue", "london", CARMEN_CLUE_POSITIVE);
     carmen_city_add_site(&c, &s);
 
     TEST_ASSERT_EQUAL_STRING("Tower", c.sites[0].name);
-    TEST_ASSERT_EQUAL_INT(1, c.sites[0].clue_count);
-    TEST_ASSERT_EQUAL_STRING("A test clue", c.sites[0].clues[0].text);
-    TEST_ASSERT_EQUAL_STRING("london", c.sites[0].clues[0].target_city_id);
+    TEST_ASSERT_EQUAL_STRING("tower", c.sites[0].id);
+    TEST_ASSERT_EQUAL_STRING("landmark", c.sites[0].site_type);
 }
 
 static void test_city_add_site_respects_max(void)
@@ -174,43 +172,47 @@ static void test_city_sites_of_type_respects_max_out(void)
     TEST_ASSERT_EQUAL_INT(2, n);
 }
 
-/* --------------------------------------------------- carmen_city_random_clue */
+/* ---------------------------------------- carmen_city inbound clue pool */
 
-static void test_city_random_clue_returns_null_when_no_sites(void)
+static void test_city_random_inbound_clue_null_when_empty(void)
 {
     CarmenCity c = make_test_city();
-    TEST_ASSERT_NULL(carmen_city_random_clue(&c));
+    TEST_ASSERT_NULL(carmen_city_random_inbound_clue(&c));
 }
 
-static void test_city_random_clue_returns_null_when_sites_have_no_clues(void)
+static void test_city_add_inbound_clue_increments_count(void)
 {
     CarmenCity c = make_test_city();
-    CarmenSite s;
-    carmen_site_init(&s, "empty_site", "Empty Site", "landmark");
-    carmen_city_add_site(&c, &s);
-    TEST_ASSERT_NULL(carmen_city_random_clue(&c));
+    carmen_city_add_inbound_clue(&c, "clue.paris.inbound.0");
+    carmen_city_add_inbound_clue(&c, "clue.paris.inbound.1");
+    TEST_ASSERT_EQUAL_INT(2, c.inbound_clue_count);
+    TEST_ASSERT_EQUAL_STRING("clue.paris.inbound.0", c.inbound_clues[0]);
+    TEST_ASSERT_EQUAL_STRING("clue.paris.inbound.1", c.inbound_clues[1]);
 }
 
-static void test_city_random_clue_returns_valid_clue_with_target(void)
+static void test_city_add_inbound_clue_respects_max(void)
+{
+    CarmenCity c = make_test_city();
+    for (int i = 0; i < CARMEN_MAX_INBOUND_CLUES + 3; i++)
+        carmen_city_add_inbound_clue(&c, "clue.paris.inbound.x");
+    TEST_ASSERT_EQUAL_INT(CARMEN_MAX_INBOUND_CLUES, c.inbound_clue_count);
+}
+
+static void test_city_random_inbound_clue_is_among_added(void)
 {
     srand(42);
     CarmenCity c = make_test_city();
-    CarmenSite s1, s2;
-    carmen_site_init(&s1, "museum", "Museum", "museum");
-    carmen_site_add_clue(&s1, "Clue A", "cairo", CARMEN_CLUE_POSITIVE);
-    carmen_site_add_clue(&s1, "Clue B", "london", CARMEN_CLUE_POSITIVE);
-    carmen_site_init(&s2, "airport", "Airport", "airport");
-    carmen_site_add_clue(&s2, "Clue C", "rome", CARMEN_CLUE_POSITIVE);
-    carmen_city_add_site(&c, &s1);
-    carmen_city_add_site(&c, &s2);
+    carmen_city_add_inbound_clue(&c, "alpha");
+    carmen_city_add_inbound_clue(&c, "beta");
+    carmen_city_add_inbound_clue(&c, "gamma");
 
     for (int trial = 0; trial < 20; trial++) {
-        const CarmenClue *clue = carmen_city_random_clue(&c);
+        const char *clue = carmen_city_random_inbound_clue(&c);
         TEST_ASSERT_NOT_NULL(clue);
-        int found = (strcmp(clue->text, "Clue A") == 0 && strcmp(clue->target_city_id, "cairo")  == 0) ||
-                    (strcmp(clue->text, "Clue B") == 0 && strcmp(clue->target_city_id, "london") == 0) ||
-                    (strcmp(clue->text, "Clue C") == 0 && strcmp(clue->target_city_id, "rome")   == 0);
-        TEST_ASSERT_TRUE_MESSAGE(found, "Clue text/target mismatch");
+        int found = strcmp(clue, "alpha") == 0 ||
+                    strcmp(clue, "beta")  == 0 ||
+                    strcmp(clue, "gamma") == 0;
+        TEST_ASSERT_TRUE_MESSAGE(found, "Clue not among added inbound clues");
     }
 }
 
@@ -232,8 +234,9 @@ int main(void)
     RUN_TEST(test_city_sites_of_type_filters_correctly);
     RUN_TEST(test_city_sites_of_type_returns_zero_when_none);
     RUN_TEST(test_city_sites_of_type_respects_max_out);
-    RUN_TEST(test_city_random_clue_returns_null_when_no_sites);
-    RUN_TEST(test_city_random_clue_returns_null_when_sites_have_no_clues);
-    RUN_TEST(test_city_random_clue_returns_valid_clue_with_target);
+    RUN_TEST(test_city_random_inbound_clue_null_when_empty);
+    RUN_TEST(test_city_add_inbound_clue_increments_count);
+    RUN_TEST(test_city_add_inbound_clue_respects_max);
+    RUN_TEST(test_city_random_inbound_clue_is_among_added);
     return UNITY_END();
 }
