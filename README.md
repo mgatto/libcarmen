@@ -3,8 +3,29 @@
 A "Hash Map of Composites" data structure for modeling the locations and
 sites in "Where in the World is Carmen Sandiego?", implemented in C17.
 
-Parallel implementation of [libcarmen](https://github.com/) (Ruby) and
-[libcarmen-py](https://github.com/) (Python).
+(What is a tasteful mix of the modern with the historical for important Muslim cities globally?)
+
+## Project Goal
+
+`libcarmen-c` is a **hobby project**: a small, portable, dependency-light **core engine**
+designed to be cleanly wrapped by other languages and frameworks. The C17 core owns all
+game logic and state; front-ends and language bindings simply drive it through a stable,
+UI-agnostic API.
+
+The public interface is intentionally shaped for wrapping:
+
+- **Plain-data structs and a C ABI** -- easy to bind from Ruby (FFI), Python (ctypes/cffi),
+  Rust, Go (cgo), Node (N-API), or compile to WebAssembly via Emscripten.
+- **Clear separation of queries and actions** -- read-only query functions for rendering
+  the UI, and discrete action functions (`travel`, `investigate`, `issue_warrant`,
+  `arrest`) for input.
+- **Built-in i18n** -- user-facing strings are looked up via locale files, so wrappers and
+  UIs stay language-neutral.
+- **No embedded UI or I/O in the core** -- the terminal demo is just one front-end; the
+  same library is meant to back native, web, and TUI clients equally.
+
+Ruby and Python wrappers (and other language bindings and front-ends) are intended to
+build on top of this core rather than reimplement it.
 
 ## Data Model
 
