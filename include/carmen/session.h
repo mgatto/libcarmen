@@ -10,6 +10,7 @@ typedef enum {
   CARMEN_STATUS_PLAYING,
   CARMEN_STATUS_WON,
   CARMEN_STATUS_LOST_TIME,
+  CARMEN_STATUS_LOST_MOVES,
   CARMEN_STATUS_LOST_WRONG_ARREST,
   CARMEN_STATUS_LOST_NO_WARRANT,
   CARMEN_STATUS_NOT_AT_HIDEOUT
@@ -18,6 +19,7 @@ typedef enum {
 typedef struct {
   CarmenWorld *world;
   CarmenCase active_case;
+  CarmenCaseSettings settings;
   CarmenSessionStatus status;
   char current_city_id[CARMEN_MAX_NAME_LEN];
   int time_remaining_hrs;
@@ -59,7 +61,8 @@ CARMEN_API int carmen_session_active_sites(const CarmenSession *s,
  *
  * Deducts time based on the connection's transport mode and distance.
  * Returns 0 on success, -1 if no connection, -2 if out of time,
- * -3 if the session is not in PLAYING state.
+ * -3 if the session is not in PLAYING state, -4 if the move limit was
+ * reached (settings.move_limit > 0 and moves exhausted).
  */
 CARMEN_API int carmen_session_travel(CarmenSession *s, const char *dest_id);
 
@@ -87,7 +90,14 @@ CARMEN_API const CarmenClue *carmen_session_investigate(CarmenSession *s,
 /*
  * Issue (or change) an arrest warrant for a villain.
  * villain_idx is the index into FITNA_VILLAINS[].
- * Returns 0 on success, -1 on invalid index or not PLAYING.
+ *
+ * A warrant always requires a full set of villain identity clues to have
+ * been collected first (evidence_count == FITNA_MAX_ID_CLUES), matching the
+ * classic collect-clues-then-warrant flow. Evidence is gathered only by
+ * investigating sites at the villain's hideout.
+ *
+ * Returns 0 on success, -1 on invalid index or not PLAYING, -2 if
+ * insufficient evidence has been collected.
  */
 CARMEN_API int carmen_session_issue_warrant(CarmenSession *s, int villain_idx);
 

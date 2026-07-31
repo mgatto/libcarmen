@@ -82,6 +82,7 @@ static int read_line(char *buf, int size) {
 
 int main(int argc, char *argv[]) {
   const char *locale = (argc > 1) ? argv[1] : "en";
+  const char *settings_path = (argc > 2) ? argv[2] : NULL;
   if (!valid_locale_id(locale)) {
     fprintf(stderr, "Invalid locale id: %s\n", locale);
     return 1;
@@ -106,7 +107,12 @@ int main(int argc, char *argv[]) {
   carmen_seed_build_islamic_world(world);
 
   CarmenSession session;
-  CarmenCaseSettings settings = {CARMEN_DIFFICULTY_MEDIUM, 0};
+  CarmenCaseSettings settings = carmen_case_settings_default();
+  if (settings_path && !carmen_case_settings_load(&settings, settings_path)) {
+    fprintf(stderr, "Failed to load settings: %s (using defaults)\n",
+            settings_path);
+    settings = carmen_case_settings_default();
+  }
   if (!carmen_session_start(&session, world, &settings)) {
     fprintf(stderr, "Failed to generate case\n");
     carmen_world_free(world);
@@ -224,9 +230,12 @@ int main(int argc, char *argv[]) {
                carmen_i18n_get(i18n, FITNA_VILLAINS[v].alias));
       printf("  > ");
       int choice = read_int();
-      if (carmen_session_issue_warrant(&session, choice - 1) == 0) {
+      int wr = carmen_session_issue_warrant(&session, choice - 1);
+      if (wr == 0) {
         printf("  %s %s.\n", carmen_i18n_get(i18n, "ui.warrant_ok"),
                carmen_i18n_get(i18n, FITNA_VILLAINS[choice - 1].name));
+      } else if (wr == -2) {
+        printf("  %s\n", carmen_i18n_get(i18n, "ui.warrant_need_evidence"));
       } else {
         printf("  %s\n", carmen_i18n_get(i18n, "ui.warrant_fail"));
       }
@@ -282,6 +291,8 @@ int main(int argc, char *argv[]) {
            carmen_i18n_get(i18n, cas->villain->alias));
   } else if (final == CARMEN_STATUS_LOST_TIME) {
     printf("  %s\n", carmen_i18n_get(i18n, "ui.lost_time"));
+  } else if (final == CARMEN_STATUS_LOST_MOVES) {
+    printf("  %s\n", carmen_i18n_get(i18n, "ui.lost_moves"));
   } else if (final == CARMEN_STATUS_LOST_WRONG_ARREST) {
     printf("  %s\n", carmen_i18n_get(i18n, "ui.arrest_wrong"));
   } else if (final == CARMEN_STATUS_LOST_NO_WARRANT) {

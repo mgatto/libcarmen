@@ -30,6 +30,7 @@ int carmen_session_start(CarmenSession *s, CarmenWorld *w,
 
     memset(s, 0, sizeof(*s));
     s->world              = w;
+    s->settings           = *settings;
     s->warrant_villain_idx = -1;
 
     if (!carmen_case_generate(&s->active_case, w, settings))
@@ -46,8 +47,10 @@ void carmen_session_reset(CarmenSession *s)
 {
     if (!s) return;
     CarmenWorld *w = s->world;
+    CarmenCaseSettings settings = s->settings;
     memset(s, 0, sizeof(*s));
     s->world = w;
+    s->settings = settings;
     s->warrant_villain_idx = -1;
 }
 
@@ -124,6 +127,10 @@ int carmen_session_travel(CarmenSession *s, const char *dest_id)
         s->status = CARMEN_STATUS_LOST_TIME;
         return -2;
     }
+    if (s->settings.move_limit > 0 && s->moves >= s->settings.move_limit) {
+        s->status = CARMEN_STATUS_LOST_MOVES;
+        return -4;
+    }
     return 0;
 }
 
@@ -193,6 +200,7 @@ int carmen_session_issue_warrant(CarmenSession *s, int villain_idx)
 {
     if (!s || s->status != CARMEN_STATUS_PLAYING) return -1;
     if (villain_idx < 0 || villain_idx >= FITNA_VILLAIN_COUNT) return -1;
+    if (s->evidence_count < FITNA_MAX_ID_CLUES) return -2;
     s->warrant_villain_idx = villain_idx;
     return 0;
 }

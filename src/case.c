@@ -94,7 +94,8 @@ static void shuffle(int *arr, int n)
  * Sites with matching clues are preferred for the positive slots.
  * The hideout stop stores site indices only (evidence, not clues).
  */
-static void assign_trail_clues(CarmenCase *c, CarmenWorld *w)
+static void assign_trail_clues(CarmenCase *c, CarmenWorld *w,
+                               int active_sites, int positive_clues)
 {
     for (int i = 0; i < c->trail_len; i++) {
         CarmenCity *city = carmen_world_find(w, c->trail[i]);
@@ -120,13 +121,13 @@ static void assign_trail_clues(CarmenCase *c, CarmenWorld *w)
             int sel[CARMEN_TRAIL_SITES], ns = 0;
             int mi = 0, oi = 0;
 
-            while (ns < 2 && mi < nm) sel[ns++] = match[mi++];
-            while (ns < 2 && oi < no) sel[ns++] = other[oi++];
+            /* Positive slots: prefer sites that point to the next city. */
+            while (ns < positive_clues && mi < nm) sel[ns++] = match[mi++];
+            while (ns < positive_clues && oi < no) sel[ns++] = other[oi++];
 
-            if (ns < CARMEN_TRAIL_SITES && oi < no)
-                sel[ns++] = other[oi++];
-            else if (ns < CARMEN_TRAIL_SITES && mi < nm)
-                sel[ns++] = match[mi++];
+            /* Remaining slots: prefer herrings/negatives, then leftovers. */
+            while (ns < active_sites && oi < no) sel[ns++] = other[oi++];
+            while (ns < active_sites && mi < nm) sel[ns++] = match[mi++];
 
             stop->site_count = ns;
 
@@ -134,7 +135,7 @@ static void assign_trail_clues(CarmenCase *c, CarmenWorld *w)
                 stop->sites[j].site_idx = sel[j];
                 const CarmenSite *site = &city->sites[sel[j]];
 
-                if (j < 2) {
+                if (j < positive_clues) {
                     const CarmenClue *found = NULL;
                     for (int k = 0; k < site->clue_count; k++) {
                         if (site->clues[k].type == CARMEN_CLUE_POSITIVE &&
@@ -189,8 +190,8 @@ static void assign_trail_clues(CarmenCase *c, CarmenWorld *w)
         } else {
             int indices[CARMEN_MAX_SITES];
             for (int j = 0; j < available; j++) indices[j] = j;
-            int pick = available < CARMEN_TRAIL_SITES
-                     ? available : CARMEN_TRAIL_SITES;
+            int pick = available < active_sites
+                     ? available : active_sites;
             for (int j = 0; j < pick; j++) {
                 int k = j + carmen_random() % (available - j);
                 int tmp = indices[j];
@@ -235,9 +236,13 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
     memset(c, 0, sizeof(*c));
 
     CarmenDifficulty diff = settings->difficulty;
-    int target_len = trail_length_for(diff);
+    int target_len = settings->trail_length > 0
+                   ? settings->trail_length
+                   : trail_length_for(diff);
     if (target_len > CARMEN_MAX_TRAIL)
         target_len = CARMEN_MAX_TRAIL;
+    if (target_len < 2)
+        target_len = 2;
 
     int built = 0;
     for (int attempt = 0; attempt < CASE_MAX_RETRIES; attempt++) {
@@ -259,10 +264,23 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
     int art_idx = carmen_random() % CARMEN_ARTIFACT_COUNT;
     c->artifact = CARMEN_ARTIFACTS[art_idx];
 
-    assign_trail_clues(c, w);
+    int active_sites = settings->active_sites_per_city > 0
+                     ? settings->active_sites_per_city : CARMEN_TRAIL_SITES;
+    if (active_sites > CARMEN_TRAIL_SITES)
+        active_sites = CARMEN_TRAIL_SITES;
+    int positive_clues = settings->positive_clues_per_stop > 0
+                       ? settings->positive_clues_per_stop : 2;
+    if (positive_clues > active_sites)
+        positive_clues = active_sites;
 
-    int travel_hrs = compute_trail_travel_hrs(w, c->trail, c->trail_len);
-    c->time_budget_hrs = time_budget_hrs_for(diff, travel_hrs);
+    assign_trail_clues(c, w, active_sites, positive_clues);
+
+    if (settings->time_budget_hrs > 0) {
+        c->time_budget_hrs = settings->time_budget_hrs;
+    } else {
+        int travel_hrs = compute_trail_travel_hrs(w, c->trail, c->trail_len);
+        c->time_budget_hrs = time_budget_hrs_for(diff, travel_hrs);
+    }
 
     return 1;
 }

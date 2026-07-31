@@ -137,8 +137,15 @@ void tearDown(void)
 
 static int start_easy(CarmenSession *s)
 {
-    CarmenCaseSettings settings = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings settings = carmen_case_settings_default();
+    settings.difficulty = CARMEN_DIFFICULTY_EASY;
     return carmen_session_start(s, world, &settings);
+}
+
+/* Warrants require a full set of collected evidence; simulate that here. */
+static void give_full_evidence(CarmenSession *s)
+{
+    s->evidence_count = FITNA_MAX_ID_CLUES;
 }
 
 /* =================================================== lifecycle tests */
@@ -511,6 +518,7 @@ static void test_issue_warrant_succeeds(void)
 {
     CarmenSession s;
     start_easy(&s);
+    give_full_evidence(&s);
     int rc = carmen_session_issue_warrant(&s, 0);
     TEST_ASSERT_EQUAL_INT(0, rc);
     TEST_ASSERT_EQUAL_INT(0, s.warrant_villain_idx);
@@ -520,6 +528,7 @@ static void test_issue_warrant_change(void)
 {
     CarmenSession s;
     start_easy(&s);
+    give_full_evidence(&s);
     carmen_session_issue_warrant(&s, 0);
     carmen_session_issue_warrant(&s, 1);
     TEST_ASSERT_EQUAL_INT(1, s.warrant_villain_idx);
@@ -529,8 +538,22 @@ static void test_issue_warrant_invalid_index_fails(void)
 {
     CarmenSession s;
     start_easy(&s);
+    give_full_evidence(&s);
     TEST_ASSERT_EQUAL_INT(-1, carmen_session_issue_warrant(&s, -1));
     TEST_ASSERT_EQUAL_INT(-1, carmen_session_issue_warrant(&s, FITNA_VILLAIN_COUNT));
+}
+
+static void test_issue_warrant_requires_evidence(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    /* No evidence collected yet: warrant is refused. */
+    TEST_ASSERT_EQUAL_INT(-2, carmen_session_issue_warrant(&s, 0));
+    TEST_ASSERT_EQUAL_INT(-1, s.warrant_villain_idx);
+    /* Once the full evidence set is collected, the warrant is granted. */
+    give_full_evidence(&s);
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_issue_warrant(&s, 0));
+    TEST_ASSERT_EQUAL_INT(0, s.warrant_villain_idx);
 }
 
 /* ==================================================== arrest tests */
@@ -552,6 +575,7 @@ static void test_arrest_at_hideout_correct_warrant_wins(void)
     }
     TEST_ASSERT_NOT_EQUAL(-1, vidx);
 
+    give_full_evidence(&s);
     carmen_session_issue_warrant(&s, vidx);
     CarmenSessionStatus st = carmen_session_arrest(&s);
     TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_WON, st);
@@ -575,6 +599,7 @@ static void test_arrest_at_hideout_wrong_warrant_loses(void)
     }
     TEST_ASSERT_NOT_EQUAL(-1, wrong);
 
+    give_full_evidence(&s);
     carmen_session_issue_warrant(&s, wrong);
     CarmenSessionStatus st = carmen_session_arrest(&s);
     TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_LOST_WRONG_ARREST, st);
@@ -677,6 +702,7 @@ int main(void)
     RUN_TEST(test_issue_warrant_succeeds);
     RUN_TEST(test_issue_warrant_change);
     RUN_TEST(test_issue_warrant_invalid_index_fails);
+    RUN_TEST(test_issue_warrant_requires_evidence);
 
     /* Arrest */
     RUN_TEST(test_arrest_at_hideout_correct_warrant_wins);

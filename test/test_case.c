@@ -18,12 +18,20 @@ void tearDown(void)
     world = NULL;
 }
 
+/* Build valid default settings with a chosen difficulty. */
+static CarmenCaseSettings mk(CarmenDifficulty d)
+{
+    CarmenCaseSettings s = carmen_case_settings_default();
+    s.difficulty = d;
+    return s;
+}
+
 /* -------------------------------------------------- generation basics */
 
 static void test_generate_easy_succeeds(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     int ok = carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_INT(1, ok);
@@ -32,7 +40,7 @@ static void test_generate_easy_succeeds(void)
 static void test_generate_medium_succeeds(void)
 {
     srand(99);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_MEDIUM, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_MEDIUM);
     CarmenCase c;
     int ok = carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_INT(1, ok);
@@ -41,7 +49,7 @@ static void test_generate_medium_succeeds(void)
 static void test_generate_hard_succeeds(void)
 {
     srand(17);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_HARD, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_HARD);
     CarmenCase c;
     int ok = carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_INT(1, ok);
@@ -52,7 +60,7 @@ static void test_generate_hard_succeeds(void)
 static void test_easy_trail_length_is_3(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_INT(3, c.trail_len);
@@ -61,7 +69,7 @@ static void test_easy_trail_length_is_3(void)
 static void test_medium_trail_length_is_5(void)
 {
     srand(99);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_MEDIUM, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_MEDIUM);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_INT(5, c.trail_len);
@@ -70,7 +78,7 @@ static void test_medium_trail_length_is_5(void)
 static void test_hard_trail_length_is_7(void)
 {
     srand(17);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_HARD, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_HARD);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_INT(7, c.trail_len);
@@ -79,7 +87,7 @@ static void test_hard_trail_length_is_7(void)
 static void test_trail_cities_exist_in_world(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_MEDIUM, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_MEDIUM);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
 
@@ -92,7 +100,7 @@ static void test_trail_cities_exist_in_world(void)
 static void test_trail_has_no_duplicate_cities(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_HARD, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_HARD);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
 
@@ -106,7 +114,7 @@ static void test_trail_has_no_duplicate_cities(void)
 static void test_origin_is_first_trail_city(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_STRING(c.trail[0], c.origin_id);
@@ -115,7 +123,7 @@ static void test_origin_is_first_trail_city(void)
 static void test_hideout_is_last_trail_city(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_STRING(c.trail[c.trail_len - 1], c.hideout_id);
@@ -126,7 +134,7 @@ static void test_hideout_is_last_trail_city(void)
 static void test_villain_is_set(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
     TEST_ASSERT_NOT_NULL(c.villain);
@@ -136,7 +144,7 @@ static void test_villain_is_set(void)
 static void test_artifact_is_set(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
     TEST_ASSERT_NOT_NULL(c.artifact.id);
@@ -152,7 +160,7 @@ static void test_time_budget_is_positive(void)
         CARMEN_DIFFICULTY_EASY, CARMEN_DIFFICULTY_MEDIUM, CARMEN_DIFFICULTY_HARD
     };
     for (int d = 0; d < 3; d++) {
-        CarmenCaseSettings s = { diffs[d], 0 };
+        CarmenCaseSettings s = mk(diffs[d]);
         CarmenCase c;
         carmen_case_generate(&c, world, &s);
         TEST_ASSERT_GREATER_THAN(0, c.time_budget_hrs);
@@ -164,7 +172,7 @@ static void test_time_budget_is_positive(void)
 static void test_trail_stops_have_sites(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     int ok = carmen_case_generate(&c, world, &s);
     if (!ok) { TEST_IGNORE_MESSAGE("generation failed"); return; }
@@ -175,7 +183,7 @@ static void test_trail_stops_have_sites(void)
 static void test_non_hideout_stops_have_two_positives(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     int ok = carmen_case_generate(&c, world, &s);
     if (!ok) { TEST_IGNORE_MESSAGE("generation failed"); return; }
@@ -197,7 +205,7 @@ static void test_non_hideout_stops_have_two_positives(void)
 static void test_difficulty_stored_in_case(void)
 {
     srand(42);
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_HARD, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_HARD);
     CarmenCase c;
     carmen_case_generate(&c, world, &s);
     TEST_ASSERT_EQUAL_INT(CARMEN_DIFFICULTY_HARD, c.difficulty);
@@ -207,13 +215,13 @@ static void test_difficulty_stored_in_case(void)
 
 static void test_generate_null_case_returns_0(void)
 {
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     TEST_ASSERT_EQUAL_INT(0, carmen_case_generate(NULL, world, &s));
 }
 
 static void test_generate_null_world_returns_0(void)
 {
-    CarmenCaseSettings s = { CARMEN_DIFFICULTY_EASY, 0 };
+    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
     CarmenCase c;
     TEST_ASSERT_EQUAL_INT(0, carmen_case_generate(&c, NULL, &s));
 }

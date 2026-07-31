@@ -14,6 +14,7 @@
 #include "artifact.h"
 #include "case.h"
 #include "session.h"
+#include "settings.h"
 #include "i18n.h"
 
 #endif

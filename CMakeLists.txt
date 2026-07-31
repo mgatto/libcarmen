@@ -35,6 +35,7 @@ set(CARMEN_SOURCES
     src/artifact.c
     src/case.c
     src/session.c
+    src/settings.c
     src/i18n.c
     vendor/cjson/cJSON.c
 )
@@ -54,6 +55,7 @@ set(CARMEN_PUBLIC_HEADERS
     include/carmen/artifact.h
     include/carmen/case.h
     include/carmen/session.h
+    include/carmen/settings.h
     include/carmen/i18n.h
 )
 
@@ -70,6 +72,7 @@ target_include_directories(carmen
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/utf8
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cjson
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/toml-c
 )
 
 set_target_properties(carmen PROPERTIES
@@ -135,6 +138,7 @@ if(CARMEN_BUILD_TESTS)
     carmen_add_test(test_artifact          test/test_artifact.c)
     carmen_add_test(test_case              test/test_case.c)
     carmen_add_test(test_session            test/test_session.c)
+    carmen_add_test(test_settings          test/test_settings.c)
 endif()
 
 # --------------------------------------------------------------------------- #

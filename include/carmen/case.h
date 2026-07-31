@@ -12,13 +12,24 @@ typedef enum {
     CARMEN_DIFFICULTY_HARD
 } CarmenDifficulty;
 
-typedef struct {
-    CarmenDifficulty difficulty;
-    int  max_trail_hops;  /* ignored — trail always uses direct connections */
-} CarmenCaseSettings;
-
 #define CARMEN_MAX_TRAIL  8
 #define CARMEN_TRAIL_SITES 3
+
+/*
+ * The single knob for customizing game rules. Populate via
+ * carmen_case_settings_default() and, optionally, carmen_case_settings_load().
+ *
+ * Override fields use 0 to mean "derive/unlimited"; count fields are
+ * clamped into their valid ranges at load time.
+ */
+typedef struct {
+    CarmenDifficulty difficulty;
+    int  trail_length;            /* 0 = derive from difficulty; else clamped to [2, CARMEN_MAX_TRAIL] */
+    int  time_budget_hrs;         /* 0 = derive from difficulty + trail travel time */
+    int  active_sites_per_city;   /* clamped to [1, CARMEN_TRAIL_SITES] */
+    int  positive_clues_per_stop; /* clamped to [1, active_sites_per_city] */
+    int  move_limit;              /* 0 = unlimited */
+} CarmenCaseSettings;
 
 typedef struct {
     int        site_idx;   /* index into city->sites[] */
