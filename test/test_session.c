@@ -651,6 +651,51 @@ static void test_actions_after_game_over_return_errors(void)
     TEST_ASSERT_EQUAL_INT(-1, carmen_session_issue_warrant(&s, 0));
 }
 
+/*
+ * Full playthrough with no cheating: follow the generated trail to the
+ * hideout, collect evidence purely by investigating hideout sites, then
+ * issue a warrant and arrest. This guards against the case being
+ * unwinnable when FITNA_MAX_ID_CLUES exceeds the hideout's active-site
+ * count (see warrant_evidence_target in session.c).
+ */
+static void test_full_playthrough_reaches_won(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    /* Copy the trail up front: travelling mutates current_city_id. */
+    int trail_len = s.active_case.trail_len;
+    char trail[CARMEN_MAX_TRAIL][CARMEN_MAX_NAME_LEN];
+    for (int i = 0; i < trail_len; i++)
+        carmen_utf8_copy(trail[i], CARMEN_MAX_NAME_LEN, s.active_case.trail[i]);
+
+    /* Walk the trail from origin (trail[0], already current) to hideout. */
+    for (int i = 1; i < trail_len; i++)
+        TEST_ASSERT_EQUAL_INT(0, carmen_session_travel(&s, trail[i]));
+    TEST_ASSERT_EQUAL_STRING(s.active_case.hideout_id, s.current_city_id);
+
+    /* Collect evidence only by investigating hideout sites. */
+    int indices[CARMEN_TRAIL_SITES];
+    int n = carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
+    TEST_ASSERT_GREATER_THAN(0, n);
+    for (int i = 0; i < n; i++)
+        carmen_session_investigate(&s, indices[i]);
+
+    /* A warrant must be grantable from the evidence actually collectable. */
+    int vidx = -1;
+    for (int i = 0; i < FITNA_VILLAIN_COUNT; i++) {
+        if (strcmp(FITNA_VILLAINS[i].id, s.active_case.villain->id) == 0) {
+            vidx = i;
+            break;
+        }
+    }
+    TEST_ASSERT_NOT_EQUAL(-1, vidx);
+
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_issue_warrant(&s, vidx));
+    TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_WON, carmen_session_arrest(&s));
+    TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_WON, carmen_session_status(&s));
+}
+
 /* ============================================== visited history tests */
 
 static void test_start_records_origin_as_first_visit(void)
@@ -891,6 +936,7 @@ int main(void)
     RUN_TEST(test_arrest_no_warrant_loses);
     RUN_TEST(test_arrest_not_at_hideout_returns_not_at_hideout);
     RUN_TEST(test_actions_after_game_over_return_errors);
+    RUN_TEST(test_full_playthrough_reaches_won);
 
     /* Visited history */
     RUN_TEST(test_start_records_origin_as_first_visit);

@@ -53,10 +53,8 @@ static void print_notebook(const CarmenI18n *i18n, const CarmenSession *s,
   int count = carmen_session_notebook_count(s);
   if (count == 0)
     return;
-  int start = count > 5 ? count - 5 : 0;
-  printf("\n  %s (last %d)\n", carmen_i18n_get(i18n, "ui.notebook_header"),
-         count - start);
-  for (int i = start; i < count; i++) {
+  printf("\n  %s (%d)\n", carmen_i18n_get(i18n, "ui.notebook_header"), count);
+  for (int i = 0; i < count; i++) {
     const CarmenClue *clue = carmen_session_notebook_at(s, i);
     const char *raw = carmen_i18n_get(i18n, clue->text);
     char expanded[EXPAND_BUF];
@@ -157,6 +155,9 @@ int main(int argc, char *argv[]) {
     print_status_bar(i18n, &session);
     printf("%s\n", RULE);
 
+    if (strcmp(city->id, cas->hideout_id) == 0)
+      printf("\n  %s\n", carmen_i18n_get(i18n, "ui.hideout_reached"));
+
     int active[CARMEN_TRAIL_SITES];
     int nactive = carmen_session_active_sites(&session, active,
                                               CARMEN_TRAIL_SITES);
@@ -168,6 +169,7 @@ int main(int argc, char *argv[]) {
                carmen_i18n_get(i18n, city->sites[active[s]].name),
                carmen_i18n_get(i18n, city->sites[active[s]].site_type));
     } else {
+      printf("    %s\n", carmen_i18n_get(i18n, "ui.off_trail"));
       for (int s = 0; s < city->site_count; s++)
         printf("    [%d] %s (%s)\n", s + 1,
                carmen_i18n_get(i18n, city->sites[s].name),

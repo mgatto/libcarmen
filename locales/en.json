@@ -792,6 +792,8 @@
   "ui.hours": "hours",
   "ui.moves": "Moves:",
   "ui.sites_header": "Sites to investigate:",
+  "ui.off_trail": "You've lost the trail -- no fresh leads here. Backtrack to the last city where the clues pointed.",
+  "ui.hideout_reached": "** HIDEOUT BREACHED ** The suspect is holed up here. Investigate every site to collect their identity, then issue a warrant and make the arrest.",
   "ui.investigate_prompt": "Investigate site [1-%d], (t)ravel, (w)arrant, (a)rrest: ",
   "ui.travel_prompt": "Travel to which city? ",
   "ui.travel_ok": "You traveled to",

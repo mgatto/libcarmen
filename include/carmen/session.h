@@ -138,9 +138,11 @@ CARMEN_API const CarmenClue *carmen_session_investigate(CarmenSession *s,
  * villain_idx is the index into FITNA_VILLAINS[].
  *
  * A warrant always requires a full set of villain identity clues to have
- * been collected first (evidence_count == FITNA_MAX_ID_CLUES), matching the
- * classic collect-clues-then-warrant flow. Evidence is gathered only by
- * investigating sites at the villain's hideout.
+ * been collected first, matching the classic collect-clues-then-warrant
+ * flow. Evidence is gathered only by investigating sites at the villain's
+ * hideout, so "full set" means every clue the hideout can surface: the
+ * lesser of FITNA_MAX_ID_CLUES and the number of active sites at the
+ * hideout (capped at CARMEN_TRAIL_SITES).
  *
  * Returns 0 on success, -1 on invalid index or not PLAYING, -2 if
  * insufficient evidence has been collected.

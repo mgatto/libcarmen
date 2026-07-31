@@ -21,6 +21,25 @@ static int trail_index_of(const CarmenCase *c, const char *city_id)
     return -1;
 }
 
+/*
+ * How many identity clues a warrant requires. Ideally the full villain
+ * id-clue set (FITNA_MAX_ID_CLUES), but the hideout can only surface one
+ * clue per active site there, and the active-site count is capped at
+ * CARMEN_TRAIL_SITES -- which is smaller than FITNA_MAX_ID_CLUES. Requiring
+ * the fixed maximum would make every case unwinnable, so cap the
+ * requirement at what the hideout can actually yield.
+ */
+static int warrant_evidence_target(const CarmenCase *c)
+{
+    int target = FITNA_MAX_ID_CLUES;
+    if (c->trail_len > 0) {
+        int hideout_sites = c->stops[c->trail_len - 1].site_count;
+        if (hideout_sites < target)
+            target = hideout_sites;
+    }
+    return target;
+}
+
 static void record_visit(CarmenSession *s, const char *city_id)
 {
     int cap = s->settings.visited_history_size;
@@ -268,7 +287,7 @@ int carmen_session_issue_warrant(CarmenSession *s, int villain_idx)
 {
     if (!s || s->status != CARMEN_STATUS_PLAYING) return -1;
     if (villain_idx < 0 || villain_idx >= FITNA_VILLAIN_COUNT) return -1;
-    if (s->evidence_count < FITNA_MAX_ID_CLUES) return -2;
+    if (s->evidence_count < warrant_evidence_target(&s->active_case)) return -2;
     s->warrant_villain_idx = villain_idx;
     return 0;
 }
