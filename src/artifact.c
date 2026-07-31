@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "carmen/artifact.h"
 
 const CarmenArtifact CARMEN_ARTIFACTS[CARMEN_ARTIFACT_COUNT] = {
@@ -91,3 +92,14 @@ const CarmenArtifact CARMEN_ARTIFACTS[CARMEN_ARTIFACT_COUNT] = {
      "dakar",
      "artifact.glass_weight_dakar.desc"},
 };
+
+int carmen_artifact_count(void)
+{
+    return CARMEN_ARTIFACT_COUNT;
+}
+
+const CarmenArtifact *carmen_artifact_at(int index)
+{
+    if (index < 0 || index >= CARMEN_ARTIFACT_COUNT) return NULL;
+    return &CARMEN_ARTIFACTS[index];
+}

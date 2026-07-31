@@ -49,6 +49,12 @@ CARMEN_API int carmen_session_time_remaining(const CarmenSession *s);
 CARMEN_API int carmen_session_moves(const CarmenSession *s);
 
 /*
+ * The villain behind the active case. Returns NULL if s is NULL.
+ * Convenience wrapper so clients don't dereference the embedded case.
+ */
+CARMEN_API const FitnaVillain *carmen_session_villain(const CarmenSession *s);
+
+/*
  * Cities-visited history (chronological, includes the origin and any
  * revisits). Capped at the session's visited_history_size setting.
  * carmen_session_visited_at returns NULL for an out-of-range index.

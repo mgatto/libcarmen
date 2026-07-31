@@ -69,4 +69,16 @@ typedef struct {
 CARMEN_API int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
                                     const CarmenCaseSettings *settings);
 
+/*
+ * The villain behind this case. Returns NULL if c is NULL. Lets clients
+ * read the culprit without dereferencing c->villain directly.
+ */
+CARMEN_API const FitnaVillain *carmen_case_villain(const CarmenCase *c);
+
+/*
+ * The artifact stolen in this case. Returns NULL if c is NULL. Lets
+ * clients read the loot without reaching into c->artifact directly.
+ */
+CARMEN_API const CarmenArtifact *carmen_case_artifact(const CarmenCase *c);
+
 #endif

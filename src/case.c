@@ -284,3 +284,15 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
 
     return 1;
 }
+
+const FitnaVillain *carmen_case_villain(const CarmenCase *c)
+{
+    if (!c) return NULL;
+    return c->villain;
+}
+
+const CarmenArtifact *carmen_case_artifact(const CarmenCase *c)
+{
+    if (!c) return NULL;
+    return &c->artifact;
+}

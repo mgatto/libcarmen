@@ -52,6 +52,17 @@ const FitnaVillain FITNA_VILLAINS[FITNA_VILLAIN_COUNT] = {
       "villain.rumi.2", "villain.rumi.3"}},
 };
 
+int carmen_villain_count(void)
+{
+    return FITNA_VILLAIN_COUNT;
+}
+
+const FitnaVillain *carmen_villain_at(int index)
+{
+    if (index < 0 || index >= FITNA_VILLAIN_COUNT) return NULL;
+    return &FITNA_VILLAINS[index];
+}
+
 void carmen_villain_expand_clue(const char *tmpl, char gender, char *out, size_t size)
 {
     int male = (gender == 'M');

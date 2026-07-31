@@ -38,11 +38,12 @@ static void print_evidence(const CarmenI18n *i18n, const CarmenSession *s) {
   if (count == 0)
     return;
   printf("\n  %s\n", carmen_i18n_get(i18n, "ui.evidence_header"));
+  const FitnaVillain *villain = carmen_session_villain(s);
   for (int i = 0; i < count; i++) {
     char expanded[EXPAND_BUF];
     carmen_villain_expand_clue(
         carmen_i18n_get(i18n, carmen_session_evidence_at(s, i)),
-        s->active_case.villain->gender, expanded, sizeof expanded);
+        villain->gender, expanded, sizeof expanded);
     printf("    %d. %s\n", i + 1, expanded);
   }
 }
@@ -124,16 +125,18 @@ int main(int argc, char *argv[]) {
   }
 
   const CarmenCase *cas = carmen_session_case(&session);
+  const FitnaVillain *villain = carmen_case_villain(cas);
 
   /* ── Banner ──────────────────────────────────────────────────── */
   printf("\n%s\n", LINE);
   printf("  %s\n", carmen_i18n_get(i18n, "ui.title"));
   printf("  %s\n", carmen_i18n_get(i18n, "ui.intel"));
   printf("  %s\n", carmen_i18n_get(i18n, "ui.instruction"));
+  const CarmenArtifact *artifact = carmen_case_artifact(cas);
   printf("\n  %s %s\n", carmen_i18n_get(i18n, "ui.stolen"),
-         carmen_i18n_get(i18n, cas->artifact.name));
+         carmen_i18n_get(i18n, artifact->name));
   const CarmenCity *origin =
-      carmen_world_find(world, cas->artifact.origin_city_id);
+      carmen_world_find(world, artifact->origin_city_id);
   if (origin) {
     printf("  %s ", carmen_i18n_get(i18n, "ui.from"));
     print_city_name(i18n, origin);
@@ -195,7 +198,7 @@ int main(int argc, char *argv[]) {
     }
 
     print_evidence(i18n, &session);
-    print_notebook(i18n, &session, cas->villain->gender);
+    print_notebook(i18n, &session, villain->gender);
 
     int site_limit = nactive > 0 ? nactive : city->site_count;
     printf("\n  ");
@@ -229,16 +232,20 @@ int main(int argc, char *argv[]) {
       }
     } else if (input[0] == 'w' || input[0] == 'W') {
       printf("  %s\n", carmen_i18n_get(i18n, "ui.warrant_prompt"));
-      for (int v = 0; v < FITNA_VILLAIN_COUNT; v++)
+      int villain_count = carmen_villain_count();
+      for (int v = 0; v < villain_count; v++) {
+        const FitnaVillain *vp = carmen_villain_at(v);
         printf("    [%2d] %s, a.k.a. \"%s\"\n", v + 1,
-               carmen_i18n_get(i18n, FITNA_VILLAINS[v].name),
-               carmen_i18n_get(i18n, FITNA_VILLAINS[v].alias));
+               carmen_i18n_get(i18n, vp->name),
+               carmen_i18n_get(i18n, vp->alias));
+      }
       printf("  > ");
       int choice = read_int();
       int wr = carmen_session_issue_warrant(&session, choice - 1);
       if (wr == 0) {
+        const FitnaVillain *chosen = carmen_villain_at(choice - 1);
         printf("  %s %s.\n", carmen_i18n_get(i18n, "ui.warrant_ok"),
-               carmen_i18n_get(i18n, FITNA_VILLAINS[choice - 1].name));
+               carmen_i18n_get(i18n, chosen ? chosen->name : ""));
       } else if (wr == -2) {
         printf("  %s\n", carmen_i18n_get(i18n, "ui.warrant_need_evidence"));
       } else {
@@ -275,7 +282,7 @@ int main(int argc, char *argv[]) {
         if (clue) {
           const char *raw = carmen_i18n_get(i18n, clue->text);
           char expanded[EXPAND_BUF];
-          carmen_villain_expand_clue(raw, cas->villain->gender, expanded,
+          carmen_villain_expand_clue(raw, villain->gender, expanded,
                                      sizeof expanded);
           const char *tag = clue->type == CARMEN_CLUE_POSITIVE ? "+" : "-";
           printf("\n    [%s] \"%s\"\n", tag, expanded);
@@ -292,8 +299,8 @@ int main(int argc, char *argv[]) {
   if (final == CARMEN_STATUS_WON) {
     printf("  %s\n", carmen_i18n_get(i18n, "ui.won"));
     printf("  (It was %s, a.k.a. \"%s\")\n",
-           carmen_i18n_get(i18n, cas->villain->name),
-           carmen_i18n_get(i18n, cas->villain->alias));
+           carmen_i18n_get(i18n, villain->name),
+           carmen_i18n_get(i18n, villain->alias));
   } else if (final == CARMEN_STATUS_LOST_TIME) {
     printf("  %s\n", carmen_i18n_get(i18n, "ui.lost_time"));
   } else if (final == CARMEN_STATUS_LOST_MOVES) {

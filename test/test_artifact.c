@@ -48,6 +48,27 @@ static void test_count_matches_array(void)
     TEST_ASSERT_EQUAL_INT(CARMEN_ARTIFACT_COUNT, count);
 }
 
+static void test_accessor_count_matches_constant(void)
+{
+    TEST_ASSERT_EQUAL_INT(CARMEN_ARTIFACT_COUNT, carmen_artifact_count());
+}
+
+static void test_accessor_at_returns_matching_entry(void)
+{
+    for (int i = 0; i < carmen_artifact_count(); i++) {
+        const CarmenArtifact *a = carmen_artifact_at(i);
+        TEST_ASSERT_NOT_NULL(a);
+        TEST_ASSERT_EQUAL_PTR(&CARMEN_ARTIFACTS[i], a);
+    }
+}
+
+static void test_accessor_at_out_of_range_returns_null(void)
+{
+    TEST_ASSERT_NULL(carmen_artifact_at(-1));
+    TEST_ASSERT_NULL(carmen_artifact_at(carmen_artifact_count()));
+    TEST_ASSERT_NULL(carmen_artifact_at(CARMEN_ARTIFACT_COUNT + 100));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -55,5 +76,8 @@ int main(void)
     RUN_TEST(test_all_fields_populated);
     RUN_TEST(test_no_duplicate_ids);
     RUN_TEST(test_count_matches_array);
+    RUN_TEST(test_accessor_count_matches_constant);
+    RUN_TEST(test_accessor_at_returns_matching_entry);
+    RUN_TEST(test_accessor_at_out_of_range_returns_null);
     return UNITY_END();
 }

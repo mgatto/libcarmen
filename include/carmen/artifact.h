@@ -14,4 +14,11 @@ typedef struct {
 
 CARMEN_API extern const CarmenArtifact CARMEN_ARTIFACTS[CARMEN_ARTIFACT_COUNT];
 
+/*
+ * Read-only accessors for the artifact catalog, so clients (UI, bindings)
+ * can list artifacts without reaching into the CARMEN_ARTIFACTS[] global.
+ */
+CARMEN_API int                   carmen_artifact_count(void);
+CARMEN_API const CarmenArtifact *carmen_artifact_at(int index);
+
 #endif

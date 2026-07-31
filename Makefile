@@ -132,7 +132,7 @@ TEST_DIR  = $(BUILD_DIR)/test
 TEST_BINS = $(TEST_DIR)/test_site $(TEST_DIR)/test_connection $(TEST_DIR)/test_city \
             $(TEST_DIR)/test_game_world $(TEST_DIR)/test_carmen_scenarios \
             $(TEST_DIR)/test_artifact $(TEST_DIR)/test_case $(TEST_DIR)/test_session \
-            $(TEST_DIR)/test_settings
+            $(TEST_DIR)/test_settings $(TEST_DIR)/test_villain
 
 test: $(TEST_BINS)
 	@echo "========================================"
@@ -186,6 +186,9 @@ $(TEST_DIR)/test_session: test/test_session.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_
 $(TEST_DIR)/test_settings: test/test_settings.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
+$(TEST_DIR)/test_villain: test/test_villain.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
 # --------------------------------------------------------------------------- #
 #  Code Coverage  (requires lcov:  brew install lcov)
 # --------------------------------------------------------------------------- #
@@ -202,7 +205,7 @@ endif
 COV_BINS = $(COV_DIR)/test_site $(COV_DIR)/test_connection $(COV_DIR)/test_city \
            $(COV_DIR)/test_game_world $(COV_DIR)/test_carmen_scenarios \
            $(COV_DIR)/test_artifact $(COV_DIR)/test_case $(COV_DIR)/test_session \
-           $(COV_DIR)/test_settings
+           $(COV_DIR)/test_settings $(COV_DIR)/test_villain
 
 coverage: $(COV_BINS)
 	@echo "========================================"
@@ -265,6 +268,9 @@ $(COV_DIR)/test_session: test/test_session.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DI
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
 
 $(COV_DIR)/test_settings: test/test_settings.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+
+$(COV_DIR)/test_villain: test/test_villain.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
 
 .PHONY: all lib clean test coverage install uninstall

@@ -96,6 +96,12 @@ int carmen_session_moves(const CarmenSession *s)
     return s->moves;
 }
 
+const FitnaVillain *carmen_session_villain(const CarmenSession *s)
+{
+    if (!s) return NULL;
+    return s->active_case.villain;
+}
+
 int carmen_session_active_sites(const CarmenSession *s,
                                 int *out_indices, int max_out)
 {

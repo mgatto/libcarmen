@@ -781,6 +781,38 @@ static void test_connections_returns_current_city_edges(void)
         TEST_ASSERT_EQUAL_PTR(&city->connections[i], conns[i]);
 }
 
+/* ================================================== villain getters */
+
+static void test_session_villain_matches_case_villain(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    const CarmenCase *cas = carmen_session_case(&s);
+    const FitnaVillain *v = carmen_session_villain(&s);
+    TEST_ASSERT_NOT_NULL(v);
+    TEST_ASSERT_EQUAL_PTR(cas->villain, v);
+    TEST_ASSERT_EQUAL_PTR(carmen_case_villain(cas), v);
+}
+
+static void test_villain_getters_null_safe(void)
+{
+    TEST_ASSERT_NULL(carmen_session_villain(NULL));
+    TEST_ASSERT_NULL(carmen_case_villain(NULL));
+}
+
+static void test_case_artifact_getter(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    const CarmenCase *cas = carmen_session_case(&s);
+    const CarmenArtifact *a = carmen_case_artifact(cas);
+    TEST_ASSERT_NOT_NULL(a);
+    TEST_ASSERT_EQUAL_PTR(&cas->artifact, a);
+    TEST_ASSERT_NULL(carmen_case_artifact(NULL));
+}
+
 /* ================================================ query null safety */
 
 static void test_queries_null_session(void)
@@ -867,6 +899,11 @@ int main(void)
     RUN_TEST(test_notebook_at_out_of_range_returns_null);
     RUN_TEST(test_evidence_count_and_at_at_hideout);
     RUN_TEST(test_connections_returns_current_city_edges);
+
+    /* Villain / artifact getters */
+    RUN_TEST(test_session_villain_matches_case_villain);
+    RUN_TEST(test_villain_getters_null_safe);
+    RUN_TEST(test_case_artifact_getter);
 
     /* Null safety */
     RUN_TEST(test_queries_null_session);

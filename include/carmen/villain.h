@@ -18,6 +18,13 @@ typedef struct {
 CARMEN_API extern const FitnaVillain FITNA_VILLAINS[FITNA_VILLAIN_COUNT];
 
 /*
+ * Read-only accessors for the villain catalog, so clients (UI, bindings)
+ * can list villains without reaching into the FITNA_VILLAINS[] global.
+ */
+CARMEN_API int                 carmen_villain_count(void);
+CARMEN_API const FitnaVillain *carmen_villain_at(int index);
+
+/*
  * Expand pronoun template tokens in a clue string.
  *
  * Tokens: {They}/{they}, {Their}/{their}, {them},
