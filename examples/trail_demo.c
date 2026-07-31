@@ -37,7 +37,10 @@ static void print_evidence(const CarmenI18n *i18n, const CarmenSession *s) {
   int count = carmen_session_evidence_count(s);
   if (count == 0)
     return;
-  printf("\n  %s\n", carmen_i18n_get(i18n, "ui.evidence_header"));
+  int required = carmen_session_evidence_required(s);
+  printf("\n  ");
+  printf(carmen_i18n_get(i18n, "ui.evidence_header"), count, required);
+  printf("\n");
   const FitnaVillain *villain = carmen_session_villain(s);
   for (int i = 0; i < count; i++) {
     char expanded[EXPAND_BUF];
@@ -272,6 +275,7 @@ int main(int argc, char *argv[]) {
         real_idx = choice;
 
       if (real_idx >= 0) {
+        bool could_warrant = carmen_session_can_issue_warrant(&session);
         const CarmenClue *clue =
             carmen_session_investigate(&session, real_idx);
         if (clue) {
@@ -281,6 +285,8 @@ int main(int argc, char *argv[]) {
                                      sizeof expanded);
           const char *tag = clue->type == CARMEN_CLUE_POSITIVE ? "+" : "-";
           printf("\n    [%s] \"%s\"\n", tag, expanded);
+          if (!could_warrant && carmen_session_can_issue_warrant(&session))
+            printf("\n  %s\n", carmen_i18n_get(i18n, "ui.warrant_ready"));
         } else {
           printf("  %s\n", carmen_i18n_get(i18n, "ui.no_clues"));
         }

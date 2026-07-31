@@ -173,6 +173,18 @@ const char *carmen_session_evidence_at(const CarmenSession *s, int index)
     return s->evidence[index];
 }
 
+int carmen_session_evidence_required(const CarmenSession *s)
+{
+    if (!s) return 0;
+    return warrant_evidence_target(&s->active_case);
+}
+
+bool carmen_session_can_issue_warrant(const CarmenSession *s)
+{
+    if (!s || s->status != CARMEN_STATUS_PLAYING) return false;
+    return s->evidence_count >= warrant_evidence_target(&s->active_case);
+}
+
 int carmen_session_connections(const CarmenSession *s,
                                const CarmenConnection **out, int max_out)
 {

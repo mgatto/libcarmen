@@ -1,6 +1,7 @@
 #ifndef CARMEN_SESSION_H
 #define CARMEN_SESSION_H
 
+#include <stdbool.h>
 #include "carmen_export.h"
 #include "case.h"
 
@@ -81,6 +82,27 @@ CARMEN_API const CarmenClue *carmen_session_notebook_at(
 CARMEN_API int         carmen_session_evidence_count(const CarmenSession *s);
 CARMEN_API const char *carmen_session_evidence_at(const CarmenSession *s,
                                                   int index);
+
+/*
+ * How many identity clues a warrant requires for the active case. This is
+ * the goal the player is collecting evidence toward: ideally the full
+ * villain id-clue set (FITNA_MAX_ID_CLUES), but capped at what the hideout
+ * can actually surface (one clue per active site there, itself capped at
+ * CARMEN_TRAIL_SITES). Front-ends can render progress as
+ * carmen_session_evidence_count() / carmen_session_evidence_required().
+ * Returns 0 if s is NULL.
+ */
+CARMEN_API int carmen_session_evidence_required(const CarmenSession *s);
+
+/*
+ * True once enough evidence has been collected to issue a warrant and the
+ * session is still PLAYING -- i.e. carmen_session_issue_warrant() would no
+ * longer be refused with -2 for lack of evidence. Front-ends can watch this
+ * flip false->true (evidence is only ever gained via
+ * carmen_session_investigate at the hideout) to notify the player they can
+ * now make an ID. Returns false if s is NULL.
+ */
+CARMEN_API bool carmen_session_can_issue_warrant(const CarmenSession *s);
 
 /*
  * Connections leaving the current city. Writes up to max_out connection
