@@ -3,7 +3,7 @@
 
 #include "carmen_export.h"
 
-#define CARMEN_ARTIFACT_COUNT 18
+#define CARMEN_ARTIFACT_COUNT 21
 
 typedef struct {
     const char *id;

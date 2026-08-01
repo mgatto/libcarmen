@@ -116,6 +116,36 @@
   "city.bandung.country": "Indonesia",
   "city.bandung.continent": "Asia",
 
+  "city.tunis.name": "Tunis",
+  "city.tunis.local_name": "تونس",
+  "city.tunis.country": "Tunisia",
+  "city.tunis.continent": "Africa",
+
+  "city.damascus.name": "Damascus",
+  "city.damascus.local_name": "دمشق",
+  "city.damascus.country": "Syria",
+  "city.damascus.continent": "Asia",
+
+  "city.kano.name": "Kano",
+  "city.kano.local_name": "Kano",
+  "city.kano.country": "Nigeria",
+  "city.kano.continent": "Africa",
+
+  "city.samarkand.name": "Samarkand",
+  "city.samarkand.local_name": "Samarqand",
+  "city.samarkand.country": "Uzbekistan",
+  "city.samarkand.continent": "Asia",
+
+  "city.kabul.name": "Kabul",
+  "city.kabul.local_name": "کابل",
+  "city.kabul.country": "Afghanistan",
+  "city.kabul.continent": "Asia",
+
+  "city.yogyakarta.name": "Yogyakarta",
+  "city.yogyakarta.local_name": "Yogyakarta",
+  "city.yogyakarta.country": "Indonesia",
+  "city.yogyakarta.continent": "Asia",
+
   "site.istanbul.suleymaniye": "Suleymaniye Mosque",
   "site.istanbul.istanbul_modern": "Istanbul Modern",
   "site.istanbul.kadikoy": "Kadikoy Food Market",
@@ -220,6 +250,36 @@
   "site.hyderabad.mecca_masjid": "Mecca Masjid",
   "site.hyderabad.salar_jung": "Salar Jung Museum",
   "site.hyderabad.laad_bazaar": "Laad Bazaar",
+
+  "site.tunis.zitouna": "Zitouna Mosque",
+  "site.tunis.medina": "Tunis Medina",
+  "site.tunis.bardo": "Bardo National Museum",
+  "site.tunis.carthage": "Ruins of Carthage",
+
+  "site.damascus.umayyad": "Umayyad Mosque",
+  "site.damascus.hamidiyah": "Al-Hamidiyah Souq",
+  "site.damascus.national_museum": "National Museum",
+  "site.damascus.azm_palace": "Azm Palace",
+
+  "site.kano.great_mosque": "Kano Central Mosque",
+  "site.kano.kurmi_market": "Kurmi Market",
+  "site.kano.gidan_makama": "Gidan Makama Museum",
+  "site.kano.dala_hill": "Dala Hill",
+
+  "site.samarkand.bibi_khanum": "Bibi-Khanum Mosque",
+  "site.samarkand.siyob_bazaar": "Siyob Bazaar",
+  "site.samarkand.registan": "The Registan",
+  "site.samarkand.shah_i_zinda": "Shah-i-Zinda",
+
+  "site.kabul.id_gah": "Id Gah Mosque",
+  "site.kabul.national_museum": "National Museum",
+  "site.kabul.babur_gardens": "Gardens of Babur",
+  "site.kabul.darul_aman": "Darul Aman Palace",
+
+  "site.yogyakarta.gede_kauman": "Gedhe Kauman Mosque",
+  "site.yogyakarta.malioboro": "Malioboro Street",
+  "site.yogyakarta.sonobudoyo": "Sonobudoyo Museum",
+  "site.yogyakarta.kraton": "Kraton Palace",
 
   "type.mosque": "mosque",
   "type.museum": "museum",
@@ -344,6 +404,36 @@
   "clue.bandung.inbound.1": "{They} mentioned Art Deco villas and cool mountain air",
   "clue.bandung.inbound.2": "{They} kept talking about hot springs and a nearby crater",
   "clue.bandung.inbound.3": "{They} was craving the coffee and colonial cafes of Braga street",
+
+  "clue.tunis.inbound.0": "{They} booked a flight to a North African capital beside the ruins of ancient Carthage",
+  "clue.tunis.inbound.1": "{They} mentioned a whitewashed medina and the great Zitouna Mosque",
+  "clue.tunis.inbound.2": "{They} kept talking about a Mediterranean port where a rival of Rome once stood",
+  "clue.tunis.inbound.3": "{They} wanted to wander the blue-and-white lanes above the Gulf of Tunis",
+
+  "clue.damascus.inbound.0": "{They} was headed to one of the world's oldest continuously inhabited cities",
+  "clue.damascus.inbound.1": "{They} mentioned the Umayyad Mosque and the covered Hamidiyah souq",
+  "clue.damascus.inbound.2": "{They} kept talking about the biblical Street Called Straight in an ancient Levantine capital",
+  "clue.damascus.inbound.3": "{They} wanted to trace the old caravan routes at the edge of the Syrian desert",
+
+  "clue.kano.inbound.0": "{They} booked a flight to an ancient Hausa trading city on the edge of the Sahel",
+  "clue.kano.inbound.1": "{They} mentioned the indigo dye pits and the sprawling Kurmi Market",
+  "clue.kano.inbound.2": "{They} kept talking about a northern Nigerian emirate wrapped in old city walls",
+  "clue.kano.inbound.3": "{They} wanted to climb Dala Hill above a trans-Saharan caravan hub",
+
+  "clue.samarkand.inbound.0": "{They} was headed to a Silk Road city of turquoise domes in Central Asia",
+  "clue.samarkand.inbound.1": "{They} mentioned the Registan and the tomb of Tamerlane",
+  "clue.samarkand.inbound.2": "{They} kept talking about the blue-tiled madrasas of an ancient Uzbek oasis",
+  "clue.samarkand.inbound.3": "{They} wanted to walk the avenue of mausoleums at Shah-i-Zinda",
+
+  "clue.kabul.inbound.0": "{They} booked passage to a high mountain capital in the Hindu Kush",
+  "clue.kabul.inbound.1": "{They} mentioned the Gardens of Babur and the old city bazaars",
+  "clue.kabul.inbound.2": "{They} kept talking about a crossroads guarding the Khyber Pass",
+  "clue.kabul.inbound.3": "{They} wanted to see the ruins of the Darul Aman Palace",
+
+  "clue.yogyakarta.inbound.0": "{They} was headed to a Javanese royal city near the temples of Borobudur and Prambanan",
+  "clue.yogyakarta.inbound.1": "{They} mentioned the Sultan's Kraton palace and busy Malioboro Street",
+  "clue.yogyakarta.inbound.2": "{They} kept talking about the cultural heart of Java and its batik workshops",
+  "clue.yogyakarta.inbound.3": "{They} wanted to watch a shadow-puppet wayang performance near a living sultanate",
 
   "villain.qamar.name": "Qamar Samarkandi",
   "villain.qamar.alias": "The Moon",
@@ -475,17 +565,14 @@
   "artifact.whirling_robe_konya.name": "Dervish Ceremonial Robe",
   "artifact.whirling_robe_konya.desc": "A white wool tennure robe worn by a senior Mevlevi dervish during the sema ceremony at the Konya lodge, dating to the 17th century.",
 
-  "artifact.samarkand_paper_tashkent.name": "Samarkand Silk Paper Folio",
-  "artifact.samarkand_paper_tashkent.desc": "A folio of polished mulberry-bark paper from the legendary Samarkand mills, bearing a treatise on algebra in the hand of a 10th-century scholar.",
+  "artifact.silk_paper_samarkand.name": "Samarkand Silk Paper Folio",
+  "artifact.silk_paper_samarkand.desc": "A folio of polished mulberry-bark paper from the legendary Samarkand mills, bearing a treatise on algebra in the hand of a 10th-century scholar.",
 
   "artifact.mughal_miniature_lahore.name": "Mughal Miniature Painting",
   "artifact.mughal_miniature_lahore.desc": "A jewel-toned miniature depicting Emperor Jahangir receiving a Sufi saint, painted with crushed lapis lazuli and gold at the Lahore court.",
 
   "artifact.zellige_mosaic_fez.name": "Zellige Mosaic Star Panel",
   "artifact.zellige_mosaic_fez.desc": "A hand-cut geometric mosaic of glazed terracotta tiles arranged in a 16-point star, removed from a 14th-century riad courtyard in the Fez medina.",
-
-  "artifact.dead_sea_scrolls_amman.name": "Copper Scroll of the Dead Sea",
-  "artifact.dead_sea_scrolls_amman.desc": "A thin copper sheet inscribed with an inventory of hidden treasures, discovered in a cave near the Dead Sea and kept in the Amman Citadel museum.",
 
   "artifact.pearl_chest_dubai.name": "Pearl Diver's Chest",
   "artifact.pearl_chest_dubai.desc": "A teak chest inlaid with mother-of-pearl, used by Gulf pearl merchants to store and grade natural pearls before the oil era transformed Dubai.",
@@ -505,11 +592,23 @@
   "artifact.keris_jakarta.name": "Javanese Keris Blade",
   "artifact.keris_jakarta.desc": "A sinuous-bladed keris with a damascened iron blade folded from meteorite nickel, believed to hold spiritual power and forged by an empu master smith.",
 
-  "artifact.cedar_oud_beirut.name": "Cedar-Wood Oud",
-  "artifact.cedar_oud_beirut.desc": "A pear-shaped oud crafted from Lebanese cedar with bone tuning pegs, once played by a renowned musician at the Beirut conservatory.",
-
   "artifact.glass_weight_dakar.name": "Fatimid Glass Weight",
   "artifact.glass_weight_dakar.desc": "A translucent green glass disc stamped with a Fatimid caliph's name, used as a trade standard along the trans-Saharan gold route through Dakar.",
+
+  "artifact.ivory_casket_tunis.name": "Zirid Ivory Casket",
+  "artifact.ivory_casket_tunis.desc": "A carved ivory casket with gilt-bronze mounts and interlacing arabesques, made for a Zirid prince in Ifriqiya and preserved in the Bardo museum of Tunis.",
+
+  "artifact.damascene_sabre_damascus.name": "Watered-Steel Damascene Sabre",
+  "artifact.damascene_sabre_damascus.desc": "A curved sabre forged from crucible steel with the rippling watered pattern that made Damascus blades legendary, its hilt inlaid with gold-and-silver damascene work.",
+
+  "artifact.indigo_robe_kano.name": "Indigo-Dyed Hausa Robe",
+  "artifact.indigo_robe_kano.desc": "A voluminous embroidered riga robe dyed a deep indigo in the centuries-old Kofar Mata pits of Kano, its yoke worked with protective Hausa knot motifs.",
+
+  "artifact.lapis_bowl_kabul.name": "Badakhshan Lapis Bowl",
+  "artifact.lapis_bowl_kabul.desc": "A shallow bowl carved from a single block of deep-blue lapis lazuli mined in Badakhshan, flecked with pyrite like a night sky, held in the Kabul museum.",
+
+  "artifact.batik_cloth_yogyakarta.name": "Sultan's Batik Parang Cloth",
+  "artifact.batik_cloth_yogyakarta.desc": "A hand-drawn batik cloth bearing the diagonal parang pattern once reserved for the royal court, waxed and dyed by palace artisans of the Yogyakarta sultanate.",
 
   "ui.title": "CARMEN: THE MODERN MUSLIM TRAVELER",
   "ui.intel": "A FITNA operative has been sighted.",

@@ -32,10 +32,10 @@ const CarmenArtifact CARMEN_ARTIFACTS[CARMEN_ARTIFACT_COUNT] = {
      "konya",
      "artifact.whirling_robe_konya.desc"},
 
-    {"samarkand_paper_tashkent",
-     "artifact.samarkand_paper_tashkent.name",
-     "tashkent",
-     "artifact.samarkand_paper_tashkent.desc"},
+    {"silk_paper_samarkand",
+     "artifact.silk_paper_samarkand.name",
+     "samarkand",
+     "artifact.silk_paper_samarkand.desc"},
 
     {"mughal_miniature_lahore",
      "artifact.mughal_miniature_lahore.name",
@@ -46,11 +46,6 @@ const CarmenArtifact CARMEN_ARTIFACTS[CARMEN_ARTIFACT_COUNT] = {
      "artifact.zellige_mosaic_fez.name",
      "fez",
      "artifact.zellige_mosaic_fez.desc"},
-
-    {"dead_sea_scrolls_amman",
-     "artifact.dead_sea_scrolls_amman.name",
-     "amman",
-     "artifact.dead_sea_scrolls_amman.desc"},
 
     {"pearl_chest_dubai",
      "artifact.pearl_chest_dubai.name",
@@ -82,15 +77,35 @@ const CarmenArtifact CARMEN_ARTIFACTS[CARMEN_ARTIFACT_COUNT] = {
      "jakarta",
      "artifact.keris_jakarta.desc"},
 
-    {"cedar_oud_beirut",
-     "artifact.cedar_oud_beirut.name",
-     "beirut",
-     "artifact.cedar_oud_beirut.desc"},
-
     {"glass_weight_dakar",
      "artifact.glass_weight_dakar.name",
      "dakar",
      "artifact.glass_weight_dakar.desc"},
+
+    {"ivory_casket_tunis",
+     "artifact.ivory_casket_tunis.name",
+     "tunis",
+     "artifact.ivory_casket_tunis.desc"},
+
+    {"damascene_sabre_damascus",
+     "artifact.damascene_sabre_damascus.name",
+     "damascus",
+     "artifact.damascene_sabre_damascus.desc"},
+
+    {"indigo_robe_kano",
+     "artifact.indigo_robe_kano.name",
+     "kano",
+     "artifact.indigo_robe_kano.desc"},
+
+    {"lapis_bowl_kabul",
+     "artifact.lapis_bowl_kabul.name",
+     "kabul",
+     "artifact.lapis_bowl_kabul.desc"},
+
+    {"batik_cloth_yogyakarta",
+     "artifact.batik_cloth_yogyakarta.name",
+     "yogyakarta",
+     "artifact.batik_cloth_yogyakarta.desc"},
 };
 
 int carmen_artifact_count(void)

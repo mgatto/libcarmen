@@ -1,0 +1,106 @@
+Islamicate Caucasus & Central Asia -- Candidate City List
+==========================================================
+
+Potential additions to the Islamic CarmenWorld seed data for
+cities in the Caucasus and Central Asia with significant
+Islamicate cultural heritage: mosques, madrasas, Silk Road
+caravanserais, Timurid architecture, Sufi shrines, and
+living Muslim tradition shaping civic identity.
+
+Current coverage: Tashkent is the only Central Asian city
+(connected to Isfahan and Lahore). No Caucasus cities exist.
+
+
+Caucasus
+--------
+
+- Baku (Azerbaijan)      -- TOP PICK
+  Icherisheher (Old City, UNESCO), Palace of the Shirvanshahs,
+  Bibi-Heybat Mosque, Heydar Aliyev Center, Flame Towers.
+  Majority Shia Muslim country; dramatic medieval/ultra-modern
+  contrast; Caspian Sea port; "Land of Fire" Zoroastrian legacy;
+  carpet-weaving; mugham music.
+  Coords: 40.41, 49.87
+  Graph connections: Istanbul (flight, Turkic corridor),
+    Isfahan (Caspian/Persian link), Tashkent (Central Asian corridor)
+  Role: Hub/connector filling void between Turkey and Central Asia
+
+- Derbent (Dagestan, Russia) -- niche/adventurous pick
+  Naryn-Kala Citadel (UNESCO), Juma Mosque (oldest in Russia),
+  Old Town, Derbent Wall.
+  "Caspian Gates" (Alexander the Great legend); Sassanid-era
+  fortifications; multicultural Dagestan (40+ ethnic groups);
+  ancient trade-route chokepoint between steppe and Persia.
+  Graph connections: Baku (natural pair), Istanbul (flight)
+  Downside: Obscure; limited to 2-3 connections; better as a
+  spoke/dead-end off Baku.
+
+- Sheki (Azerbaijan)     -- secondary pick
+  Palace of Sheki Khans (UNESCO), shebeke stained-glass craft,
+  18th-century caravanserai.
+  Downside: Small town, fewer site options, better as a spoke
+  off Baku than a standalone city.
+
+
+Central Asia
+------------
+
+- Samarkand (Uzbekistan) -- TOP PICK
+  Registan Square, Shah-i-Zinda necropolis, Bibi-Khanym Mosque,
+  Gur-e-Amir (Timur's tomb), Siab Bazaar.
+  Timur/Tamerlane's capital; Silk Road crossroads; Ulugh Beg's
+  observatory (medieval astronomy); blue tile mosaics;
+  paper-making tradition (oldest in Islamic world).
+  Coords: 39.65, 66.96
+  Graph connections: Tashkent (train/high-speed rail, ~300 km),
+    Isfahan (Timurid-Safavid cultural link),
+    Lahore (Mughal connection -- Babur came through),
+    possibly Baku or Bukhara
+  Role: Connector; bridges Tashkent into richer sub-graph
+
+- Bukhara (Uzbekistan)   -- strong second
+  Po-i-Kalyan complex (Kalyan Minaret + mosque), Ark Citadel,
+  Lyab-i-Hauz ensemble, Samanid Mausoleum (~10th c., oldest
+  Islamic monument in the region), covered bazaars (Taki-Zargaron).
+  "Bukhara the Noble"; Imam al-Bukhari's birthplace (compiler of
+  most authoritative hadith collection); Avicenna's homeland;
+  Naqshbandi Sufi order; "Genghis Khan burned it, Timur rebuilt it."
+  Coords: 39.77, 64.42
+  Graph connections: Tashkent (train), Samarkand (train, same
+    Silk Road artery); spoke off Tashkent or Samarkand
+  Role: Deepens Central Asian cluster (Tashkent-Samarkand-Bukhara
+    triangle) for multi-hop chases
+
+- Khiva (Uzbekistan)     -- atmospheric but peripheral
+  Ichan Kala walled city (entire inner city is UNESCO), Kalta Minor
+  (unfinished turquoise minaret), Juma Mosque (218 carved wooden
+  columns), Tash-Hauli Palace.
+  Slave trade history; Khorezm empire; desert oasis;
+  Al-Khwarizmi's birthplace (father of algebra -- the word
+  "algorithm" derives from his name).
+  Coords: 41.38, 60.36
+  Graph connections: Spoke off Bukhara or Tashkent; dead-end risk
+    unless Turkmenistan cities are added
+  Role: Spoke/dead-end
+
+
+Recommendations for the Graph
+------------------------------
+
+Highest-impact additions:
+
+  City        | Region       | Role           | Natural connections
+  ------------+--------------+----------------+-------------------------------
+  Baku        | Caucasus     | Hub/connector  | Istanbul, Isfahan, Tashkent
+  Samarkand   | Central Asia | Connector      | Tashkent, Isfahan, Lahore/Baku
+
+This turns the Isfahan--Tashkent corridor into:
+  - Isfahan -- Baku -- Istanbul  (Caucasus arc)
+  - Isfahan -- Tashkent -- Samarkand  (Central Asian arc)
+
+Bukhara is a strong third for a deeper Central Asian cluster
+(Tashkent--Samarkand--Bukhara triangle).
+
+If only one city: Samarkand gives the most bang -- iconic enough
+to anchor clues, and it bridges Tashkent (currently a leaf node
+with only 2 connections) into a more interesting sub-graph.

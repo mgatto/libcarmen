@@ -20,7 +20,7 @@ void tearDown(void)
 
 static void test_world_has_expected_city_count(void)
 {
-    TEST_ASSERT_EQUAL_INT(23, world.city_count);
+    TEST_ASSERT_EQUAL_INT(22, world.city_count);
 }
 
 static void test_world_has_continent_index(void)
@@ -97,10 +97,10 @@ static void test_dubai_has_direct_flights(void)
                                            out, CARMEN_MAX_CITIES);
     TEST_ASSERT_TRUE(n >= 1);
 
-    int found_doha = 0;
+    int found_muscat = 0;
     for (int i = 0; i < n; i++)
-        if (strcmp(out[i]->id, "doha") == 0) found_doha = 1;
-    TEST_ASSERT_TRUE(found_doha);
+        if (strcmp(out[i]->id, "muscat") == 0) found_muscat = 1;
+    TEST_ASSERT_TRUE(found_muscat);
 }
 
 /* -------------------- reachable within */
