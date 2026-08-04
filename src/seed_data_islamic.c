@@ -37,13 +37,38 @@ void carmen_seed_build_islamic_world(CarmenWorld *w)
     carmen_world_add_city(w, "kabul",        "city.kabul.name",        "city.kabul.local_name",        "city.kabul.country",        "city.kabul.continent",        34.53,   69.17);
     carmen_world_add_city(w, "yogyakarta",   "city.yogyakarta.name",   "city.yogyakarta.local_name",   "city.yogyakarta.country",   "city.yogyakarta.continent",   -7.80,  110.36);
 
+    /* ------------------------------------------------------------- spheres */
+    /* Internal cultural sub-sphere grouping (doc/future/cross-sphere-connectivity.md). */
+    set_sphere(w, "casablanca",   "maghreb");
+    set_sphere(w, "fez",          "maghreb");
+    set_sphere(w, "tunis",        "maghreb");
+    set_sphere(w, "istanbul",     "turkey_balkans");
+    set_sphere(w, "konya",        "turkey_balkans");
+    set_sphere(w, "sarajevo",     "turkey_balkans");
+    set_sphere(w, "cairo",        "arab_east");
+    set_sphere(w, "damascus",     "arab_east");
+    set_sphere(w, "dubai",        "arab_east");
+    set_sphere(w, "muscat",       "arab_east");
+    set_sphere(w, "dakar",        "sub_saharan_africa");
+    set_sphere(w, "zanzibar",     "sub_saharan_africa");
+    set_sphere(w, "kano",         "sub_saharan_africa");
+    set_sphere(w, "isfahan",      "iran_central_asia");
+    set_sphere(w, "samarkand",    "iran_central_asia");
+    set_sphere(w, "kabul",        "iran_central_asia");
+    set_sphere(w, "lahore",       "south_asia");
+    set_sphere(w, "dhaka",        "south_asia");
+    set_sphere(w, "hyderabad",    "south_asia");
+    set_sphere(w, "kuala_lumpur", "southeast_asia");
+    set_sphere(w, "jakarta",      "southeast_asia");
+    set_sphere(w, "yogyakarta",   "southeast_asia");
+
     /* --------------------------------------------------------------- sites */
     /* Sites are investigation locations only; they carry no clues. */
 
     add_site(w, "istanbul", "suleymaniye",     "site.istanbul.suleymaniye",     "type.mosque");
     add_site(w, "istanbul", "istanbul_modern", "site.istanbul.istanbul_modern", "type.museum");
     add_site(w, "istanbul", "kadikoy",         "site.istanbul.kadikoy",         "type.market");
-    add_site(w, "istanbul", "camlica",         "site.istanbul.camlica",         "type.mosque");
+    add_site(w, "istanbul", "topkapi",         "site.istanbul.topkapi",         "type.landmark");
 
     add_site(w, "dubai", "museum_future", "site.dubai.museum_future", "type.museum");
     add_site(w, "dubai", "al_fahidi",     "site.dubai.al_fahidi",     "type.landmark");
@@ -57,7 +82,7 @@ void carmen_seed_build_islamic_world(CarmenWorld *w)
 
     add_site(w, "casablanca", "hassan_ii",    "site.casablanca.hassan_ii",    "type.mosque");
     add_site(w, "casablanca", "habous",       "site.casablanca.habous",       "type.market");
-    add_site(w, "casablanca", "morocco_mall", "site.casablanca.morocco_mall", "type.market");
+    add_site(w, "casablanca", "slaoui",       "site.casablanca.slaoui",       "type.museum");
     add_site(w, "casablanca", "art_deco",     "site.casablanca.art_deco",     "type.landmark");
 
     add_site(w, "jakarta", "istiqlal",        "site.jakarta.istiqlal",        "type.mosque");
@@ -68,6 +93,7 @@ void carmen_seed_build_islamic_world(CarmenWorld *w)
     add_site(w, "sarajevo", "bascarsija",  "site.sarajevo.bascarsija",  "type.market");
     add_site(w, "sarajevo", "gazi_husrev", "site.sarajevo.gazi_husrev", "type.mosque");
     add_site(w, "sarajevo", "war_tunnel",  "site.sarajevo.war_tunnel",  "type.museum");
+    add_site(w, "sarajevo", "vrelo_bosne", "site.sarajevo.vrelo_bosne", "type.park");
 
     add_site(w, "cairo", "azhar_park",    "site.cairo.azhar_park",    "type.park");
     add_site(w, "cairo", "tahrir",        "site.cairo.tahrir",        "type.landmark");
@@ -77,32 +103,37 @@ void carmen_seed_build_islamic_world(CarmenWorld *w)
     add_site(w, "lahore", "badshahi",    "site.lahore.badshahi",    "type.mosque");
     add_site(w, "lahore", "lahore_fort", "site.lahore.lahore_fort", "type.landmark");
     add_site(w, "lahore", "food_street", "site.lahore.food_street", "type.market");
-    add_site(w, "lahore", "anarkali",    "site.lahore.anarkali",    "type.market");
+    add_site(w, "lahore", "lahore_museum", "site.lahore.lahore_museum", "type.museum");
 
     add_site(w, "konya", "mevlana",  "site.konya.mevlana",  "type.museum");
     add_site(w, "konya", "alaeddin", "site.konya.alaeddin", "type.mosque");
     add_site(w, "konya", "sille",    "site.konya.sille",    "type.landmark");
+    add_site(w, "konya", "bedesten", "site.konya.bedesten", "type.market");
 
     add_site(w, "muscat", "sultan_qaboos", "site.muscat.sultan_qaboos", "type.mosque");
     add_site(w, "muscat", "bimmah",        "site.muscat.bimmah",        "type.landmark");
     add_site(w, "muscat", "royal_opera",   "site.muscat.royal_opera",   "type.landmark");
+    add_site(w, "muscat", "mutrah_souq",   "site.muscat.mutrah_souq",   "type.market");
 
     add_site(w, "dakar", "grande_mosquee",      "site.dakar.grande_mosquee",      "type.mosque");
     add_site(w, "dakar", "goree",               "site.dakar.goree",               "type.landmark");
     add_site(w, "dakar", "african_renaissance", "site.dakar.african_renaissance", "type.landmark");
+    add_site(w, "dakar", "ifan",                "site.dakar.ifan",                "type.museum");
 
-    add_site(w, "isfahan", "naqsh_e_jahan", "site.isfahan.naqsh_e_jahan", "type.landmark");
-    add_site(w, "isfahan", "vank",          "site.isfahan.vank",          "type.landmark");
-    add_site(w, "isfahan", "si_o_se_pol",   "site.isfahan.si_o_se_pol",   "type.cafe");
+    add_site(w, "isfahan", "naqsh_e_jahan",    "site.isfahan.naqsh_e_jahan",    "type.landmark");
+    add_site(w, "isfahan", "sheikh_lotfollah", "site.isfahan.sheikh_lotfollah", "type.mosque");
+    add_site(w, "isfahan", "vank",             "site.isfahan.vank",             "type.landmark");
+    add_site(w, "isfahan", "si_o_se_pol",      "site.isfahan.si_o_se_pol",      "type.cafe");
 
     add_site(w, "dhaka", "baitul_mukarram", "site.dhaka.baitul_mukarram", "type.mosque");
-    add_site(w, "dhaka", "star_mosque",     "site.dhaka.star_mosque",     "type.mosque");
+    add_site(w, "dhaka", "shakhari_bazaar", "site.dhaka.shakhari_bazaar", "type.market");
     add_site(w, "dhaka", "lalbagh",         "site.dhaka.lalbagh",         "type.landmark");
-    add_site(w, "dhaka", "sadarghat",       "site.dhaka.sadarghat",       "type.landmark");
+    add_site(w, "dhaka", "national_museum", "site.dhaka.national_museum", "type.museum");
 
     add_site(w, "fez", "qarawiyyin", "site.fez.qarawiyyin", "type.mosque");
     add_site(w, "fez", "fez_medina", "site.fez.fez_medina", "type.market");
     add_site(w, "fez", "borj_nord",  "site.fez.borj_nord",  "type.landmark");
+    add_site(w, "fez", "jnan_sbil",  "site.fez.jnan_sbil",  "type.park");
 
     add_site(w, "zanzibar", "stone_town", "site.zanzibar.stone_town", "type.landmark");
     add_site(w, "zanzibar", "hamamni",    "site.zanzibar.hamamni",    "type.landmark");
@@ -115,13 +146,13 @@ void carmen_seed_build_islamic_world(CarmenWorld *w)
     add_site(w, "hyderabad", "laad_bazaar",  "site.hyderabad.laad_bazaar",  "type.market");
 
     add_site(w, "tunis", "zitouna",  "site.tunis.zitouna",  "type.mosque");
-    add_site(w, "tunis", "medina",   "site.tunis.medina",   "type.market");
+    add_site(w, "tunis", "sidi_bou_said", "site.tunis.sidi_bou_said", "type.cafe");
     add_site(w, "tunis", "bardo",    "site.tunis.bardo",    "type.museum");
     add_site(w, "tunis", "carthage", "site.tunis.carthage", "type.landmark");
 
     add_site(w, "damascus", "umayyad",         "site.damascus.umayyad",         "type.mosque");
     add_site(w, "damascus", "hamidiyah",       "site.damascus.hamidiyah",       "type.market");
-    add_site(w, "damascus", "national_museum", "site.damascus.national_museum", "type.museum");
+    add_site(w, "damascus", "nawfara",         "site.damascus.nawfara",         "type.cafe");
     add_site(w, "damascus", "azm_palace",      "site.damascus.azm_palace",      "type.landmark");
 
     add_site(w, "kano", "great_mosque", "site.kano.great_mosque", "type.mosque");
@@ -141,7 +172,7 @@ void carmen_seed_build_islamic_world(CarmenWorld *w)
 
     add_site(w, "yogyakarta", "gede_kauman", "site.yogyakarta.gede_kauman", "type.mosque");
     add_site(w, "yogyakarta", "malioboro",   "site.yogyakarta.malioboro",   "type.market");
-    add_site(w, "yogyakarta", "sonobudoyo",  "site.yogyakarta.sonobudoyo",  "type.museum");
+    add_site(w, "yogyakarta", "taman_sari",  "site.yogyakarta.taman_sari",  "type.park");
     add_site(w, "yogyakarta", "kraton",      "site.yogyakarta.kraton",      "type.landmark");
 
     /* --------------------------------------------------- inbound clue pools */

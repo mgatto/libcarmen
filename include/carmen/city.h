@@ -14,6 +14,10 @@ typedef struct {
     char             local_name[CARMEN_MAX_NAME_LEN];
     char             country[CARMEN_MAX_NAME_LEN];
     char             continent[CARMEN_MAX_NAME_LEN];
+    /* Internal cultural sub-sphere grouping id (e.g. "maghreb").  Seed-only
+       metadata, not display text and not part of the public API surface;
+       no accessors are exported for it.  Empty when unset. */
+    char             sphere[CARMEN_MAX_NAME_LEN];
     double           latitude;
     double           longitude;
     CarmenSite       sites[CARMEN_MAX_SITES];

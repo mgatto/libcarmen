@@ -2,7 +2,21 @@
 #define CARMEN_SEED_HELPERS_H
 
 #include <stddef.h>
+#include <string.h>
 #include "carmen/game_world.h"
+
+/* Tag a city with its internal cultural sub-sphere grouping id (see
+   doc/future/cross-sphere-connectivity.md).  Writes the CarmenCity.sphere
+   field directly; deliberately not a public API accessor. */
+static inline void set_sphere(CarmenWorld *w, const char *city_id,
+                              const char *sphere)
+{
+    if (!w || !city_id || !sphere) return;
+    CarmenCity *c = carmen_world_find(w, city_id);
+    if (!c) return;
+    strncpy(c->sphere, sphere, CARMEN_MAX_NAME_LEN - 1);
+    c->sphere[CARMEN_MAX_NAME_LEN - 1] = '\0';
+}
 
 /* Add an investigation site to a city.  Sites no longer carry clues:
    clues are drawn at case-generation time from destination cities'

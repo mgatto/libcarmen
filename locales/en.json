@@ -21,11 +21,6 @@
   "city.casablanca.country": "Morocco",
   "city.casablanca.continent": "Africa",
 
-  "city.marrakech.name": "Marrakech",
-  "city.marrakech.local_name": "مراكش",
-  "city.marrakech.country": "Morocco",
-  "city.marrakech.continent": "Africa",
-
   "city.fez.name": "Fez",
   "city.fez.local_name": "فاس",
   "city.fez.country": "Morocco",
@@ -40,16 +35,6 @@
   "city.dubai.local_name": "دبي",
   "city.dubai.country": "UAE",
   "city.dubai.continent": "Asia",
-
-  "city.doha.name": "Doha",
-  "city.doha.local_name": "الدوحة",
-  "city.doha.country": "Qatar",
-  "city.doha.continent": "Asia",
-
-  "city.abu_dhabi.name": "Abu Dhabi",
-  "city.abu_dhabi.local_name": "أبوظبي",
-  "city.abu_dhabi.country": "UAE",
-  "city.abu_dhabi.continent": "Asia",
 
   "city.zanzibar.name": "Zanzibar",
   "city.zanzibar.local_name": "زنجبار",
@@ -66,16 +51,6 @@
   "city.muscat.country": "Oman",
   "city.muscat.continent": "Asia",
 
-  "city.amman.name": "Amman",
-  "city.amman.local_name": "عمّان",
-  "city.amman.country": "Jordan",
-  "city.amman.continent": "Asia",
-
-  "city.beirut.name": "Beirut",
-  "city.beirut.local_name": "بيروت",
-  "city.beirut.country": "Lebanon",
-  "city.beirut.continent": "Asia",
-
   "city.isfahan.name": "Isfahan",
   "city.isfahan.local_name": "اصفهان",
   "city.isfahan.country": "Iran",
@@ -85,11 +60,6 @@
   "city.konya.local_name": "Konya",
   "city.konya.country": "Turkey",
   "city.konya.continent": "Asia",
-
-  "city.tashkent.name": "Tashkent",
-  "city.tashkent.local_name": "Тошкент",
-  "city.tashkent.country": "Uzbekistan",
-  "city.tashkent.continent": "Asia",
 
   "city.lahore.name": "Lahore",
   "city.lahore.local_name": "لاہور",
@@ -110,11 +80,6 @@
   "city.jakarta.local_name": "Jakarta",
   "city.jakarta.country": "Indonesia",
   "city.jakarta.continent": "Asia",
-
-  "city.bandung.name": "Bandung",
-  "city.bandung.local_name": "Bandung",
-  "city.bandung.country": "Indonesia",
-  "city.bandung.continent": "Asia",
 
   "city.tunis.name": "Tunis",
   "city.tunis.local_name": "تونس",
@@ -149,7 +114,7 @@
   "site.istanbul.suleymaniye": "Suleymaniye Mosque",
   "site.istanbul.istanbul_modern": "Istanbul Modern",
   "site.istanbul.kadikoy": "Kadikoy Food Market",
-  "site.istanbul.camlica": "Camlica Mosque",
+  "site.istanbul.topkapi": "Topkapi Palace",
 
   "site.dubai.museum_future": "Museum of the Future",
   "site.dubai.al_fahidi": "Al Fahidi Historical Dist",
@@ -161,18 +126,9 @@
   "site.kuala_lumpur.jalan_alor": "Jalan Alor",
   "site.kuala_lumpur.masjid_negara": "Masjid Negara",
 
-  "site.doha.islamic_art": "Museum of Islamic Art",
-  "site.doha.souq_waqif": "Souq Waqif",
-  "site.doha.katara": "Katara Cultural Village",
-  "site.doha.education_city": "Education City",
-
-  "site.amman.citadel": "The Citadel",
-  "site.amman.rainbow_street": "Rainbow Street Cafes",
-  "site.amman.king_abdullah": "King Abdullah Mosque",
-
   "site.casablanca.hassan_ii": "Hassan II Mosque",
   "site.casablanca.habous": "Habous Quarter",
-  "site.casablanca.morocco_mall": "Morocco Mall",
+  "site.casablanca.slaoui": "Abderrahman Slaoui Museum",
   "site.casablanca.art_deco": "Art Deco Downtown",
 
   "site.jakarta.istiqlal": "Istiqlal Mosque",
@@ -183,63 +139,47 @@
   "site.sarajevo.bascarsija": "Bascarsija",
   "site.sarajevo.gazi_husrev": "Gazi Husrev-beg Mosque",
   "site.sarajevo.war_tunnel": "War Tunnel Museum",
-
-  "site.tashkent.khast_imam": "Khast Imam Complex",
-  "site.tashkent.chorsu": "Chorsu Bazaar",
-  "site.tashkent.tashkent_metro": "Tashkent Metro",
-  "site.tashkent.minor_mosque": "Minor Mosque",
+  "site.sarajevo.vrelo_bosne": "Vrelo Bosne Park",
 
   "site.cairo.azhar_park": "Al-Azhar Park",
   "site.cairo.tahrir": "Tahrir Square",
   "site.cairo.khan_khalili": "Khan el-Khalili",
   "site.cairo.sultan_hassan": "Sultan Hassan Mosque",
 
-  "site.beirut.al_amin": "Mohammad Al-Amin Mosque",
-  "site.beirut.gemmayzeh": "Gemmayzeh Street Art",
-  "site.beirut.national_museum": "National Museum",
-
-  "site.marrakech.jemaa": "Jemaa el-Fnaa",
-  "site.marrakech.macaal": "MACAAL",
-  "site.marrakech.le_jardin": "Le Jardin Secret",
-
   "site.lahore.badshahi": "Badshahi Mosque",
   "site.lahore.lahore_fort": "Lahore Fort",
   "site.lahore.food_street": "Food Street",
-  "site.lahore.anarkali": "Anarkali Bazaar",
+  "site.lahore.lahore_museum": "Lahore Museum",
 
   "site.konya.mevlana": "Mevlana Museum",
   "site.konya.alaeddin": "Alaeddin Mosque",
   "site.konya.sille": "Sille Village",
-
-  "site.abu_dhabi.sheikh_zayed": "Sheikh Zayed Mosque",
-  "site.abu_dhabi.louvre_ad": "Louvre Abu Dhabi",
-  "site.abu_dhabi.mangrove_park": "Mangrove Park",
-  "site.abu_dhabi.qasr_watan": "Qasr Al Watan",
+  "site.konya.bedesten": "Bedesten Bazaar",
 
   "site.muscat.sultan_qaboos": "Sultan Qaboos Mosque",
   "site.muscat.bimmah": "Bimmah Sinkhole",
   "site.muscat.royal_opera": "Royal Opera House",
+  "site.muscat.mutrah_souq": "Mutrah Souq",
 
   "site.dakar.grande_mosquee": "Grande Mosquee",
   "site.dakar.goree": "Goree Island",
   "site.dakar.african_renaissance": "African Renaissance Monument",
-
-  "site.bandung.braga": "Braga Street",
-  "site.bandung.masjid_raya": "Masjid Raya Bandung",
-  "site.bandung.tangkuban": "Tangkuban Perahu",
+  "site.dakar.ifan": "IFAN Museum",
 
   "site.isfahan.naqsh_e_jahan": "Naqsh-e Jahan Square",
+  "site.isfahan.sheikh_lotfollah": "Sheikh Lotfollah Mosque",
   "site.isfahan.vank": "Vank Cathedral",
   "site.isfahan.si_o_se_pol": "Si-o-se-pol Tea Houses",
 
   "site.dhaka.baitul_mukarram": "Baitul Mukarram Mosque",
-  "site.dhaka.star_mosque": "Star Mosque",
+  "site.dhaka.shakhari_bazaar": "Shakhari Bazaar",
   "site.dhaka.lalbagh": "Lalbagh Fort",
-  "site.dhaka.sadarghat": "Sadarghat Terminal",
+  "site.dhaka.national_museum": "Bangladesh National Museum",
 
   "site.fez.qarawiyyin": "Al-Qarawiyyin",
   "site.fez.fez_medina": "Fez Medina",
   "site.fez.borj_nord": "Borj Nord Viewpoint",
+  "site.fez.jnan_sbil": "Jnan Sbil Gardens",
 
   "site.zanzibar.stone_town": "Stone Town",
   "site.zanzibar.hamamni": "Hamamni Persian Baths",
@@ -252,13 +192,13 @@
   "site.hyderabad.laad_bazaar": "Laad Bazaar",
 
   "site.tunis.zitouna": "Zitouna Mosque",
-  "site.tunis.medina": "Tunis Medina",
+  "site.tunis.sidi_bou_said": "Sidi Bou Said Cafes",
   "site.tunis.bardo": "Bardo National Museum",
   "site.tunis.carthage": "Ruins of Carthage",
 
   "site.damascus.umayyad": "Umayyad Mosque",
   "site.damascus.hamidiyah": "Al-Hamidiyah Souq",
-  "site.damascus.national_museum": "National Museum",
+  "site.damascus.nawfara": "Al-Nawfara Cafe",
   "site.damascus.azm_palace": "Azm Palace",
 
   "site.kano.great_mosque": "Kano Central Mosque",
@@ -278,7 +218,7 @@
 
   "site.yogyakarta.gede_kauman": "Gedhe Kauman Mosque",
   "site.yogyakarta.malioboro": "Malioboro Street",
-  "site.yogyakarta.sonobudoyo": "Sonobudoyo Museum",
+  "site.yogyakarta.taman_sari": "Taman Sari Water Castle",
   "site.yogyakarta.kraton": "Kraton Palace",
 
   "type.mosque": "mosque",
@@ -310,11 +250,6 @@
   "clue.casablanca.inbound.2": "{They} mentioned the economic capital on Morocco's Atlantic coast",
   "clue.casablanca.inbound.3": "{They} kept humming about a certain old film set in a Moroccan port",
 
-  "clue.marrakech.inbound.0": "{They} had a riad reservation in the Red City at the foot of the Atlas",
-  "clue.marrakech.inbound.1": "{They} was headed for the ochre-walled city and its Jemaa el-Fnaa square",
-  "clue.marrakech.inbound.2": "{They} mentioned snake charmers and souks below snow-capped mountains",
-  "clue.marrakech.inbound.3": "{They} was craving the night food stalls of the Red City",
-
   "clue.fez.inbound.0": "{They} wanted to see the world's oldest university in Morocco's oldest imperial city",
   "clue.fez.inbound.1": "{They} was getting lost on purpose in a labyrinthine walled medina",
   "clue.fez.inbound.2": "{They} mentioned the famous tanneries and their dye pits",
@@ -329,16 +264,6 @@
   "clue.dubai.inbound.1": "{They} kept talking about a Museum of the Future rising from the desert",
   "clue.dubai.inbound.2": "{They} mentioned mega-malls and indoor ski slopes on the Arabian coast",
   "clue.dubai.inbound.3": "{They} was reading about a city built from sand into glass and steel",
-
-  "clue.doha.inbound.0": "{They} wanted to visit the Museum of Islamic Art on a Gulf peninsula",
-  "clue.doha.inbound.1": "{They} mentioned the Souq Waqif and a glittering peninsula skyline",
-  "clue.doha.inbound.2": "{They} was headed to the capital of a small but wealthy Gulf emirate",
-  "clue.doha.inbound.3": "{They} kept talking about pearl-diving heritage on the Qatari coast",
-
-  "clue.abu_dhabi.inbound.0": "{They} wanted to see the white marble mosque that seats forty thousand",
-  "clue.abu_dhabi.inbound.1": "{They} mentioned the Louvre branch beside the presidential palace",
-  "clue.abu_dhabi.inbound.2": "{They} was headed to the capital emirate down the Gulf coast",
-  "clue.abu_dhabi.inbound.3": "{They} kept talking about mangrove kayaking near a Gulf capital",
 
   "clue.zanzibar.inbound.0": "{They} booked passage to a spice island in the Indian Ocean",
   "clue.zanzibar.inbound.1": "{They} mentioned the coral-stone alleys of a Swahili Stone Town",
@@ -355,16 +280,6 @@
   "clue.muscat.inbound.2": "{They} was reading about wadis and frankincense on the Arabian Sea",
   "clue.muscat.inbound.3": "{They} wanted to see the royal opera house by the Gulf of Oman",
 
-  "clue.amman.inbound.0": "{They} was headed for a Levantine capital built across seven hills",
-  "clue.amman.inbound.1": "{They} mentioned Roman citadel ruins overlooking a hilltop city",
-  "clue.amman.inbound.2": "{They} kept talking about Nabataean ruins a short drive away",
-  "clue.amman.inbound.3": "{They} was reading about the cafes of a Jordanian capital's Rainbow Street",
-
-  "clue.beirut.inbound.0": "{They} wanted a Mediterranean city where nightlife meets church bells and adhan",
-  "clue.beirut.inbound.1": "{They} mentioned the blue-domed Mohammad Al-Amin mosque",
-  "clue.beirut.inbound.2": "{They} was headed to a Levantine port rebuilt again and again",
-  "clue.beirut.inbound.3": "{They} kept talking about the bars of a seaside Gemmayzeh district",
-
   "clue.isfahan.inbound.0": "{They} was headed to a Persian city once called half the world",
   "clue.isfahan.inbound.1": "{They} mentioned a vast royal square ringed with blue-tiled domes",
   "clue.isfahan.inbound.2": "{They} kept talking about arched bridges with tea houses underneath",
@@ -375,18 +290,13 @@
   "clue.konya.inbound.2": "{They} was reading about a former Seljuk capital on the plateau",
   "clue.konya.inbound.3": "{They} kept talking about spinning mystics in green-domed shrines",
 
-  "clue.tashkent.inbound.0": "{They} was headed to a Central Asian capital on the old Silk Road",
-  "clue.tashkent.inbound.1": "{They} mentioned an ornate metro and the Khast Imam complex",
-  "clue.tashkent.inbound.2": "{They} kept talking about the sprawling Chorsu bazaar under its dome",
-  "clue.tashkent.inbound.3": "{They} was reading about a city rebuilt after a great earthquake",
-
   "clue.lahore.inbound.0": "{They} was headed to Pakistan's cultural capital and its Mughal fort",
   "clue.lahore.inbound.1": "{They} mentioned the Badshahi Mosque and Wazir Khan's tilework",
   "clue.lahore.inbound.2": "{They} kept craving the food street of an old walled city",
   "clue.lahore.inbound.3": "{They} was reading about the gardens of a Punjab metropolis",
 
   "clue.dhaka.inbound.0": "{They} was headed to a dense river capital in the Bengal delta",
-  "clue.dhaka.inbound.1": "{They} mentioned the national mosque and a pink Star Mosque",
+  "clue.dhaka.inbound.1": "{They} mentioned the national mosque and the Mughal Lalbagh Fort",
   "clue.dhaka.inbound.2": "{They} kept talking about rickshaws crowding a megacity's lanes",
   "clue.dhaka.inbound.3": "{They} was craving the kacchi biryani of a Bengali capital",
 
@@ -399,11 +309,6 @@
   "clue.jakarta.inbound.1": "{They} mentioned Istiqlal, the largest mosque in the region",
   "clue.jakarta.inbound.2": "{They} kept talking about a Dutch old town called Kota Tua",
   "clue.jakarta.inbound.3": "{They} was reading about a sprawling megacity on Java's north coast",
-
-  "clue.bandung.inbound.0": "{They} was headed to a volcanic highland city they called the Paris of Java",
-  "clue.bandung.inbound.1": "{They} mentioned Art Deco villas and cool mountain air",
-  "clue.bandung.inbound.2": "{They} kept talking about hot springs and a nearby crater",
-  "clue.bandung.inbound.3": "{They} was craving the coffee and colonial cafes of Braga street",
 
   "clue.tunis.inbound.0": "{They} booked a flight to a North African capital beside the ruins of ancient Carthage",
   "clue.tunis.inbound.1": "{They} mentioned a whitewashed medina and the great Zitouna Mosque",
