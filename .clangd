@@ -3,5 +3,7 @@ CompileFlags:
     - -Iinclude
     - -Ivendor/stb
     - -Ivendor/utf8
+    - -Ivendor/cjson
+    - -Ivendor/toml-c
     - -Ivendor/unity
     - -DUNITY_INCLUDE_DOUBLE
