@@ -1,0 +1,506 @@
+// Islamic world preset -- Modern Muslim Traveler.
+//
+// Single source of truth for the built-in "islamic" world.  This file is a
+// faithful translation of the former src/seed_data_islamic.c and is compiled
+// in at build time by tools/gen_world.c (which validates it and emits the
+// generated carmen_world_build_islamic()).  Values are i18n keys, never
+// display text; targets are resolved at case generation, not here.
+//
+// Clue design: clues are not baked onto sites.  Each city owns an inbound
+// clue pool -- targetless descriptor keys that "point to it".  At case
+// generation the engine draws positives from the next trail city's pool and
+// decoys from wrong neighbors' pools, assigning target_city_id at runtime
+// (see src/case.c).
+//
+// "sphere" tags a city with its internal cultural sub-sphere grouping id
+// (see doc/future/cross-sphere-connectivity.md); it is seed-only metadata,
+// not display text.  Sites are investigation locations only and carry no
+// clues.  City order defines storage[] slots, so it is preserved 1:1.
+{
+  "id": "islamic",
+
+  "cities": [
+    // Istanbul (turkey_balkans)
+    {
+      "id": "istanbul",
+      "name": "city.istanbul.name", "local_name": "city.istanbul.local_name",
+      "country": "city.istanbul.country", "continent": "city.istanbul.continent",
+      "sphere": "turkey_balkans", "lat": 41.01, "lon": 28.98,
+      "sites": [
+        { "id": "suleymaniye",     "name": "site.istanbul.suleymaniye",     "type": "type.mosque" },
+        { "id": "istanbul_modern", "name": "site.istanbul.istanbul_modern", "type": "type.museum" },
+        { "id": "kadikoy",         "name": "site.istanbul.kadikoy",         "type": "type.market" },
+        { "id": "topkapi",         "name": "site.istanbul.topkapi",         "type": "type.landmark" }
+      ],
+      "inbound_clues": [
+        "clue.istanbul.inbound.0", "clue.istanbul.inbound.1",
+        "clue.istanbul.inbound.2", "clue.istanbul.inbound.3"
+      ]
+    },
+
+    // Sarajevo (turkey_balkans)
+    {
+      "id": "sarajevo",
+      "name": "city.sarajevo.name", "local_name": "city.sarajevo.local_name",
+      "country": "city.sarajevo.country", "continent": "city.sarajevo.continent",
+      "sphere": "turkey_balkans", "lat": 43.86, "lon": 18.41,
+      "sites": [
+        { "id": "bascarsija",  "name": "site.sarajevo.bascarsija",  "type": "type.market" },
+        { "id": "gazi_husrev", "name": "site.sarajevo.gazi_husrev", "type": "type.mosque" },
+        { "id": "war_tunnel",  "name": "site.sarajevo.war_tunnel",  "type": "type.museum" },
+        { "id": "vrelo_bosne", "name": "site.sarajevo.vrelo_bosne", "type": "type.park" }
+      ],
+      "inbound_clues": [
+        "clue.sarajevo.inbound.0", "clue.sarajevo.inbound.1",
+        "clue.sarajevo.inbound.2", "clue.sarajevo.inbound.3"
+      ]
+    },
+
+    // Cairo (arab_east)
+    {
+      "id": "cairo",
+      "name": "city.cairo.name", "local_name": "city.cairo.local_name",
+      "country": "city.cairo.country", "continent": "city.cairo.continent",
+      "sphere": "arab_east", "lat": 30.04, "lon": 31.24,
+      "sites": [
+        { "id": "azhar_park",    "name": "site.cairo.azhar_park",    "type": "type.park" },
+        { "id": "tahrir",        "name": "site.cairo.tahrir",        "type": "type.landmark" },
+        { "id": "khan_khalili",  "name": "site.cairo.khan_khalili",  "type": "type.market" },
+        { "id": "sultan_hassan", "name": "site.cairo.sultan_hassan", "type": "type.mosque" }
+      ],
+      "inbound_clues": [
+        "clue.cairo.inbound.0", "clue.cairo.inbound.1",
+        "clue.cairo.inbound.2", "clue.cairo.inbound.3"
+      ]
+    },
+
+    // Casablanca (maghreb)
+    {
+      "id": "casablanca",
+      "name": "city.casablanca.name", "local_name": "city.casablanca.local_name",
+      "country": "city.casablanca.country", "continent": "city.casablanca.continent",
+      "sphere": "maghreb", "lat": 33.57, "lon": -7.59,
+      "sites": [
+        { "id": "hassan_ii", "name": "site.casablanca.hassan_ii", "type": "type.mosque" },
+        { "id": "habous",    "name": "site.casablanca.habous",    "type": "type.market" },
+        { "id": "slaoui",    "name": "site.casablanca.slaoui",    "type": "type.museum" },
+        { "id": "art_deco",  "name": "site.casablanca.art_deco",  "type": "type.landmark" }
+      ],
+      "inbound_clues": [
+        "clue.casablanca.inbound.0", "clue.casablanca.inbound.1",
+        "clue.casablanca.inbound.2", "clue.casablanca.inbound.3"
+      ]
+    },
+
+    // Fez (maghreb)
+    {
+      "id": "fez",
+      "name": "city.fez.name", "local_name": "city.fez.local_name",
+      "country": "city.fez.country", "continent": "city.fez.continent",
+      "sphere": "maghreb", "lat": 34.03, "lon": -5.00,
+      "sites": [
+        { "id": "qarawiyyin", "name": "site.fez.qarawiyyin", "type": "type.mosque" },
+        { "id": "fez_medina", "name": "site.fez.fez_medina", "type": "type.market" },
+        { "id": "borj_nord",  "name": "site.fez.borj_nord",  "type": "type.landmark" },
+        { "id": "jnan_sbil",  "name": "site.fez.jnan_sbil",  "type": "type.park" }
+      ],
+      "inbound_clues": [
+        "clue.fez.inbound.0", "clue.fez.inbound.1",
+        "clue.fez.inbound.2", "clue.fez.inbound.3"
+      ]
+    },
+
+    // Dakar (sub_saharan_africa)
+    {
+      "id": "dakar",
+      "name": "city.dakar.name", "local_name": "city.dakar.local_name",
+      "country": "city.dakar.country", "continent": "city.dakar.continent",
+      "sphere": "sub_saharan_africa", "lat": 14.72, "lon": -17.47,
+      "sites": [
+        { "id": "grande_mosquee",      "name": "site.dakar.grande_mosquee",      "type": "type.mosque" },
+        { "id": "goree",               "name": "site.dakar.goree",               "type": "type.landmark" },
+        { "id": "african_renaissance", "name": "site.dakar.african_renaissance", "type": "type.landmark" },
+        { "id": "ifan",                "name": "site.dakar.ifan",                "type": "type.museum" }
+      ],
+      "inbound_clues": [
+        "clue.dakar.inbound.0", "clue.dakar.inbound.1",
+        "clue.dakar.inbound.2", "clue.dakar.inbound.3"
+      ]
+    },
+
+    // Dubai (arab_east)
+    {
+      "id": "dubai",
+      "name": "city.dubai.name", "local_name": "city.dubai.local_name",
+      "country": "city.dubai.country", "continent": "city.dubai.continent",
+      "sphere": "arab_east", "lat": 25.20, "lon": 55.27,
+      "sites": [
+        { "id": "museum_future", "name": "site.dubai.museum_future", "type": "type.museum" },
+        { "id": "al_fahidi",     "name": "site.dubai.al_fahidi",     "type": "type.landmark" },
+        { "id": "dubai_mall",    "name": "site.dubai.dubai_mall",    "type": "type.market" },
+        { "id": "jumeirah",      "name": "site.dubai.jumeirah",      "type": "type.mosque" }
+      ],
+      "inbound_clues": [
+        "clue.dubai.inbound.0", "clue.dubai.inbound.1",
+        "clue.dubai.inbound.2", "clue.dubai.inbound.3"
+      ]
+    },
+
+    // Zanzibar (sub_saharan_africa)
+    {
+      "id": "zanzibar",
+      "name": "city.zanzibar.name", "local_name": "city.zanzibar.local_name",
+      "country": "city.zanzibar.country", "continent": "city.zanzibar.continent",
+      "sphere": "sub_saharan_africa", "lat": -6.16, "lon": 39.19,
+      "sites": [
+        { "id": "stone_town", "name": "site.zanzibar.stone_town", "type": "type.landmark" },
+        { "id": "hamamni",    "name": "site.zanzibar.hamamni",    "type": "type.landmark" },
+        { "id": "malindi",    "name": "site.zanzibar.malindi",    "type": "type.mosque" },
+        { "id": "forodhani",  "name": "site.zanzibar.forodhani",  "type": "type.market" }
+      ],
+      "inbound_clues": [
+        "clue.zanzibar.inbound.0", "clue.zanzibar.inbound.1",
+        "clue.zanzibar.inbound.2", "clue.zanzibar.inbound.3"
+      ]
+    },
+
+    // Hyderabad (south_asia)
+    {
+      "id": "hyderabad",
+      "name": "city.hyderabad.name", "local_name": "city.hyderabad.local_name",
+      "country": "city.hyderabad.country", "continent": "city.hyderabad.continent",
+      "sphere": "south_asia", "lat": 17.38, "lon": 78.49,
+      "sites": [
+        { "id": "charminar",    "name": "site.hyderabad.charminar",    "type": "type.landmark" },
+        { "id": "mecca_masjid", "name": "site.hyderabad.mecca_masjid", "type": "type.mosque" },
+        { "id": "salar_jung",   "name": "site.hyderabad.salar_jung",   "type": "type.museum" },
+        { "id": "laad_bazaar",  "name": "site.hyderabad.laad_bazaar",  "type": "type.market" }
+      ],
+      "inbound_clues": [
+        "clue.hyderabad.inbound.0", "clue.hyderabad.inbound.1",
+        "clue.hyderabad.inbound.2", "clue.hyderabad.inbound.3"
+      ]
+    },
+
+    // Muscat (arab_east)
+    {
+      "id": "muscat",
+      "name": "city.muscat.name", "local_name": "city.muscat.local_name",
+      "country": "city.muscat.country", "continent": "city.muscat.continent",
+      "sphere": "arab_east", "lat": 23.59, "lon": 58.55,
+      "sites": [
+        { "id": "sultan_qaboos", "name": "site.muscat.sultan_qaboos", "type": "type.mosque" },
+        { "id": "bimmah",        "name": "site.muscat.bimmah",        "type": "type.landmark" },
+        { "id": "royal_opera",   "name": "site.muscat.royal_opera",   "type": "type.landmark" },
+        { "id": "mutrah_souq",   "name": "site.muscat.mutrah_souq",   "type": "type.market" }
+      ],
+      "inbound_clues": [
+        "clue.muscat.inbound.0", "clue.muscat.inbound.1",
+        "clue.muscat.inbound.2", "clue.muscat.inbound.3"
+      ]
+    },
+
+    // Isfahan (iran_central_asia)
+    {
+      "id": "isfahan",
+      "name": "city.isfahan.name", "local_name": "city.isfahan.local_name",
+      "country": "city.isfahan.country", "continent": "city.isfahan.continent",
+      "sphere": "iran_central_asia", "lat": 32.65, "lon": 51.68,
+      "sites": [
+        { "id": "naqsh_e_jahan",    "name": "site.isfahan.naqsh_e_jahan",    "type": "type.landmark" },
+        { "id": "sheikh_lotfollah", "name": "site.isfahan.sheikh_lotfollah", "type": "type.mosque" },
+        { "id": "vank",             "name": "site.isfahan.vank",             "type": "type.landmark" },
+        { "id": "si_o_se_pol",      "name": "site.isfahan.si_o_se_pol",      "type": "type.cafe" }
+      ],
+      "inbound_clues": [
+        "clue.isfahan.inbound.0", "clue.isfahan.inbound.1",
+        "clue.isfahan.inbound.2", "clue.isfahan.inbound.3"
+      ]
+    },
+
+    // Konya (turkey_balkans)
+    {
+      "id": "konya",
+      "name": "city.konya.name", "local_name": "city.konya.local_name",
+      "country": "city.konya.country", "continent": "city.konya.continent",
+      "sphere": "turkey_balkans", "lat": 37.87, "lon": 32.48,
+      "sites": [
+        { "id": "mevlana",  "name": "site.konya.mevlana",  "type": "type.museum" },
+        { "id": "alaeddin", "name": "site.konya.alaeddin", "type": "type.mosque" },
+        { "id": "sille",    "name": "site.konya.sille",    "type": "type.landmark" },
+        { "id": "bedesten", "name": "site.konya.bedesten", "type": "type.market" }
+      ],
+      "inbound_clues": [
+        "clue.konya.inbound.0", "clue.konya.inbound.1",
+        "clue.konya.inbound.2", "clue.konya.inbound.3"
+      ]
+    },
+
+    // Lahore (south_asia)
+    {
+      "id": "lahore",
+      "name": "city.lahore.name", "local_name": "city.lahore.local_name",
+      "country": "city.lahore.country", "continent": "city.lahore.continent",
+      "sphere": "south_asia", "lat": 31.55, "lon": 74.35,
+      "sites": [
+        { "id": "badshahi",      "name": "site.lahore.badshahi",      "type": "type.mosque" },
+        { "id": "lahore_fort",   "name": "site.lahore.lahore_fort",   "type": "type.landmark" },
+        { "id": "food_street",   "name": "site.lahore.food_street",   "type": "type.market" },
+        { "id": "lahore_museum", "name": "site.lahore.lahore_museum", "type": "type.museum" }
+      ],
+      "inbound_clues": [
+        "clue.lahore.inbound.0", "clue.lahore.inbound.1",
+        "clue.lahore.inbound.2", "clue.lahore.inbound.3"
+      ]
+    },
+
+    // Dhaka (south_asia)
+    {
+      "id": "dhaka",
+      "name": "city.dhaka.name", "local_name": "city.dhaka.local_name",
+      "country": "city.dhaka.country", "continent": "city.dhaka.continent",
+      "sphere": "south_asia", "lat": 23.81, "lon": 90.41,
+      "sites": [
+        { "id": "baitul_mukarram", "name": "site.dhaka.baitul_mukarram", "type": "type.mosque" },
+        { "id": "shakhari_bazaar", "name": "site.dhaka.shakhari_bazaar", "type": "type.market" },
+        { "id": "lalbagh",         "name": "site.dhaka.lalbagh",         "type": "type.landmark" },
+        { "id": "national_museum", "name": "site.dhaka.national_museum", "type": "type.museum" }
+      ],
+      "inbound_clues": [
+        "clue.dhaka.inbound.0", "clue.dhaka.inbound.1",
+        "clue.dhaka.inbound.2", "clue.dhaka.inbound.3"
+      ]
+    },
+
+    // Kuala Lumpur (southeast_asia)
+    {
+      "id": "kuala_lumpur",
+      "name": "city.kuala_lumpur.name", "local_name": "city.kuala_lumpur.local_name",
+      "country": "city.kuala_lumpur.country", "continent": "city.kuala_lumpur.continent",
+      "sphere": "southeast_asia", "lat": 3.14, "lon": 101.69,
+      "sites": [
+        { "id": "petronas",      "name": "site.kuala_lumpur.petronas",      "type": "type.landmark" },
+        { "id": "islamic_arts",  "name": "site.kuala_lumpur.islamic_arts",  "type": "type.museum" },
+        { "id": "jalan_alor",    "name": "site.kuala_lumpur.jalan_alor",    "type": "type.market" },
+        { "id": "masjid_negara", "name": "site.kuala_lumpur.masjid_negara", "type": "type.mosque" }
+      ],
+      "inbound_clues": [
+        "clue.kuala_lumpur.inbound.0", "clue.kuala_lumpur.inbound.1",
+        "clue.kuala_lumpur.inbound.2", "clue.kuala_lumpur.inbound.3"
+      ]
+    },
+
+    // Jakarta (southeast_asia)
+    {
+      "id": "jakarta",
+      "name": "city.jakarta.name", "local_name": "city.jakarta.local_name",
+      "country": "city.jakarta.country", "continent": "city.jakarta.continent",
+      "sphere": "southeast_asia", "lat": -6.21, "lon": 106.85,
+      "sites": [
+        { "id": "istiqlal",        "name": "site.jakarta.istiqlal",        "type": "type.mosque" },
+        { "id": "national_museum", "name": "site.jakarta.national_museum", "type": "type.museum" },
+        { "id": "kota_tua",        "name": "site.jakarta.kota_tua",        "type": "type.landmark" },
+        { "id": "menteng",         "name": "site.jakarta.menteng",         "type": "type.cafe" }
+      ],
+      "inbound_clues": [
+        "clue.jakarta.inbound.0", "clue.jakarta.inbound.1",
+        "clue.jakarta.inbound.2", "clue.jakarta.inbound.3"
+      ]
+    },
+
+    // Tunis (maghreb)
+    {
+      "id": "tunis",
+      "name": "city.tunis.name", "local_name": "city.tunis.local_name",
+      "country": "city.tunis.country", "continent": "city.tunis.continent",
+      "sphere": "maghreb", "lat": 36.81, "lon": 10.18,
+      "sites": [
+        { "id": "zitouna",       "name": "site.tunis.zitouna",       "type": "type.mosque" },
+        { "id": "sidi_bou_said", "name": "site.tunis.sidi_bou_said", "type": "type.cafe" },
+        { "id": "bardo",         "name": "site.tunis.bardo",         "type": "type.museum" },
+        { "id": "carthage",      "name": "site.tunis.carthage",      "type": "type.landmark" }
+      ],
+      "inbound_clues": [
+        "clue.tunis.inbound.0", "clue.tunis.inbound.1",
+        "clue.tunis.inbound.2", "clue.tunis.inbound.3"
+      ]
+    },
+
+    // Damascus (arab_east)
+    {
+      "id": "damascus",
+      "name": "city.damascus.name", "local_name": "city.damascus.local_name",
+      "country": "city.damascus.country", "continent": "city.damascus.continent",
+      "sphere": "arab_east", "lat": 33.51, "lon": 36.29,
+      "sites": [
+        { "id": "umayyad",    "name": "site.damascus.umayyad",    "type": "type.mosque" },
+        { "id": "hamidiyah",  "name": "site.damascus.hamidiyah",  "type": "type.market" },
+        { "id": "nawfara",    "name": "site.damascus.nawfara",    "type": "type.cafe" },
+        { "id": "azm_palace", "name": "site.damascus.azm_palace", "type": "type.landmark" }
+      ],
+      "inbound_clues": [
+        "clue.damascus.inbound.0", "clue.damascus.inbound.1",
+        "clue.damascus.inbound.2", "clue.damascus.inbound.3"
+      ]
+    },
+
+    // Kano (sub_saharan_africa)
+    {
+      "id": "kano",
+      "name": "city.kano.name", "local_name": "city.kano.local_name",
+      "country": "city.kano.country", "continent": "city.kano.continent",
+      "sphere": "sub_saharan_africa", "lat": 12.00, "lon": 8.52,
+      "sites": [
+        { "id": "great_mosque", "name": "site.kano.great_mosque", "type": "type.mosque" },
+        { "id": "kurmi_market", "name": "site.kano.kurmi_market", "type": "type.market" },
+        { "id": "gidan_makama", "name": "site.kano.gidan_makama", "type": "type.museum" },
+        { "id": "dala_hill",    "name": "site.kano.dala_hill",    "type": "type.landmark" }
+      ],
+      "inbound_clues": [
+        "clue.kano.inbound.0", "clue.kano.inbound.1",
+        "clue.kano.inbound.2", "clue.kano.inbound.3"
+      ]
+    },
+
+    // Samarkand (iran_central_asia)
+    {
+      "id": "samarkand",
+      "name": "city.samarkand.name", "local_name": "city.samarkand.local_name",
+      "country": "city.samarkand.country", "continent": "city.samarkand.continent",
+      "sphere": "iran_central_asia", "lat": 39.63, "lon": 66.98,
+      "sites": [
+        { "id": "bibi_khanym",  "name": "site.samarkand.bibi_khanym",  "type": "type.mosque" },
+        { "id": "siyob_bazaar", "name": "site.samarkand.siyob_bazaar", "type": "type.market" },
+        { "id": "registan",     "name": "site.samarkand.registan",     "type": "type.landmark" },
+        { "id": "shah_i_zinda", "name": "site.samarkand.shah_i_zinda", "type": "type.landmark" }
+      ],
+      "inbound_clues": [
+        "clue.samarkand.inbound.0", "clue.samarkand.inbound.1",
+        "clue.samarkand.inbound.2", "clue.samarkand.inbound.3"
+      ]
+    },
+
+    // Kabul (iran_central_asia)
+    {
+      "id": "kabul",
+      "name": "city.kabul.name", "local_name": "city.kabul.local_name",
+      "country": "city.kabul.country", "continent": "city.kabul.continent",
+      "sphere": "iran_central_asia", "lat": 34.53, "lon": 69.17,
+      "sites": [
+        { "id": "id_gah",          "name": "site.kabul.id_gah",          "type": "type.mosque" },
+        { "id": "national_museum", "name": "site.kabul.national_museum", "type": "type.museum" },
+        { "id": "babur_gardens",   "name": "site.kabul.babur_gardens",   "type": "type.park" },
+        { "id": "darul_aman",      "name": "site.kabul.darul_aman",      "type": "type.landmark" }
+      ],
+      "inbound_clues": [
+        "clue.kabul.inbound.0", "clue.kabul.inbound.1",
+        "clue.kabul.inbound.2", "clue.kabul.inbound.3"
+      ]
+    },
+
+    // Yogyakarta (southeast_asia)
+    {
+      "id": "yogyakarta",
+      "name": "city.yogyakarta.name", "local_name": "city.yogyakarta.local_name",
+      "country": "city.yogyakarta.country", "continent": "city.yogyakarta.continent",
+      "sphere": "southeast_asia", "lat": -7.80, "lon": 110.36,
+      "sites": [
+        { "id": "gede_kauman", "name": "site.yogyakarta.gede_kauman", "type": "type.mosque" },
+        { "id": "malioboro",   "name": "site.yogyakarta.malioboro",   "type": "type.market" },
+        { "id": "taman_sari",  "name": "site.yogyakarta.taman_sari",  "type": "type.park" },
+        { "id": "kraton",      "name": "site.yogyakarta.kraton",      "type": "type.landmark" }
+      ],
+      "inbound_clues": [
+        "clue.yogyakarta.inbound.0", "clue.yogyakarta.inbound.1",
+        "clue.yogyakarta.inbound.2", "clue.yogyakarta.inbound.3"
+      ]
+    }
+  ],
+
+  // This graph mirrors the reference network in
+  // doc/future/cross-sphere-connectivity.md: 22 cities, 46 undirected edges,
+  // every city in the 3-5 degree range and reaching at least two other
+  // cultural sub-spheres.  Distances are great-circle estimates.  Each edge is
+  // listed once; the loader mirrors the reverse edge.
+  "routes": [
+    // A - Maghreb (Casablanca, Fez, Tunis)
+    { "from": "tunis",        "to": "fez",          "km": 1350,  "mode": "flight" },
+
+    // B - Turkey / Balkans (Istanbul, Konya, Sarajevo)
+    { "from": "istanbul",     "to": "sarajevo",     "km": 950,   "mode": "flight" },
+
+    // C - Arab East (Cairo, Damascus, Dubai, Muscat)
+    { "from": "dubai",        "to": "muscat",       "km": 450,   "mode": "boat" },
+
+    // D - Sub-Saharan Africa (Dakar, Zanzibar, Kano)
+    { "from": "zanzibar",     "to": "dakar",        "km": 6200,  "mode": "flight" },
+    { "from": "dakar",        "to": "kano",         "km": 2850,  "mode": "flight" },
+
+    // E - Iran / Central Asia (Isfahan, Samarkand, Kabul)
+    { "from": "isfahan",      "to": "samarkand",    "km": 1650,  "mode": "flight" },
+    { "from": "kabul",        "to": "samarkand",    "km": 600,   "mode": "train" },
+    { "from": "kabul",        "to": "isfahan",      "km": 1600,  "mode": "flight" },
+
+    // F - South Asia (Lahore, Dhaka, Hyderabad)
+    { "from": "lahore",       "to": "dhaka",        "km": 1800,  "mode": "flight" },
+    { "from": "hyderabad",    "to": "lahore",       "km": 1500,  "mode": "flight" },
+    { "from": "hyderabad",    "to": "dhaka",        "km": 1500,  "mode": "flight" },
+
+    // G - Southeast Asia (Kuala Lumpur, Jakarta, Yogyakarta)
+    { "from": "kuala_lumpur", "to": "jakarta",      "km": 1200,  "mode": "flight" },
+    { "from": "yogyakarta",   "to": "kuala_lumpur", "km": 1550,  "mode": "flight" },
+
+    // Cross-sphere: Turkey/Balkans - Arab East - Maghreb
+    { "from": "istanbul",     "to": "cairo",        "km": 1250,  "mode": "flight" },
+    { "from": "istanbul",     "to": "casablanca",   "km": 3150,  "mode": "flight" },
+    { "from": "istanbul",     "to": "kabul",        "km": 3700,  "mode": "flight" },
+    { "from": "cairo",        "to": "casablanca",   "km": 3350,  "mode": "flight" },
+
+    // Cross-sphere: Arab East - Sub-Saharan Africa
+    { "from": "cairo",        "to": "zanzibar",     "km": 3800,  "mode": "flight" },
+    { "from": "cairo",        "to": "dakar",        "km": 4700,  "mode": "flight" },
+    { "from": "cairo",        "to": "kano",         "km": 3050,  "mode": "flight" },
+    { "from": "casablanca",   "to": "dakar",        "km": 2600,  "mode": "flight" },
+
+    // Cross-sphere: Maghreb links
+    { "from": "fez",          "to": "sarajevo",     "km": 2200,  "mode": "flight" },
+    { "from": "fez",          "to": "kuala_lumpur", "km": 11400, "mode": "flight" },
+    { "from": "fez",          "to": "kano",         "km": 2700,  "mode": "flight" },
+    { "from": "fez",          "to": "damascus",     "km": 3800,  "mode": "flight" },
+
+    // Cross-sphere: Gulf - South Asia / Iran / Southeast Asia
+    { "from": "dubai",        "to": "lahore",       "km": 2400,  "mode": "flight" },
+    { "from": "dubai",        "to": "isfahan",      "km": 1200,  "mode": "flight" },
+    { "from": "dubai",        "to": "yogyakarta",   "km": 7300,  "mode": "flight" },
+
+    // Cross-sphere: Iran / Central Asia links
+    { "from": "isfahan",      "to": "konya",        "km": 2200,  "mode": "flight" },
+    { "from": "samarkand",    "to": "lahore",       "km": 1150,  "mode": "flight" },
+    { "from": "samarkand",    "to": "damascus",     "km": 2800,  "mode": "flight" },
+
+    // Cross-sphere: South Asia - Southeast Asia
+    { "from": "dhaka",        "to": "kuala_lumpur", "km": 3200,  "mode": "flight" },
+    { "from": "hyderabad",    "to": "kuala_lumpur", "km": 3900,  "mode": "flight" },
+
+    // Cross-sphere: Tunis reach
+    { "from": "tunis",        "to": "sarajevo",     "km": 1050,  "mode": "flight" },
+    { "from": "tunis",        "to": "konya",        "km": 1950,  "mode": "flight" },
+    { "from": "tunis",        "to": "dhaka",        "km": 8600,  "mode": "flight" },
+
+    // Cross-sphere: Damascus reach
+    { "from": "damascus",     "to": "isfahan",      "km": 1450,  "mode": "flight" },
+    { "from": "damascus",     "to": "konya",        "km": 650,   "mode": "train" },
+    { "from": "damascus",     "to": "sarajevo",     "km": 2050,  "mode": "flight" },
+
+    // Cross-sphere: Kabul / South Asia
+    { "from": "kabul",        "to": "lahore",       "km": 640,   "mode": "train" },
+    { "from": "kabul",        "to": "hyderabad",    "km": 2100,  "mode": "flight" },
+
+    // Cross-sphere: Southeast Asia - South Asia - Arab East
+    { "from": "jakarta",      "to": "dhaka",        "km": 3400,  "mode": "flight" },
+    { "from": "jakarta",      "to": "hyderabad",    "km": 4300,  "mode": "flight" },
+    { "from": "jakarta",      "to": "muscat",       "km": 6600,  "mode": "flight" },
+    { "from": "muscat",       "to": "zanzibar",     "km": 3200,  "mode": "boat" },
+    { "from": "zanzibar",     "to": "yogyakarta",   "km": 7900,  "mode": "flight" }
+  ]
+}

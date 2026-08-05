@@ -100,10 +100,17 @@ make coverage   # test coverage report (requires lcov)
 Or manually:
 
 ```sh
+# 1. Build the world generator and compile the preset into C.  The built-in
+#    world lives in presets/islamic.jsonc; gen_world validates it and emits C.
+cc -std=c17 -O2 -Iinclude -Ivendor/cjson \
+   tools/gen_world.c vendor/cjson/cJSON.c -o gen_world
+./gen_world presets/islamic.jsonc world_islamic_generated.c
+
+# 2. Build the demo (note -Isrc so the generated file finds seed_helpers.h).
 cc -std=c17 -Wall -Wextra -pedantic -O2 \
-   -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c \
+   -Iinclude -Isrc -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c \
    src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
-   src/seed_data_islamic.c src/villain.c src/artifact.c src/case.c \
+   world_islamic_generated.c src/villain.c src/artifact.c src/case.c \
    src/session.c src/settings.c src/i18n.c vendor/cjson/cJSON.c \
    examples/trail_demo.c -o trail_demo
 ```
@@ -154,7 +161,7 @@ include/carmen/
   connection.h             Connection struct and API
   city.h                   City composite struct and API
   game_world.h             GameWorld hash map + indices + BFS API
-  seed_data_islamic.h      World builder API
+  world_islamic.h          Built-in world builder API (impl generated at build time)
   villain.h                Villain roster and API
   artifact.h               Stolen artifact struct and API
   case.h                   Case (villain + trail + settings) API
@@ -167,13 +174,18 @@ src/
   connection.c             Connection implementation
   city.c                   City implementation
   game_world.c             Hash map, secondary indices, BFS, shortest path
-  seed_data_islamic.c      World builder (cities, sites, clues, routes)
+  seed_helpers.h           Inline helpers used by the generated world builder
   villain.c                Villain roster
   artifact.c               Stolen artifact implementation
   case.c                   Case generation (villain, trail, briefing)
   session.c                Session state and actions (travel/investigate/warrant/arrest)
   settings.c               Case settings + TOML loading
   i18n.c                   Locale JSON loading and string lookup
+presets/
+  islamic.jsonc            Built-in world data (single source of truth, JSONC)
+tools/
+  gen_world.c              Host tool: validates a preset and emits it as C
+  CMakeLists.txt           Standalone build for the host tool (used when cross-compiling)
 examples/
   trail_demo.c             main() demo driver (interactive terminal game)
 locales/
@@ -189,6 +201,9 @@ test/
   test_session.c           Session unit tests
   test_settings.c          Settings unit tests
   test_villain.c           Villain unit tests
+  test_world_islamic.c     Built-in world golden-value tests
+  test_i18n.c              i18n loading (file + buffer) tests
+  fixtures/                Invalid presets the generator must reject
 vendor/
   stb/stb_ds.h             Hash map / dynamic array library (vendored)
   unity/                   Unity test framework (vendored)

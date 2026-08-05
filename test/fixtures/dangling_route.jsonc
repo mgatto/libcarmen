@@ -1,0 +1,13 @@
+// A route whose "to" names a city that does not exist: must be rejected.
+{
+  "id": "dangling",
+  "cities": [
+    { "id": "a", "name": "na", "local_name": "la", "country": "ca", "continent": "coa",
+      "sphere": "sa", "lat": 1.0, "lon": 2.0, "sites": [], "inbound_clues": [] },
+    { "id": "b", "name": "nb", "local_name": "lb", "country": "cb", "continent": "cob",
+      "sphere": "sb", "lat": 3.0, "lon": 4.0, "sites": [], "inbound_clues": [] }
+  ],
+  "routes": [
+    { "from": "a", "to": "nowhere", "km": 100, "mode": "flight" }
+  ]
+}

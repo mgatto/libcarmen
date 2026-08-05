@@ -1,6 +1,6 @@
 CC       = cc
 CFLAGS   = -std=c17 -Wall -Wextra -pedantic -O2
-INCLUDES = -Iinclude -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c
+INCLUDES = -Iinclude -Isrc -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c
 
 # Auto-generate header dependency files (.d) alongside each object so that
 # editing a header rebuilds exactly the objects that include it.  -MP adds
@@ -31,11 +31,22 @@ endif
 # --------------------------------------------------------------------------- #
 
 LIB_SRCS = src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
-           src/seed_data_islamic.c src/villain.c src/artifact.c src/case.c \
+           src/villain.c src/artifact.c src/case.c \
            src/session.c src/settings.c src/i18n.c \
            vendor/cjson/cJSON.c
+
+# Built-in world: generated at build time from the preset by tools/gen_world.
+# LIB_SRCS_ALL is the full library source set (adds the generated world) used
+# for the shared lib and for test/coverage binaries that link everything.
+PRESET        = presets/islamic.jsonc
+GEN_DIR       = $(BUILD_DIR)/generated
+GEN_WORLD_SRC = $(GEN_DIR)/world_islamic_generated.c
+GEN_WORLD     = $(BUILD_DIR)/gen_world
+LIB_SRCS_ALL  = $(LIB_SRCS) $(GEN_WORLD_SRC)
+
 LIB_OBJS = $(patsubst src/%.c,$(BUILD_DIR)/%.o,$(filter src/%.c,$(LIB_SRCS))) \
-           $(BUILD_DIR)/cJSON.o
+           $(BUILD_DIR)/cJSON.o \
+           $(GEN_DIR)/world_islamic_generated.o
 
 # Library artifacts
 STATIC_LIB = $(BUILD_DIR)/libcarmen.a
@@ -58,9 +69,9 @@ all: $(STATIC_LIB) $(TRAIL_DEMO)
 $(STATIC_LIB): $(LIB_OBJS) | $(BUILD_DIR)
 	ar rcs $@ $^
 
-$(SHARED_LIB): $(LIB_SRCS) | $(BUILD_DIR)
+$(SHARED_LIB): $(LIB_SRCS_ALL) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(INCLUDES) $(SHARED_FLAGS) -fPIC -fvisibility=hidden \
-	    -o $@ $(LIB_SRCS)
+	    -o $@ $(LIB_SRCS_ALL)
 
 lib: $(STATIC_LIB) $(SHARED_LIB)
 
@@ -79,6 +90,28 @@ $(BUILD_DIR)/%.o: src/%.c | $(BUILD_DIR)
 
 $(BUILD_DIR)/cJSON.o: vendor/cjson/cJSON.c | $(BUILD_DIR)
 	$(CC) -std=c17 -O2 $(DEPFLAGS) -Ivendor/cjson -c -o $@ $<
+
+# --------------------------------------------------------------------------- #
+#  Built-in world code generation
+#
+#  presets/islamic.jsonc is the single source of truth for the built-in world.
+#  gen_world validates it and emits the C that defines
+#  carmen_world_build_islamic(); editing the preset regenerates the source, so
+#  a bad preset fails the build.
+# --------------------------------------------------------------------------- #
+
+$(GEN_WORLD): tools/gen_world.c vendor/cjson/cJSON.c | $(BUILD_DIR)
+	$(CC) -std=c17 -Wall -Wextra -pedantic -O2 -Iinclude -Ivendor/cjson \
+	    -o $@ tools/gen_world.c vendor/cjson/cJSON.c
+
+$(GEN_WORLD_SRC): $(PRESET) $(GEN_WORLD) | $(GEN_DIR)
+	$(GEN_WORLD) $(PRESET) $@
+
+$(GEN_DIR)/world_islamic_generated.o: $(GEN_WORLD_SRC) | $(GEN_DIR)
+	$(CC) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
+
+$(GEN_DIR):
+	mkdir -p $(GEN_DIR)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -129,7 +162,7 @@ PUBLIC_HEADERS = include/carmen/carmen.h include/carmen/carmen_export.h \
                  include/carmen/clue.h include/carmen/site.h \
                  include/carmen/connection.h include/carmen/city.h \
                  include/carmen/game_world.h \
-                 include/carmen/seed_data_islamic.h \
+                 include/carmen/world_islamic.h \
                  include/carmen/villain.h include/carmen/artifact.h \
                  include/carmen/case.h include/carmen/session.h \
                  include/carmen/settings.h include/carmen/i18n.h
@@ -165,9 +198,13 @@ TEST_DIR  = $(BUILD_DIR)/test
 TEST_BINS = $(TEST_DIR)/test_site $(TEST_DIR)/test_connection $(TEST_DIR)/test_city \
             $(TEST_DIR)/test_game_world $(TEST_DIR)/test_carmen_scenarios \
             $(TEST_DIR)/test_artifact $(TEST_DIR)/test_case $(TEST_DIR)/test_session \
-            $(TEST_DIR)/test_settings $(TEST_DIR)/test_villain
+            $(TEST_DIR)/test_settings $(TEST_DIR)/test_villain \
+            $(TEST_DIR)/test_world_islamic $(TEST_DIR)/test_i18n
 
-test: $(TEST_BINS)
+# Presets that must be rejected by the generator (build-time validation).
+GEN_REJECT_FIXTURES = bad_json over_cap_sites dangling_route
+
+test: $(TEST_BINS) $(GEN_WORLD)
 	@echo "========================================"
 	@echo "  Running all test suites"
 	@echo "========================================"
@@ -176,6 +213,15 @@ test: $(TEST_BINS)
 		echo ""; \
 		echo "--- $$t ---"; \
 		./$$t || fail=1; \
+	done; \
+	echo ""; \
+	echo "--- gen_world rejects invalid presets ---"; \
+	for b in $(GEN_REJECT_FIXTURES); do \
+		if $(GEN_WORLD) test/fixtures/$$b.jsonc $(BUILD_DIR)/gen_reject_$$b.c >/dev/null 2>&1; then \
+			echo "FAIL: gen_world accepted invalid preset $$b"; fail=1; \
+		else \
+			echo "ok: rejected $$b"; \
+		fi; \
 	done; \
 	echo ""; \
 	if [ $$fail -eq 0 ]; then \
@@ -201,25 +247,31 @@ $(TEST_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c 
 $(TEST_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_case: test/test_case.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_session: test/test_session.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_settings: test/test_settings.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
-$(TEST_DIR)/test_villain: test/test_villain.c $(LIB_SRCS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(TEST_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(TEST_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
 # --------------------------------------------------------------------------- #
@@ -238,7 +290,8 @@ endif
 COV_BINS = $(COV_DIR)/test_site $(COV_DIR)/test_connection $(COV_DIR)/test_city \
            $(COV_DIR)/test_game_world $(COV_DIR)/test_carmen_scenarios \
            $(COV_DIR)/test_artifact $(COV_DIR)/test_case $(COV_DIR)/test_session \
-           $(COV_DIR)/test_settings $(COV_DIR)/test_villain
+           $(COV_DIR)/test_settings $(COV_DIR)/test_villain \
+           $(COV_DIR)/test_world_islamic $(COV_DIR)/test_i18n
 
 coverage: $(COV_BINS)
 	@echo "========================================"
@@ -285,26 +338,32 @@ $(COV_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $
 $(COV_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC)
 
-$(COV_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+$(COV_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
-$(COV_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+$(COV_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
-$(COV_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+$(COV_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
-$(COV_DIR)/test_case: test/test_case.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+$(COV_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
-$(COV_DIR)/test_session: test/test_session.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+$(COV_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
-$(COV_DIR)/test_settings: test/test_settings.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+$(COV_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
-$(COV_DIR)/test_villain: test/test_villain.c $(LIB_SRCS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS) $(UNITY_SRC)
+$(COV_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
+
+$(COV_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
+
+$(COV_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
 # --------------------------------------------------------------------------- #
 #  Header dependency tracking

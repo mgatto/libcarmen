@@ -1,6 +1,6 @@
 # Customization -- Guide for Custom Seed Data
 
-This note is for people who build their own world (custom `CarmenWorld` seed data) instead of using the built-in `carmen_seed_build_islamic_world()`. It documents an invariant you must uphold so that case generation produces coherent narratives.
+This note is for people who build their own world (custom `CarmenWorld` seed data) instead of using the built-in `carmen_world_build_islamic()` (generated at build time from `presets/islamic.jsonc`). It documents an invariant you must uphold so that case generation produces coherent narratives.
 
 ## Every city must have a matching artifact
 

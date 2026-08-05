@@ -21,6 +21,51 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 # --------------------------------------------------------------------------- #
+#  Built-in world code generation
+#
+#  presets/islamic.jsonc is the single source of truth for the built-in world.
+#  A host tool (tools/gen_world) validates it and emits a C source defining
+#  carmen_world_build_islamic().  Editing the preset regenerates that source,
+#  so schema/capacity/reference errors fail the build (there is no runtime
+#  world loader).  WASM is a first-class target: when cross-compiling, the
+#  generator is built with the host toolchain via ExternalProject (it must run
+#  on the build machine); otherwise it is an ordinary target.
+# --------------------------------------------------------------------------- #
+
+set(CARMEN_PRESET        ${CMAKE_CURRENT_SOURCE_DIR}/presets/islamic.jsonc)
+set(CARMEN_GEN_DIR       ${CMAKE_CURRENT_BINARY_DIR}/generated)
+set(CARMEN_GEN_WORLD_SRC ${CARMEN_GEN_DIR}/world_islamic_generated.c)
+
+if(CMAKE_CROSSCOMPILING)
+    include(ExternalProject)
+    ExternalProject_Add(carmen_host_tools
+        SOURCE_DIR      ${CMAKE_CURRENT_SOURCE_DIR}/tools
+        CMAKE_ARGS      -DCMAKE_BUILD_TYPE=Release
+        # Clear any inherited cross toolchain (e.g. emscripten) so the
+        # generator is built as a native host executable that can run here.
+        CMAKE_CACHE_DEFAULT_ARGS -DCMAKE_TOOLCHAIN_FILE:FILEPATH=
+        INSTALL_COMMAND ""
+        BUILD_ALWAYS    ON
+    )
+    ExternalProject_Get_Property(carmen_host_tools BINARY_DIR)
+    set(CARMEN_GEN_WORLD_EXE ${BINARY_DIR}/gen_world)
+    set(CARMEN_GEN_WORLD_DEP carmen_host_tools)
+else()
+    add_subdirectory(tools)
+    set(CARMEN_GEN_WORLD_EXE $<TARGET_FILE:gen_world>)
+    set(CARMEN_GEN_WORLD_DEP gen_world)
+endif()
+
+add_custom_command(
+    OUTPUT  ${CARMEN_GEN_WORLD_SRC}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CARMEN_GEN_DIR}
+    COMMAND ${CARMEN_GEN_WORLD_EXE} ${CARMEN_PRESET} ${CARMEN_GEN_WORLD_SRC}
+    DEPENDS ${CARMEN_GEN_WORLD_DEP} ${CARMEN_PRESET}
+    COMMENT "Generating built-in world from presets/islamic.jsonc"
+    VERBATIM
+)
+
+# --------------------------------------------------------------------------- #
 #  Library
 # --------------------------------------------------------------------------- #
 
@@ -30,7 +75,7 @@ set(CARMEN_SOURCES
     src/connection.c
     src/city.c
     src/game_world.c
-    src/seed_data_islamic.c
+    ${CARMEN_GEN_WORLD_SRC}
     src/villain.c
     src/artifact.c
     src/case.c
@@ -50,7 +95,7 @@ set(CARMEN_PUBLIC_HEADERS
     include/carmen/connection.h
     include/carmen/city.h
     include/carmen/game_world.h
-    include/carmen/seed_data_islamic.h
+    include/carmen/world_islamic.h
     include/carmen/villain.h
     include/carmen/artifact.h
     include/carmen/case.h
@@ -69,6 +114,7 @@ target_include_directories(carmen
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/utf8
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cjson
@@ -204,6 +250,21 @@ if(CARMEN_BUILD_TESTS)
     carmen_add_test(test_case              test/test_case.c)
     carmen_add_test(test_session            test/test_session.c)
     carmen_add_test(test_settings          test/test_settings.c)
+    carmen_add_test(test_world_islamic     test/test_world_islamic.c)
+    carmen_add_test(test_i18n              test/test_i18n.c)
+
+    # The generator must reject invalid presets at build time.  These cases
+    # only apply when gen_world is an ordinary (native) target.
+    if(NOT CMAKE_CROSSCOMPILING)
+        foreach(_bad bad_json over_cap_sites dangling_route)
+            add_test(NAME gen_world_rejects_${_bad}
+                COMMAND gen_world
+                        ${CMAKE_CURRENT_SOURCE_DIR}/test/fixtures/${_bad}.jsonc
+                        ${CMAKE_CURRENT_BINARY_DIR}/gen_reject_${_bad}.c)
+            set_tests_properties(gen_world_rejects_${_bad}
+                PROPERTIES WILL_FAIL TRUE)
+        endforeach()
+    endif()
 endif()
 
 # --------------------------------------------------------------------------- #

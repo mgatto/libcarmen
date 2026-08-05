@@ -8,7 +8,7 @@ static CarmenWorld world;
 void setUp(void)
 {
     srand(42);
-    carmen_seed_build_islamic_world(&world);
+    carmen_world_build_islamic(&world);
 }
 
 void tearDown(void)
@@ -200,7 +200,7 @@ static void test_destroy_and_reinit(void)
     carmen_world_init(&world);
     TEST_ASSERT_EQUAL_INT(0, world.city_count);
     TEST_ASSERT_NULL(world.city_map);
-    carmen_seed_build_islamic_world(&world);
+    carmen_world_build_islamic(&world);
     TEST_ASSERT_TRUE(world.city_count > 0);
 }
 

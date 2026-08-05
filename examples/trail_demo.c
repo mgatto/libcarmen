@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     carmen_i18n_free(i18n);
     return 1;
   }
-  carmen_seed_build_islamic_world(world);
+  carmen_world_build_islamic(world);
 
   CarmenSession session;
   CarmenCaseSettings settings = carmen_case_settings_default();

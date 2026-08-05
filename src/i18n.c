@@ -46,8 +46,16 @@ CarmenI18n *carmen_i18n_load(const char *json_path)
     fclose(f);
     buf[nread] = '\0';
 
-    cJSON *root = cJSON_ParseWithLength(buf, nread);
+    CarmenI18n *ctx = carmen_i18n_load_json(buf, nread);
     free(buf);
+    return ctx;
+}
+
+CarmenI18n *carmen_i18n_load_json(const char *json, size_t len)
+{
+    if (!json) return NULL;
+
+    cJSON *root = cJSON_ParseWithLength(json, len);
     if (!root || !cJSON_IsObject(root)) {
         cJSON_Delete(root);
         return NULL;

@@ -9,7 +9,7 @@ void setUp(void)
 {
     world = carmen_world_create();
     TEST_ASSERT_NOT_NULL(world);
-    carmen_seed_build_islamic_world(world);
+    carmen_world_build_islamic(world);
 }
 
 void tearDown(void)

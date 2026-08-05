@@ -1,0 +1,21 @@
+// One city with 7 sites, exceeding CARMEN_MAX_SITES (6): must be rejected.
+{
+  "id": "overcap",
+  "cities": [
+    {
+      "id": "x", "name": "n", "local_name": "l", "country": "c", "continent": "co",
+      "sphere": "s", "lat": 1.0, "lon": 2.0,
+      "sites": [
+        { "id": "s1", "name": "n1", "type": "type.mosque" },
+        { "id": "s2", "name": "n2", "type": "type.museum" },
+        { "id": "s3", "name": "n3", "type": "type.market" },
+        { "id": "s4", "name": "n4", "type": "type.landmark" },
+        { "id": "s5", "name": "n5", "type": "type.park" },
+        { "id": "s6", "name": "n6", "type": "type.cafe" },
+        { "id": "s7", "name": "n7", "type": "type.mosque" }
+      ],
+      "inbound_clues": [ "clue.x.inbound.0" ]
+    }
+  ],
+  "routes": []
+}

@@ -1,0 +1,5 @@
+// Malformed JSON: the "cities" array is never closed.
+{
+  "id": "bad",
+  "cities": [
+}

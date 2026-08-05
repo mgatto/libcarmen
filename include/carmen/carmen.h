@@ -9,7 +9,7 @@
 #include "connection.h"
 #include "city.h"
 #include "game_world.h"
-#include "seed_data_islamic.h"
+#include "world_islamic.h"
 #include "villain.h"
 #include "artifact.h"
 #include "case.h"

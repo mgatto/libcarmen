@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  native:
+    name: Native (Make + CMake)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test (Make)
+        run: make test
+
+      - name: Configure, build, and test (CMake)
+        run: |
+          cmake -S . -B build-cmake -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build-cmake -j
+          ctest --test-dir build-cmake --output-on-failure
+
+  wasm:
+    name: WebAssembly (emscripten)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up emsdk
+        uses: mymindstorm/setup-emsdk@v14
+
+      # The world generator (tools/gen_world) must run on the build host, so
+      # CMakeLists.txt builds it via ExternalProject with the host toolchain
+      # while everything else is cross-compiled to wasm.  An invalid preset
+      # therefore still fails the wasm build.
+      - name: Configure (emscripten)
+        run: emcmake cmake -S . -B build-wasm -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build (emscripten)
+        run: cmake --build build-wasm -j
+
+      # The emscripten toolchain sets CMAKE_CROSSCOMPILING_EMULATOR=node, so
+      # ctest runs the Unity suites under Node.
+      - name: Test under Node
+        run: ctest --test-dir build-wasm --output-on-failure
