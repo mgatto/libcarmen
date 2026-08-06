@@ -17,22 +17,24 @@ Ruby and Python wrappers (and other language bindings and front-ends) are intend
 
 ## Built-in World
 
-The built-in world covers important Muslim cities globally, aiming for a tasteful balance of the historical and the modern — from classical centers of learning and trade to present-day capitals and cultural hubs. The selection is a starting point, not a canon; the preset system (`presets/`) is designed for adding worlds rooted in other cultural geographies.
+The built-in world covers 22 important Muslim cities globally, aiming for a tasteful balance of the historical and the modern — from classical centers of learning and trade to present-day capitals and cultural hubs. They span the breadth of the Islamicate world: Istanbul (Süleymaniye Mosque, Topkapı Palace), Fez (Al-Qarawiyyin, the ancient medina), Samarkand (the Registan, Bibi-Khanum Mosque), Zanzibar (Stone Town, Hamamni Persian Baths), Lahore (Badshahi Mosque, Lahore Fort), Kuala Lumpur (Petronas Towers), and sixteen others — each with up to four investigable sites across types: market, mosque, museum, landmark, and park. The selection is a starting point, not a canon; the preset system ([`presets/islamic.jsonc`](presets/islamic.jsonc)) is designed for adding worlds rooted in other cultural geographies.
+
+The criminal organization behind each case is **FITNA** — a roster of 16 thieves defined in [`include/carmen/villain.h`](include/carmen/villain.h) with names drawn from Arabic, Persian, and Urdu traditions: Qamar Samarkandi ("The Moon"), Layla Lapis ("Midnight Blue"), Tariq al-Tariq ("The Morning Star"), Soraya Samum ("The Sandstorm"), Rumi the Riddle ("The Poet"), and eleven others. Each villain carries four identity clues the player collects at the hideout in order to issue a warrant.
 
 ## Data Model
 
 The static world (built once, read-only during play):
 
-```
+```C
 GameWorld          -- stb_ds string hash map (city id -> slot) with secondary index arrays
-  City             -- struct: id, name, local_name, country, continent, lat/lon, sites[], connections[]
-    Site           -- struct: name, site_type, clues[]
+  City             -- struct: id, name, local_name, country, continent, lat/lon, sites[], connections[], inbound_clues[]
+    Site           -- struct: id, name, site_type  (clues are drawn at case-gen time from the city's inbound_clues[] pool)
     Connection     -- struct: destination_id, distance_km, transport_mode
 ```
 
 The scenario and play state (generated per game from the world plus settings):
 
-```
+```C
 CaseSettings       -- difficulty + optional overrides (trail length, time budget, move limit, ...)
 Case               -- one generated scenario, built from the world + settings
   Villain          -- culprit picked from the FITNA_VILLAINS[] catalog (id clues, alias, gender)
@@ -146,7 +148,7 @@ Consumer code includes the library with the `carmen/` prefix:
 
 ## Project Layout
 
-```
+```BASH
 Makefile                   Build rules (static/shared lib, tests, coverage, install)
 LICENSE                    MIT license
 carmen.pc.in               pkg-config template
