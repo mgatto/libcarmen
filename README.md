@@ -1,6 +1,6 @@
 # libcarmen
 
-Portable C17 core engine for Carmen Sandiego-style world exploration games, starting with an Islamicate world and extensible to other cultural realms — zero external deps, clean C ABI, FFI- and WebAssembly-ready.
+Portable C17 core engine for Carmen Sandiego-style world exploration games, starting with an [Islamicate world](#built-in-world) and extensible to other cultural realms — zero external deps, clean C ABI, FFI- and WebAssembly-ready.
 
 ## Project Goal
 
@@ -15,7 +15,7 @@ The public interface is intentionally shaped for wrapping:
 
 Ruby and Python wrappers (and other language bindings and front-ends) are intended to build on top of this core rather than reimplement it.
 
-## Built-in World
+## Built-in Islamicate World
 
 The built-in world covers 22 important Muslim cities globally, aiming for a tasteful balance of the historical and the modern — from classical centers of learning and trade to present-day capitals and cultural hubs. They span the breadth of the Islamicate world: Istanbul (Süleymaniye Mosque, Topkapı Palace), Fez (Al-Qarawiyyin, the ancient medina), Samarkand (the Registan, Bibi-Khanum Mosque), Zanzibar (Stone Town, Hamamni Persian Baths), Lahore (Badshahi Mosque, Lahore Fort), Kuala Lumpur (Petronas Towers), and sixteen others — each with up to four investigable sites across types: market, mosque, museum, landmark, and park. The selection is a starting point, not a canon; the preset system ([`presets/islamic.jsonc`](presets/islamic.jsonc)) is designed for adding worlds rooted in other cultural geographies.
 
