@@ -1,31 +1,23 @@
-# libcarmen-c
+# libcarmen
 
-A "Hash Map of Composites" data structure for modeling the locations and
-sites in "Where in the World is Carmen Sandiego?", implemented in C17.
-
-(What is a tasteful mix of the modern with the historical for important Muslim cities globally?)
+Portable C17 core engine for Carmen Sandiego-style world exploration games, starting with an Islamicate world and extensible to other cultural realms — zero external deps, clean C ABI, FFI- and WebAssembly-ready.
 
 ## Project Goal
 
-`libcarmen-c` is a **hobby project**: a small, portable, dependency-light **core engine**
-designed to be cleanly wrapped by other languages and frameworks. The C17 core owns all
-game logic and state; front-ends and language bindings simply drive it through a stable,
-UI-agnostic API.
+`libcarmen` is a **hobby project**: a small, portable, dependency-light **core engine** designed to be cleanly wrapped by other languages and frameworks. The C17 core owns all game logic and state; front-ends and language bindings simply drive it through a stable, UI-agnostic API.
 
 The public interface is intentionally shaped for wrapping:
 
-- **Plain-data structs and a C ABI** -- easy to bind from Ruby (FFI), Python (ctypes/cffi),
-  Rust, Go (cgo), Node (N-API), or compile to WebAssembly via Emscripten.
-- **Clear separation of queries and actions** -- read-only query functions for rendering
-  the UI, and discrete action functions (`travel`, `investigate`, `issue_warrant`,
-  `arrest`) for input.
-- **Built-in i18n** -- user-facing strings are looked up via locale files, so wrappers and
-  UIs stay language-neutral.
-- **No embedded UI or I/O in the core** -- the terminal demo is just one front-end; the
-  same library is meant to back native, web, and TUI clients equally.
+- **Plain-data structs and a C ABI** -- easy to bind from Ruby (FFI), Python (ctypes/cffi), Rust, Go (cgo), Node (N-API), or compile to WebAssembly via Emscripten.
+- **Clear separation of queries and actions** -- read-only query functions for rendering the UI, and discrete action functions (`travel`, `investigate`, `issue_warrant`, `arrest`) for input.
+- **Built-in i18n** -- user-facing strings are looked up via locale files, so wrappers and UIs stay language-neutral.
+- **No embedded UI or I/O in the core** -- the terminal demo is just one front-end; the same library is meant to back native, web, and TUI clients equally.
 
-Ruby and Python wrappers (and other language bindings and front-ends) are intended to
-build on top of this core rather than reimplement it.
+Ruby and Python wrappers (and other language bindings and front-ends) are intended to build on top of this core rather than reimplement it.
+
+## Built-in World
+
+The built-in world covers important Muslim cities globally, aiming for a tasteful balance of the historical and the modern — from classical centers of learning and trade to present-day capitals and cultural hubs. The selection is a starting point, not a canon; the preset system (`presets/`) is designed for adding worlds rooted in other cultural geographies.
 
 ## Data Model
 
@@ -59,14 +51,10 @@ The core exposes read-only queries for rendering (current city, connections, act
 
 ## Key Design Decisions
 
-- **stb_ds** (header-only, MIT/public domain) for O(1) city lookup by string ID
-  via `shput`/`shgeti` string hash map macros
-- All City structs live in a contiguous backing array (`GameWorld.storage[]`)
-  -- the stb_ds hash map stores `{key, slot_index}` entries, not the cities
-  themselves
+- **stb_ds** (header-only, MIT/public domain) for O(1) city lookup by string ID via `shput`/`shgeti` string hash map macros
+- All City structs live in a contiguous backing array (`GameWorld.storage[]`) -- the stb_ds hash map stores `{key, slot_index}` entries, not the cities themselves
 - Fixed-capacity arrays with `MAX_*` constants for sites, connections, clues
-- Secondary indices for continent/country use simple linear arrays
-  (6 continents, ~20 countries -- scan is effectively O(1))
+- Secondary indices for continent/country use simple linear arrays (6 continents, ~20 countries -- scan is effectively O(1))
 - BFS uses stack-allocated queues and visited arrays -- no dynamic memory
 - City struct is plain data -- no hash-table bookkeeping embedded in it
 
@@ -91,10 +79,10 @@ All third-party code is vendored under `vendor/` -- there are no external depend
 ## Building
 
 ```sh
-make            # static library + demo binary (build/trail_demo)
-make lib        # static + shared library
-make test       # run all unit tests
-make coverage   # test coverage report (requires lcov)
+make               # static library + demo binary (build/trail_demo)
+make lib           # static + shared library
+make test          # run all unit tests
+make coverage      # test coverage report (requires lcov)
 ```
 
 Or manually:
