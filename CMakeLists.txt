@@ -21,6 +21,31 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 # --------------------------------------------------------------------------- #
+#  Sanitizers (ASan + UBSan, GCC/Clang only)
+#
+#  -Wall -Wextra -pedantic catch style/type mistakes, not undefined behavior.
+#  Configure with -DCARMEN_SANITIZE=address,undefined to build the library,
+#  Unity, and every test binary with sanitizer instrumentation -- see
+#  .cursor/rules/c-safety.mdc. Applied globally via add_compile_options
+#  rather than per-target so it doesn't need to be threaded through every
+#  add_library/add_executable call individually.
+# --------------------------------------------------------------------------- #
+
+set(CARMEN_SANITIZE "" CACHE STRING
+    "Comma-separated sanitizers to build with, e.g. address,undefined (GCC/Clang only, ignored when cross-compiling)")
+
+if(CARMEN_SANITIZE)
+    if(MSVC)
+        message(WARNING "CARMEN_SANITIZE is ignored on MSVC; use MSVC's own /fsanitize=address separately")
+    elseif(CMAKE_CROSSCOMPILING)
+        message(WARNING "CARMEN_SANITIZE is ignored when cross-compiling (e.g. emscripten)")
+    else()
+        add_compile_options(-fsanitize=${CARMEN_SANITIZE} -fno-omit-frame-pointer -g -O0)
+        add_link_options(-fsanitize=${CARMEN_SANITIZE})
+    endif()
+endif()
+
+# --------------------------------------------------------------------------- #
 #  Built-in world code generation
 #
 #  presets/islamic.jsonc is the single source of truth for the built-in world.

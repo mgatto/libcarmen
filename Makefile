@@ -275,6 +275,87 @@ $(TEST_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DI
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
 # --------------------------------------------------------------------------- #
+#  Sanitizers (ASan + UBSan)
+#
+#  -Wall -Wextra -pedantic catch style/type mistakes, not undefined behavior.
+#  test-sanitize rebuilds every test binary with ASan+UBSan instrumentation
+#  and is required clean (in addition to plain `test`) before a change to
+#  src/ is considered done -- see .cursor/rules/c-safety.mdc.
+# --------------------------------------------------------------------------- #
+
+SANITIZE_FLAGS = -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE \
+                  -fsanitize=address,undefined -fno-omit-frame-pointer
+SANITIZE_DIR   = $(BUILD_DIR)/sanitize
+SANITIZE_BINS  = $(SANITIZE_DIR)/test_site $(SANITIZE_DIR)/test_connection $(SANITIZE_DIR)/test_city \
+                 $(SANITIZE_DIR)/test_game_world $(SANITIZE_DIR)/test_carmen_scenarios \
+                 $(SANITIZE_DIR)/test_artifact $(SANITIZE_DIR)/test_case $(SANITIZE_DIR)/test_session \
+                 $(SANITIZE_DIR)/test_settings $(SANITIZE_DIR)/test_villain \
+                 $(SANITIZE_DIR)/test_world_islamic $(SANITIZE_DIR)/test_i18n
+
+test-sanitize: $(SANITIZE_BINS)
+	@echo "========================================"
+	@echo "  Running all test suites under ASan+UBSan"
+	@echo "========================================"
+	@fail=0; \
+	for t in $(SANITIZE_BINS); do \
+		echo ""; \
+		echo "--- $$t ---"; \
+		ASAN_OPTIONS=halt_on_error=1 \
+		UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 \
+		./$$t || fail=1; \
+	done; \
+	echo ""; \
+	if [ $$fail -eq 0 ]; then \
+		echo "========================================"; \
+		echo "  ALL SUITES PASSED (ASan+UBSan clean)"; \
+		echo "========================================"; \
+	else \
+		echo "========================================"; \
+		echo "  SOME TESTS FAILED UNDER ASan+UBSan"; \
+		echo "========================================"; \
+		exit 1; \
+	fi
+
+$(SANITIZE_DIR):
+	mkdir -p $(SANITIZE_DIR)
+
+$(SANITIZE_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+$(SANITIZE_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
+# --------------------------------------------------------------------------- #
 #  Code Coverage  (requires lcov:  brew install lcov)
 # --------------------------------------------------------------------------- #
 
@@ -377,4 +458,4 @@ $(COV_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)
 DEPS = $(LIB_OBJS:.o=.d) $(TRAIL_DEMO_OBJ:.o=.d)
 -include $(DEPS)
 
-.PHONY: all lib dist clean distclean test coverage install uninstall
+.PHONY: all lib dist clean distclean test test-sanitize coverage install uninstall

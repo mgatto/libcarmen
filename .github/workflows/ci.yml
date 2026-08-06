@@ -7,8 +7,12 @@ on:
 
 jobs:
   native:
-    name: Native (Make + CMake)
-    runs-on: ubuntu-latest
+    name: Native (Make + CMake) - ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +24,38 @@ jobs:
           cmake -S . -B build-cmake -DCMAKE_BUILD_TYPE=Debug
           cmake --build build-cmake -j
           ctest --test-dir build-cmake --output-on-failure
+
+  windows:
+    name: Windows (CMake + MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # No `make` job here: the Makefile assumes a GCC/Clang-style toolchain
+      # (cc, ar, -fvisibility=hidden) that isn't present on a native Windows
+      # runner. CMake + MSVC is the actually-supported path on Windows, so it
+      # is what's tested -- see .cursor/rules/build-parity.mdc ("a claimed
+      # platform is a CI-tested platform").
+      - name: Configure, build, and test (CMake, MSVC)
+        run: |
+          cmake -S . -B build-cmake
+          cmake --build build-cmake --config Debug -j
+          ctest --test-dir build-cmake -C Debug --output-on-failure
+
+  sanitize:
+    name: Sanitizers (ASan + UBSan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test with sanitizers (Make)
+        run: make test-sanitize
+
+      - name: Configure, build, and test with sanitizers (CMake)
+        run: |
+          cmake -S . -B build-cmake-sanitize -DCMAKE_BUILD_TYPE=Debug -DCARMEN_SANITIZE=address,undefined
+          cmake --build build-cmake-sanitize -j
+          ctest --test-dir build-cmake-sanitize --output-on-failure
 
   wasm:
     name: WebAssembly (emscripten)

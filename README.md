@@ -74,7 +74,7 @@ All third-party code is vendored under `vendor/` -- there are no external depend
 - **toml-c** (`vendor/toml-c/`, MIT) -- parses optional case settings files
 - **utf8.h** (`vendor/utf8/`, public domain) -- UTF-8 helpers
 - **Unity** (`vendor/unity/`, MIT) -- unit test framework (test builds only)
-- Any C17-compliant compiler (GCC 8+, Clang 7+, MSVC 2019+)
+- Any C17-compliant compiler (GCC 8+, Clang 7+, MSVC 2019+) -- Linux and macOS are built and tested with both Make and CMake in CI; Windows/MSVC and WebAssembly (emscripten) are built and tested with CMake in CI (see `.github/workflows/ci.yml`)
 
 ## Building
 
@@ -82,7 +82,18 @@ All third-party code is vendored under `vendor/` -- there are no external depend
 make               # static library + demo binary (build/trail_demo)
 make lib           # static + shared library
 make test          # run all unit tests
+make test-sanitize # run all unit tests under ASan + UBSan (GCC/Clang only)
 make coverage      # test coverage report (requires lcov)
+```
+
+Or with CMake (also how the WebAssembly and Windows/MSVC builds are configured -- see [Building](#building) below and `.github/workflows/ci.yml`):
+
+```sh
+cmake -S . -B build && cmake --build build -j && ctest --test-dir build
+
+# ASan + UBSan (GCC/Clang only; ignored on MSVC and when cross-compiling)
+cmake -S . -B build-sanitize -DCARMEN_SANITIZE=address,undefined
+cmake --build build-sanitize -j && ctest --test-dir build-sanitize
 ```
 
 Or manually:
