@@ -86,6 +86,7 @@ make lib           # static + shared library
 make test          # run all unit tests
 make test-sanitize # run all unit tests under ASan + UBSan (GCC/Clang only)
 make coverage      # test coverage report (requires lcov)
+make package       # self-contained macOS demo tarball (libcarmen-demo-<version>-macos-<arch>.tar.gz)
 ```
 
 Or with CMake (also how the WebAssembly and Windows/MSVC builds are configured -- see [Building](#building) below and `.github/workflows/ci.yml`):

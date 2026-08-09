@@ -11,6 +11,11 @@ BUILD_DIR = build
 DIST_DIR  = dist
 VERSION   = 0.1.0
 
+# Distributable demo tarball naming: libcarmen-demo-<version>-macos-<arch>.tar.gz
+ARCH        := $(shell uname -m)
+PKG_NAME     = libcarmen-demo-$(VERSION)-macos-$(ARCH)
+PKG_TARBALL  = $(PKG_NAME).tar.gz
+
 # --------------------------------------------------------------------------- #
 #  Platform detection
 # --------------------------------------------------------------------------- #
@@ -138,11 +143,46 @@ dist: $(SHARED_LIB) $(TRAIL_DEMO_OBJ)
 	@echo "Bundle ready: run it with"
 	@echo "  cd $(DIST_DIR) && ./trail_demo en settings.toml"
 
+# --------------------------------------------------------------------------- #
+#  macOS demo tarball
+#
+#  Roll the self-contained dist/ bundle into a single versioned, arch-tagged
+#  .tar.gz for macOS. We stage a renamed copy under build/ (rather than using
+#  tar --transform / bsdtar -s) so the archive expands into a self-named
+#  top-level folder without depending on tar-flavor-specific flags.
+#
+#  dist/ is rebuilt from scratch first (unlike a plain `make dist`, which
+#  preserves an edited settings.toml) so a stale/edited bundle never leaks
+#  into the shipped tarball. The recursive `$(MAKE) dist` guarantees the wipe
+#  happens before dist/ is reassembled -- a prerequisite would build too early.
+# --------------------------------------------------------------------------- #
+
+package:
+	rm -rf $(DIST_DIR)
+	$(MAKE) dist
+	rm -rf $(BUILD_DIR)/$(PKG_NAME)
+	cp -R $(DIST_DIR) $(BUILD_DIR)/$(PKG_NAME)
+	cp -f LICENSE $(BUILD_DIR)/$(PKG_NAME)/
+	printf '%s\n' \
+	    'libcarmen demo ($(VERSION), macos $(ARCH))' \
+	    '' \
+	    'Run from inside this folder:' \
+	    '  ./trail_demo en settings.toml' \
+	    '' \
+	    'First launch may be blocked by Gatekeeper (unsigned download).' \
+	    'If so, clear the quarantine flag once:' \
+	    '  xattr -dr com.apple.quarantine .' \
+	    > $(BUILD_DIR)/$(PKG_NAME)/README.txt
+	tar -czf $(PKG_TARBALL) -C $(BUILD_DIR) $(PKG_NAME)
+	@echo ""
+	@echo "Package ready: $(PKG_TARBALL)"
+
 clean:
 	rm -rf $(BUILD_DIR)
 
 distclean: clean
 	rm -rf $(DIST_DIR)
+	rm -f $(PKG_TARBALL)
 
 # --------------------------------------------------------------------------- #
 #  pkg-config
@@ -458,4 +498,4 @@ $(COV_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)
 DEPS = $(LIB_OBJS:.o=.d) $(TRAIL_DEMO_OBJ:.o=.d)
 -include $(DEPS)
 
-.PHONY: all lib dist clean distclean test test-sanitize coverage install uninstall
+.PHONY: all lib dist package clean distclean test test-sanitize coverage install uninstall
