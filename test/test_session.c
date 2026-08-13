@@ -686,6 +686,133 @@ static void test_full_playthrough_reaches_won(void)
     TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_WON, carmen_session_status(&s));
 }
 
+/* ==================================================== score tests */
+
+static void test_score_zero_when_not_won(void)
+{
+    CarmenSession s;
+    start_easy(&s); /* PLAYING */
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_score(&s));
+
+    s.status = CARMEN_STATUS_LOST_TIME;
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_score(&s));
+
+    s.status = CARMEN_STATUS_LOST_WRONG_ARREST;
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_score(&s));
+}
+
+static void test_score_null_session_is_zero(void)
+{
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_score(NULL));
+}
+
+static void test_score_won_matches_formula(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    s.status                  = CARMEN_STATUS_WON;
+    s.active_case.difficulty  = CARMEN_DIFFICULTY_EASY;
+    s.time_remaining_hrs      = 100;
+    s.moves                   = 4;
+
+    int expected = CARMEN_SCORE_BASE_EASY
+                 + 100 * CARMEN_SCORE_TIME_WEIGHT
+                 - 4   * CARMEN_SCORE_MOVE_PENALTY;
+    TEST_ASSERT_EQUAL_INT(expected, carmen_session_score(&s));
+}
+
+static void test_score_rewards_remaining_time(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    s.status                 = CARMEN_STATUS_WON;
+    s.active_case.difficulty = CARMEN_DIFFICULTY_EASY;
+    s.moves                  = 3;
+
+    s.time_remaining_hrs = 40;
+    int low = carmen_session_score(&s);
+    s.time_remaining_hrs = 50;
+    int high = carmen_session_score(&s);
+
+    TEST_ASSERT_EQUAL_INT(10 * CARMEN_SCORE_TIME_WEIGHT, high - low);
+}
+
+static void test_score_penalizes_extra_moves(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    s.status                 = CARMEN_STATUS_WON;
+    s.active_case.difficulty = CARMEN_DIFFICULTY_EASY;
+    s.time_remaining_hrs     = 120; /* high enough to stay above the floor */
+
+    s.moves = 2;
+    int few = carmen_session_score(&s);
+    s.moves = 5;
+    int many = carmen_session_score(&s);
+
+    TEST_ASSERT_EQUAL_INT(3 * CARMEN_SCORE_MOVE_PENALTY, few - many);
+}
+
+static void test_score_floored_at_base(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    s.status                 = CARMEN_STATUS_WON;
+    s.active_case.difficulty = CARMEN_DIFFICULTY_EASY;
+    s.time_remaining_hrs     = 0;
+    s.moves                  = 100000; /* penalty far exceeds any bonus */
+
+    TEST_ASSERT_EQUAL_INT(CARMEN_SCORE_BASE_EASY, carmen_session_score(&s));
+}
+
+static void test_score_harder_difficulty_outscores_easier(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    s.status             = CARMEN_STATUS_WON;
+    s.time_remaining_hrs = 10; /* same play, above the floor for all bases */
+    s.moves              = 0;
+
+    s.active_case.difficulty = CARMEN_DIFFICULTY_EASY;
+    int easy = carmen_session_score(&s);
+    s.active_case.difficulty = CARMEN_DIFFICULTY_MEDIUM;
+    int medium = carmen_session_score(&s);
+    s.active_case.difficulty = CARMEN_DIFFICULTY_HARD;
+    int hard = carmen_session_score(&s);
+
+    TEST_ASSERT_GREATER_THAN(easy, medium);
+    TEST_ASSERT_GREATER_THAN(medium, hard);
+}
+
+static void test_score_positive_after_real_win(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    int trail_len = s.active_case.trail_len;
+    char trail[CARMEN_MAX_TRAIL][CARMEN_MAX_NAME_LEN];
+    for (int i = 0; i < trail_len; i++)
+        carmen_utf8_copy(trail[i], CARMEN_MAX_NAME_LEN, s.active_case.trail[i]);
+
+    for (int i = 1; i < trail_len; i++)
+        TEST_ASSERT_EQUAL_INT(0, carmen_session_travel(&s, trail[i]));
+
+    int indices[CARMEN_TRAIL_SITES];
+    int n = carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
+    for (int i = 0; i < n; i++)
+        carmen_session_investigate(&s, indices[i]);
+
+    int vidx = -1;
+    for (int i = 0; i < FITNA_VILLAIN_COUNT; i++)
+        if (strcmp(FITNA_VILLAINS[i].id, s.active_case.villain->id) == 0) {
+            vidx = i;
+            break;
+        }
+    carmen_session_issue_warrant(&s, vidx);
+    TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_WON, carmen_session_arrest(&s));
+    TEST_ASSERT_GREATER_THAN(0, carmen_session_score(&s));
+}
+
 /* ============================================== visited history tests */
 
 static void test_start_records_origin_as_first_visit(void)
@@ -927,6 +1054,16 @@ int main(void)
     RUN_TEST(test_arrest_not_at_hideout_returns_not_at_hideout);
     RUN_TEST(test_actions_after_game_over_return_errors);
     RUN_TEST(test_full_playthrough_reaches_won);
+
+    /* Score */
+    RUN_TEST(test_score_zero_when_not_won);
+    RUN_TEST(test_score_null_session_is_zero);
+    RUN_TEST(test_score_won_matches_formula);
+    RUN_TEST(test_score_rewards_remaining_time);
+    RUN_TEST(test_score_penalizes_extra_moves);
+    RUN_TEST(test_score_floored_at_base);
+    RUN_TEST(test_score_harder_difficulty_outscores_easier);
+    RUN_TEST(test_score_positive_after_real_win);
 
     /* Visited history */
     RUN_TEST(test_start_records_origin_as_first_visit);

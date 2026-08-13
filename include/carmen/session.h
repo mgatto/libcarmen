@@ -7,6 +7,20 @@
 
 #define CARMEN_MAX_NOTEBOOK 64
 
+/*
+ * Scoring constants for carmen_session_score() (additive model).
+ *
+ * base(difficulty) is the per-difficulty floor a win is always worth;
+ * harder cases score higher for the same play. Leftover time is rewarded
+ * per hour and each move costs a small penalty. See carmen_session_score()
+ * for the exact formula.
+ */
+#define CARMEN_SCORE_BASE_EASY    1000
+#define CARMEN_SCORE_BASE_MEDIUM  2000
+#define CARMEN_SCORE_BASE_HARD    3000
+#define CARMEN_SCORE_TIME_WEIGHT    10
+#define CARMEN_SCORE_MOVE_PENALTY   50
+
 typedef enum {
   CARMEN_STATUS_PLAYING,
   CARMEN_STATUS_WON,
@@ -48,6 +62,27 @@ carmen_session_current_city(const CarmenSession *s);
 CARMEN_API const CarmenCase *carmen_session_case(const CarmenSession *s);
 CARMEN_API int carmen_session_time_remaining(const CarmenSession *s);
 CARMEN_API int carmen_session_moves(const CarmenSession *s);
+
+/*
+ * Final score for a won session (a simple additive model). Returns 0 for
+ * any non-WON status (including a NULL session), so a front-end can call
+ * it unconditionally and only surface a score once
+ * carmen_session_status() == CARMEN_STATUS_WON.
+ *
+ * On a win the score is:
+ *
+ *     base(difficulty)
+ *       + time_remaining_hrs * CARMEN_SCORE_TIME_WEIGHT
+ *       - moves              * CARMEN_SCORE_MOVE_PENALTY
+ *
+ * clamped so it never falls below base(difficulty), where base is
+ * CARMEN_SCORE_BASE_EASY / _MEDIUM / _HARD. Leftover time rewards speed
+ * and extra moves cost a small penalty; the higher base for harder cases
+ * means a hard win outscores an easy one played equally well. The result
+ * is deterministic given the frozen end-state (no game actions remain
+ * once the session is WON).
+ */
+CARMEN_API int carmen_session_score(const CarmenSession *s);
 
 /*
  * The villain behind the active case. Returns NULL if s is NULL.

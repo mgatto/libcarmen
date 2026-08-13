@@ -115,6 +115,30 @@ int carmen_session_moves(const CarmenSession *s)
     return s->moves;
 }
 
+static int score_base_for(CarmenDifficulty d)
+{
+    switch (d) {
+        case CARMEN_DIFFICULTY_EASY:   return CARMEN_SCORE_BASE_EASY;
+        case CARMEN_DIFFICULTY_MEDIUM: return CARMEN_SCORE_BASE_MEDIUM;
+        case CARMEN_DIFFICULTY_HARD:   return CARMEN_SCORE_BASE_HARD;
+    }
+    return CARMEN_SCORE_BASE_MEDIUM;
+}
+
+int carmen_session_score(const CarmenSession *s)
+{
+    if (!s || s->status != CARMEN_STATUS_WON) return 0;
+
+    /* Inputs are bounded by game logic (time budget derives from difficulty
+       plus trail travel; a win only follows a bounded number of moves), so
+       the additive arithmetic stays well within int range. */
+    int base  = score_base_for(s->active_case.difficulty);
+    int score = base + s->time_remaining_hrs * CARMEN_SCORE_TIME_WEIGHT
+                     - s->moves * CARMEN_SCORE_MOVE_PENALTY;
+    if (score < base) score = base;
+    return score;
+}
+
 const FitnaVillain *carmen_session_villain(const CarmenSession *s)
 {
     if (!s) return NULL;
