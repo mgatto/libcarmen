@@ -37,7 +37,7 @@ endif
 
 LIB_SRCS = src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
            src/villain.c src/artifact.c src/case.c \
-           src/session.c src/settings.c src/i18n.c \
+           src/session.c src/settings.c src/save.c src/i18n.c \
            vendor/cjson/cJSON.c
 
 # Built-in world: generated at build time from the preset by tools/gen_world.
@@ -205,7 +205,8 @@ PUBLIC_HEADERS = include/carmen/carmen.h include/carmen/carmen_export.h \
                  include/carmen/world_islamic.h \
                  include/carmen/villain.h include/carmen/artifact.h \
                  include/carmen/case.h include/carmen/session.h \
-                 include/carmen/settings.h include/carmen/i18n.h
+                 include/carmen/settings.h include/carmen/save.h \
+                 include/carmen/i18n.h
 
 INCLUDEDIR   = $(PREFIX)/include/carmen
 LIBDIR       = $(PREFIX)/lib
@@ -238,7 +239,7 @@ TEST_DIR  = $(BUILD_DIR)/test
 TEST_BINS = $(TEST_DIR)/test_site $(TEST_DIR)/test_connection $(TEST_DIR)/test_city \
             $(TEST_DIR)/test_game_world $(TEST_DIR)/test_carmen_scenarios \
             $(TEST_DIR)/test_artifact $(TEST_DIR)/test_case $(TEST_DIR)/test_session \
-            $(TEST_DIR)/test_settings $(TEST_DIR)/test_villain \
+            $(TEST_DIR)/test_save $(TEST_DIR)/test_settings $(TEST_DIR)/test_villain \
             $(TEST_DIR)/test_world_islamic $(TEST_DIR)/test_i18n
 
 # Presets that must be rejected by the generator (build-time validation).
@@ -302,6 +303,9 @@ $(TEST_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DI
 $(TEST_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
+$(TEST_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
 $(TEST_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
@@ -329,7 +333,7 @@ SANITIZE_DIR   = $(BUILD_DIR)/sanitize
 SANITIZE_BINS  = $(SANITIZE_DIR)/test_site $(SANITIZE_DIR)/test_connection $(SANITIZE_DIR)/test_city \
                  $(SANITIZE_DIR)/test_game_world $(SANITIZE_DIR)/test_carmen_scenarios \
                  $(SANITIZE_DIR)/test_artifact $(SANITIZE_DIR)/test_case $(SANITIZE_DIR)/test_session \
-                 $(SANITIZE_DIR)/test_settings $(SANITIZE_DIR)/test_villain \
+                 $(SANITIZE_DIR)/test_save $(SANITIZE_DIR)/test_settings $(SANITIZE_DIR)/test_villain \
                  $(SANITIZE_DIR)/test_world_islamic $(SANITIZE_DIR)/test_i18n
 
 test-sanitize: $(SANITIZE_BINS)
@@ -383,6 +387,9 @@ $(SANITIZE_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SAN
 $(SANITIZE_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
 	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
+$(SANITIZE_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+
 $(SANITIZE_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
 	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
 
@@ -411,7 +418,7 @@ endif
 COV_BINS = $(COV_DIR)/test_site $(COV_DIR)/test_connection $(COV_DIR)/test_city \
            $(COV_DIR)/test_game_world $(COV_DIR)/test_carmen_scenarios \
            $(COV_DIR)/test_artifact $(COV_DIR)/test_case $(COV_DIR)/test_session \
-           $(COV_DIR)/test_settings $(COV_DIR)/test_villain \
+           $(COV_DIR)/test_save $(COV_DIR)/test_settings $(COV_DIR)/test_villain \
            $(COV_DIR)/test_world_islamic $(COV_DIR)/test_i18n
 
 coverage: $(COV_BINS)
@@ -472,6 +479,9 @@ $(COV_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
 $(COV_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
+
+$(COV_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)
 
 $(COV_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh

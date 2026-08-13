@@ -15,6 +15,7 @@
 #include "case.h"
 #include "session.h"
 #include "settings.h"
+#include "save.h"
 #include "i18n.h"
 
 #endif

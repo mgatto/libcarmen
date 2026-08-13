@@ -169,6 +169,7 @@ include/carmen/
   case.h                   Case (villain + trail + settings) API
   session.h                Play session state and actions
   settings.h               Case settings (difficulty, TOML loading)
+  save.h                   Session JSON save/load (serialize/restore)
   i18n.h                   Locale loading and string lookup
 src/
   utf8.c                   UTF-8 helpers
@@ -182,6 +183,7 @@ src/
   case.c                   Case generation (villain, trail, briefing)
   session.c                Session state and actions (travel/investigate/warrant/arrest)
   settings.c               Case settings + TOML loading
+  save.c                   Session JSON serialization (save/load, cJSON)
   i18n.c                   Locale JSON loading and string lookup
 presets/
   islamic.jsonc            Built-in world data (single source of truth, JSONC)
@@ -201,6 +203,7 @@ test/
   test_artifact.c          Artifact unit tests
   test_case.c              Case unit tests
   test_session.c           Session unit tests
+  test_save.c              Session save/load (JSON) tests
   test_settings.c          Settings unit tests
   test_villain.c           Villain unit tests
   test_world_islamic.c     Built-in world golden-value tests

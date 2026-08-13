@@ -106,6 +106,7 @@ set(CARMEN_SOURCES
     src/case.c
     src/session.c
     src/settings.c
+    src/save.c
     src/i18n.c
     vendor/cjson/cJSON.c
 )
@@ -126,6 +127,7 @@ set(CARMEN_PUBLIC_HEADERS
     include/carmen/case.h
     include/carmen/session.h
     include/carmen/settings.h
+    include/carmen/save.h
     include/carmen/i18n.h
 )
 
@@ -274,6 +276,7 @@ if(CARMEN_BUILD_TESTS)
     carmen_add_test(test_artifact          test/test_artifact.c)
     carmen_add_test(test_case              test/test_case.c)
     carmen_add_test(test_session            test/test_session.c)
+    carmen_add_test(test_save              test/test_save.c)
     carmen_add_test(test_settings          test/test_settings.c)
     carmen_add_test(test_world_islamic     test/test_world_islamic.c)
     carmen_add_test(test_i18n              test/test_i18n.c)
