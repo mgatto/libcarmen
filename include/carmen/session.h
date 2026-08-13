@@ -53,7 +53,20 @@ typedef struct {
 /* Lifecycle */
 CARMEN_API int carmen_session_start(CarmenSession *s, CarmenWorld *w,
                                     const CarmenCaseSettings *settings);
-CARMEN_API void carmen_session_reset(CarmenSession *s);
+
+/*
+ * Reset the session and regenerate a fresh case in place, reusing the world
+ * and settings the session was last started with. Equivalent to calling
+ * carmen_session_start() again with the same world/settings: it clears all
+ * play state (notebook, evidence, visited history, warrant, moves, status)
+ * and leaves the session immediately PLAYING at the new case's origin city.
+ *
+ * Returns 1 on success, 0 on failure (s is NULL, no world is attached, or
+ * case generation failed). On failure the session is left non-playable, so
+ * callers should treat a 0 the same way they treat a failed
+ * carmen_session_start().
+ */
+CARMEN_API int carmen_session_reset(CarmenSession *s);
 
 /* Queries (read-only, for UI) */
 CARMEN_API CarmenSessionStatus carmen_session_status(const CarmenSession *s);

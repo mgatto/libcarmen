@@ -176,10 +176,80 @@ static void test_reset_preserves_world(void)
 {
     CarmenSession s;
     start_easy(&s);
-    carmen_session_reset(&s);
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_reset(&s));
     TEST_ASSERT_EQUAL_PTR(world, s.world);
     TEST_ASSERT_EQUAL_INT(0, s.moves);
     TEST_ASSERT_EQUAL_INT(-1, s.warrant_villain_idx);
+}
+
+static void test_reset_regenerates_playable_case(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    /* Dirty the session: travel, investigate, and force a terminal status. */
+    carmen_session_travel(&s, "b");
+    int idx[CARMEN_TRAIL_SITES];
+    int n = carmen_session_active_sites(&s, idx, CARMEN_TRAIL_SITES);
+    for (int i = 0; i < n; i++)
+        carmen_session_investigate(&s, idx[i]);
+    s.status = CARMEN_STATUS_LOST_TIME;
+
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_reset(&s));
+
+    /* Fresh, immediately-playable case from the stored world + settings. */
+    TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_PLAYING, carmen_session_status(&s));
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_moves(&s));
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_notebook_count(&s));
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_evidence_count(&s));
+    TEST_ASSERT_EQUAL_INT(-1, s.warrant_villain_idx);
+
+    /* Regression: the old reset left no case, so time/current-city were
+       unset. Now the session sits at a real origin with a real budget. */
+    TEST_ASSERT_GREATER_THAN(0, carmen_session_time_remaining(&s));
+    const CarmenCity *cur = carmen_session_current_city(&s);
+    TEST_ASSERT_NOT_NULL(cur);
+    const CarmenCase *cas = carmen_session_case(&s);
+    TEST_ASSERT_GREATER_THAN(0, cas->trail_len);
+    TEST_ASSERT_NOT_NULL(cas->villain);
+    TEST_ASSERT_EQUAL_STRING(cas->origin_id, s.current_city_id);
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_visited_count(&s));
+    TEST_ASSERT_EQUAL_STRING(cas->origin_id,
+                             carmen_session_visited_at(&s, 0));
+}
+
+static void test_reset_preserves_settings(void)
+{
+    CarmenSession s;
+    CarmenCaseSettings settings = carmen_case_settings_default();
+    settings.difficulty = CARMEN_DIFFICULTY_EASY;
+    settings.visited_history_size = 2;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_start(&s, world, &settings));
+
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_reset(&s));
+    TEST_ASSERT_EQUAL_INT(CARMEN_DIFFICULTY_EASY, s.settings.difficulty);
+    TEST_ASSERT_EQUAL_INT(2, s.settings.visited_history_size);
+}
+
+static void test_reset_after_reset_is_still_playable(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_reset(&s));
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_reset(&s));
+    TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_PLAYING, carmen_session_status(&s));
+}
+
+static void test_reset_null_returns_zero(void)
+{
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_reset(NULL));
+}
+
+static void test_reset_without_world_returns_zero(void)
+{
+    CarmenSession s;
+    memset(&s, 0, sizeof s); /* no world attached */
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_reset(&s));
 }
 
 /* ===================================================== travel tests */
@@ -1014,6 +1084,11 @@ int main(void)
     RUN_TEST(test_start_sets_time_remaining);
     RUN_TEST(test_start_moves_is_zero);
     RUN_TEST(test_reset_preserves_world);
+    RUN_TEST(test_reset_regenerates_playable_case);
+    RUN_TEST(test_reset_preserves_settings);
+    RUN_TEST(test_reset_after_reset_is_still_playable);
+    RUN_TEST(test_reset_null_returns_zero);
+    RUN_TEST(test_reset_without_world_returns_zero);
 
     /* Travel */
     RUN_TEST(test_travel_to_connected_city_succeeds);

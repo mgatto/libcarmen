@@ -72,15 +72,16 @@ int carmen_session_start(CarmenSession *s, CarmenWorld *w,
     return 1;
 }
 
-void carmen_session_reset(CarmenSession *s)
+int carmen_session_reset(CarmenSession *s)
 {
-    if (!s) return;
+    if (!s) return 0;
+
+    /* Copy the world pointer and settings out first: carmen_session_start()
+       memsets *s before reading its settings argument, so passing &s->settings
+       directly would hand it a buffer it is about to zero. */
     CarmenWorld *w = s->world;
     CarmenCaseSettings settings = s->settings;
-    memset(s, 0, sizeof(*s));
-    s->world = w;
-    s->settings = settings;
-    s->warrant_villain_idx = -1;
+    return carmen_session_start(s, w, &settings);
 }
 
 /* ----------------------------------------------------------- queries */
