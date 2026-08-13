@@ -548,6 +548,7 @@
   "ui.arrest_no_warrant": "You have no warrant! The suspect walks free.",
   "ui.arrest_not_here": "The suspect is not in this city.",
   "ui.won": "You caught the villain! Case closed.",
+  "ui.score": "Final score: %d",
   "ui.lost_time": "Time's up! The suspect has escaped.",
   "ui.lost_moves": "You've run out of moves! The suspect got away.",
   "ui.difficulty_easy": "Easy",

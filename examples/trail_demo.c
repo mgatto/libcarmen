@@ -302,6 +302,9 @@ int main(int argc, char *argv[]) {
     printf("  (It was %s, a.k.a. \"%s\")\n",
            carmen_i18n_get(i18n, villain->name),
            carmen_i18n_get(i18n, villain->alias));
+    printf("  ");
+    printf(carmen_i18n_get(i18n, "ui.score"), carmen_session_score(&session));
+    printf("\n");
   } else if (final == CARMEN_STATUS_LOST_TIME) {
     printf("  %s\n", carmen_i18n_get(i18n, "ui.lost_time"));
   } else if (final == CARMEN_STATUS_LOST_MOVES) {
