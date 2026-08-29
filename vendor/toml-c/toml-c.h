@@ -176,8 +176,10 @@ static char* STRDUP(const char* s) {
 #undef strndup
 #define strndup(x) error - forbidden - use STRNDUP instead
 static char* STRNDUP(const char* s, size_t n) {
-	size_t len = strnlen(s, n);
-	char*  p   = malloc(len + 1);
+	/* strnlen is POSIX, not C17; glibc/emscripten hide it under -std=c17. */
+	const char* end = memchr(s, 0, n);
+	size_t      len = end ? (size_t)(end - s) : n;
+	char*       p   = malloc(len + 1);
 	if (p) {
 		memcpy(p, s, len);
 		p[len] = 0;

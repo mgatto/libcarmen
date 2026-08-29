@@ -23,6 +23,17 @@ static int valid_i18n_key(const char *key)
     return key[0] != '\0';
 }
 
+/* strdup is POSIX, not C17. glibc hides it under -std=c17; the resulting
+   implicit int return truncates pointers on LP64 and segfaults test_i18n. */
+static char *dup_str(const char *s)
+{
+    const size_t n = strlen(s) + 1;
+    char        *p = malloc(n);
+    if (!p) return NULL;
+    memcpy(p, s, n);
+    return p;
+}
+
 CarmenI18n *carmen_i18n_load(const char *json_path)
 {
     if (!json_path) return NULL;
@@ -93,7 +104,7 @@ CarmenI18n *carmen_i18n_load_json(const char *json, size_t len)
             continue;
         }
 
-        char *dup = strdup(item->valuestring);
+        char *dup = dup_str(item->valuestring);
         if (!dup) continue;
         shput(ctx->map, item->string, dup);
         entry_count++;
