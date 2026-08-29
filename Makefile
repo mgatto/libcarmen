@@ -1,6 +1,9 @@
 CC       = cc
 CFLAGS   = -std=c17 -Wall -Wextra -pedantic -O2
-INCLUDES = -Iinclude -Isrc -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c
+INCLUDES = -Iinclude -Isrc -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c \
+           -Ivendor/fribidi -Ivendor/fribidi/lib
+
+FRIBIDI_CFLAGS = -DHAVE_CONFIG_H
 
 # Auto-generate header dependency files (.d) alongside each object so that
 # editing a header rebuilds exactly the objects that include it.  -MP adds
@@ -32,13 +35,38 @@ else
 endif
 
 # --------------------------------------------------------------------------- #
+#  Vendored GNU FriBidi (LGPL-2.1+); see vendor/fribidi/README.vendor
+# --------------------------------------------------------------------------- #
+
+FRIBIDI_SRCS = vendor/fribidi/lib/fribidi.c \
+               vendor/fribidi/lib/fribidi-arabic.c \
+               vendor/fribidi/lib/fribidi-bidi.c \
+               vendor/fribidi/lib/fribidi-bidi-types.c \
+               vendor/fribidi/lib/fribidi-char-sets.c \
+               vendor/fribidi/lib/fribidi-char-sets-cap-rtl.c \
+               vendor/fribidi/lib/fribidi-char-sets-cp1255.c \
+               vendor/fribidi/lib/fribidi-char-sets-cp1256.c \
+               vendor/fribidi/lib/fribidi-char-sets-iso8859-6.c \
+               vendor/fribidi/lib/fribidi-char-sets-iso8859-8.c \
+               vendor/fribidi/lib/fribidi-char-sets-utf8.c \
+               vendor/fribidi/lib/fribidi-deprecated.c \
+               vendor/fribidi/lib/fribidi-joining.c \
+               vendor/fribidi/lib/fribidi-joining-types.c \
+               vendor/fribidi/lib/fribidi-mirroring.c \
+               vendor/fribidi/lib/fribidi-brackets.c \
+               vendor/fribidi/lib/fribidi-run.c \
+               vendor/fribidi/lib/fribidi-shape.c
+
+FRIBIDI_OBJS = $(patsubst vendor/fribidi/lib/%.c,$(BUILD_DIR)/fribidi_%.o,$(FRIBIDI_SRCS))
+
+# --------------------------------------------------------------------------- #
 #  Library sources
 # --------------------------------------------------------------------------- #
 
 LIB_SRCS = src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
            src/villain.c src/artifact.c src/case.c \
            src/session.c src/settings.c src/save.c src/i18n.c \
-           vendor/cjson/cJSON.c
+           vendor/cjson/cJSON.c $(FRIBIDI_SRCS)
 
 # Built-in world: generated at build time from the preset by tools/gen_world.
 # LIB_SRCS_ALL is the full library source set (adds the generated world) used
@@ -51,6 +79,7 @@ LIB_SRCS_ALL  = $(LIB_SRCS) $(GEN_WORLD_SRC)
 
 LIB_OBJS = $(patsubst src/%.c,$(BUILD_DIR)/%.o,$(filter src/%.c,$(LIB_SRCS))) \
            $(BUILD_DIR)/cJSON.o \
+           $(FRIBIDI_OBJS) \
            $(GEN_DIR)/world_islamic_generated.o
 
 # Library artifacts
@@ -75,7 +104,7 @@ $(STATIC_LIB): $(LIB_OBJS) | $(BUILD_DIR)
 	ar rcs $@ $^
 
 $(SHARED_LIB): $(LIB_SRCS_ALL) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) $(SHARED_FLAGS) -fPIC -fvisibility=hidden \
+	$(CC) $(CFLAGS) $(FRIBIDI_CFLAGS) $(INCLUDES) $(SHARED_FLAGS) -fPIC -fvisibility=hidden \
 	    -o $@ $(LIB_SRCS_ALL)
 
 lib: $(STATIC_LIB) $(SHARED_LIB)
@@ -95,6 +124,10 @@ $(BUILD_DIR)/%.o: src/%.c | $(BUILD_DIR)
 
 $(BUILD_DIR)/cJSON.o: vendor/cjson/cJSON.c | $(BUILD_DIR)
 	$(CC) -std=c17 -O2 $(DEPFLAGS) -Ivendor/cjson -c -o $@ $<
+
+$(BUILD_DIR)/fribidi_%.o: vendor/fribidi/lib/%.c | $(BUILD_DIR)
+	$(CC) -std=c17 -Wall -Wextra -O2 $(DEPFLAGS) $(FRIBIDI_CFLAGS) \
+	    -Ivendor/fribidi -Ivendor/fribidi/lib -c -o $@ $<
 
 # --------------------------------------------------------------------------- #
 #  Built-in world code generation
@@ -233,11 +266,11 @@ uninstall:
 
 UNITY_SRC  = vendor/unity/unity.c
 UNITY_INC  = -Ivendor/unity
-TEST_FLAGS = -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE
+TEST_FLAGS = -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE $(FRIBIDI_CFLAGS)
 
 TEST_DIR  = $(BUILD_DIR)/test
 TEST_BINS = $(TEST_DIR)/test_site $(TEST_DIR)/test_connection $(TEST_DIR)/test_city \
-            $(TEST_DIR)/test_game_world $(TEST_DIR)/test_carmen_scenarios \
+            $(TEST_DIR)/test_utf8 $(TEST_DIR)/test_game_world $(TEST_DIR)/test_carmen_scenarios \
             $(TEST_DIR)/test_artifact $(TEST_DIR)/test_case $(TEST_DIR)/test_session \
             $(TEST_DIR)/test_save $(TEST_DIR)/test_settings $(TEST_DIR)/test_villain \
             $(TEST_DIR)/test_world_islamic $(TEST_DIR)/test_i18n
@@ -279,14 +312,17 @@ test: $(TEST_BINS) $(GEN_WORLD)
 $(TEST_DIR):
 	mkdir -p $(TEST_DIR)
 
-$(TEST_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+$(TEST_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(TEST_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+$(TEST_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(TEST_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+$(TEST_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
+
+$(TEST_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
 $(TEST_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
@@ -328,10 +364,10 @@ $(TEST_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DI
 # --------------------------------------------------------------------------- #
 
 SANITIZE_FLAGS = -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE \
-                  -fsanitize=address,undefined -fno-omit-frame-pointer
+                  -fsanitize=address,undefined -fno-omit-frame-pointer $(FRIBIDI_CFLAGS)
 SANITIZE_DIR   = $(BUILD_DIR)/sanitize
 SANITIZE_BINS  = $(SANITIZE_DIR)/test_site $(SANITIZE_DIR)/test_connection $(SANITIZE_DIR)/test_city \
-                 $(SANITIZE_DIR)/test_game_world $(SANITIZE_DIR)/test_carmen_scenarios \
+                 $(SANITIZE_DIR)/test_utf8 $(SANITIZE_DIR)/test_game_world $(SANITIZE_DIR)/test_carmen_scenarios \
                  $(SANITIZE_DIR)/test_artifact $(SANITIZE_DIR)/test_case $(SANITIZE_DIR)/test_session \
                  $(SANITIZE_DIR)/test_save $(SANITIZE_DIR)/test_settings $(SANITIZE_DIR)/test_villain \
                  $(SANITIZE_DIR)/test_world_islamic $(SANITIZE_DIR)/test_i18n
@@ -363,14 +399,17 @@ test-sanitize: $(SANITIZE_BINS)
 $(SANITIZE_DIR):
 	mkdir -p $(SANITIZE_DIR)
 
-$(SANITIZE_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+$(SANITIZE_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(SANITIZE_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+$(SANITIZE_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(SANITIZE_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
+$(SANITIZE_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
+
+$(SANITIZE_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
 $(SANITIZE_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
 	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^
@@ -406,7 +445,7 @@ $(SANITIZE_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SAN
 #  Code Coverage  (requires lcov:  brew install lcov)
 # --------------------------------------------------------------------------- #
 
-COV_FLAGS = -std=c17 -Wall -Wextra -pedantic -O0 -g --coverage -DUNITY_INCLUDE_DOUBLE
+COV_FLAGS = -std=c17 -Wall -Wextra -pedantic -O0 -g --coverage -DUNITY_INCLUDE_DOUBLE $(FRIBIDI_CFLAGS)
 COV_DIR   = $(BUILD_DIR)/coverage
 LCOV_GCOV = --gcov-tool /usr/bin/gcov
 
@@ -416,7 +455,7 @@ ifneq ($(LLVM_COV_GCOV),)
 endif
 
 COV_BINS = $(COV_DIR)/test_site $(COV_DIR)/test_connection $(COV_DIR)/test_city \
-           $(COV_DIR)/test_game_world $(COV_DIR)/test_carmen_scenarios \
+           $(COV_DIR)/test_utf8 $(COV_DIR)/test_game_world $(COV_DIR)/test_carmen_scenarios \
            $(COV_DIR)/test_artifact $(COV_DIR)/test_case $(COV_DIR)/test_session \
            $(COV_DIR)/test_save $(COV_DIR)/test_settings $(COV_DIR)/test_villain \
            $(COV_DIR)/test_world_islamic $(COV_DIR)/test_i18n
@@ -457,14 +496,17 @@ $(COV_DIR)/llvm-gcov.sh: | $(COV_DIR)
 $(COV_DIR):
 	mkdir -p $(COV_DIR)
 
-$(COV_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/site.c src/utf8.c $(UNITY_SRC)
+$(COV_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(COV_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/connection.c src/utf8.c $(UNITY_SRC)
+$(COV_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(COV_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
-	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/city.c src/site.c src/connection.c src/utf8.c $(UNITY_SRC)
+$(COV_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
+
+$(COV_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
 $(COV_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC)

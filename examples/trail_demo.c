@@ -11,32 +11,45 @@
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
 
-static int valid_locale_id(const char *id) {
+static int valid_locale_id(const char *id)
+{
   for (const char *p = id; *p; p++)
-    if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') ||
-          (*p >= '0' && *p <= '9') || *p == '_' || *p == '-'))
+        if (!((*p >= 'a' && *p <= 'z') || (*p >= 'A' && *p <= 'Z') || (*p >= '0' && *p <= '9') ||
+              *p == '_' || *p == '-'))
       return 0;
   return id[0] != '\0';
 }
 
-static void print_city_name(const CarmenI18n *i18n, const CarmenCity *c) {
-  const char *name = carmen_i18n_get(i18n, c->name);
-  const char *local = carmen_i18n_get(i18n, c->local_name);
-  printf("%s", name);
-  if (local[0] && strcmp(name, local) != 0)
-    printf(" (%s)", local);
+static void print_bidi(const char *s)
+{
+    char visual[EXPAND_BUF];
+    carmen_utf8_bidi_visual(s, visual, sizeof visual);
+    printf("%s", visual);
 }
 
-static void print_status_bar(const CarmenI18n *i18n, const CarmenSession *s) {
+static void print_city_name(const CarmenI18n *i18n, const CarmenCity *c)
+{
+    const char *name  = carmen_i18n_get(i18n, c->name);
+    const char *local = carmen_i18n_get(i18n, c->local_name);
+    char        composed[EXPAND_BUF];
+    if (local[0] && strcmp(name, local) != 0)
+        snprintf(composed, sizeof composed, "%s (%s)", name, local);
+    else
+        snprintf(composed, sizeof composed, "%s", name);
+    print_bidi(composed);
+}
+
+static void print_status_bar(const CarmenI18n *i18n, const CarmenSession *s)
+{
   printf("  %s %d %s  |  %s %d\n", carmen_i18n_get(i18n, "ui.time_left"),
          carmen_session_time_remaining(s), carmen_i18n_get(i18n, "ui.hours"),
          carmen_i18n_get(i18n, "ui.moves"), carmen_session_moves(s));
 }
 
-static void print_evidence(const CarmenI18n *i18n, const CarmenSession *s) {
+static void print_evidence(const CarmenI18n *i18n, const CarmenSession *s)
+{
   int count = carmen_session_evidence_count(s);
-  if (count == 0)
-    return;
+    if (count == 0) return;
   int required = carmen_session_evidence_required(s);
   printf("\n  ");
   printf(carmen_i18n_get(i18n, "ui.evidence_header"), count, required);
@@ -44,18 +57,16 @@ static void print_evidence(const CarmenI18n *i18n, const CarmenSession *s) {
   const FitnaVillain *villain = carmen_session_villain(s);
   for (int i = 0; i < count; i++) {
     char expanded[EXPAND_BUF];
-    carmen_villain_expand_clue(
-        carmen_i18n_get(i18n, carmen_session_evidence_at(s, i)),
+        carmen_villain_expand_clue(carmen_i18n_get(i18n, carmen_session_evidence_at(s, i)),
         villain->gender, expanded, sizeof expanded);
     printf("    %d. %s\n", i + 1, expanded);
   }
 }
 
-static void print_notebook(const CarmenI18n *i18n, const CarmenSession *s,
-                           char villain_gender) {
+static void print_notebook(const CarmenI18n *i18n, const CarmenSession *s, char villain_gender)
+{
   int count = carmen_session_notebook_count(s);
-  if (count == 0)
-    return;
+    if (count == 0) return;
   printf("\n  %s (%d)\n", carmen_i18n_get(i18n, "ui.notebook_header"), count);
   for (int i = 0; i < count; i++) {
     const CarmenClue *clue = carmen_session_notebook_at(s, i);
@@ -67,14 +78,29 @@ static void print_notebook(const CarmenI18n *i18n, const CarmenSession *s,
   }
 }
 
-static int read_int(void) {
+static void print_route(const CarmenI18n *i18n, const CarmenSession *s, CarmenWorld *world)
+{
+    int count = carmen_session_visited_count(s);
+    if (count <= 1) return;
+    printf("\n  %s ", carmen_i18n_get(i18n, "ui.route"));
+    for (int i = 0; i < count; i++) {
+        const char       *id = carmen_session_visited_at(s, i);
+        const CarmenCity *c  = carmen_world_find(world, id);
+        printf("%s", c ? carmen_i18n_get(i18n, c->name) : id);
+        if (i < count - 1) printf(" -> ");
+    }
+    printf("\n");
+}
+
+static int read_int(void)
+{
   char buf[64];
-  if (!fgets(buf, sizeof buf, stdin))
-    return -1;
+    if (!fgets(buf, sizeof buf, stdin)) return -1;
   return atoi(buf);
 }
 
-static int read_line(char *buf, int size) {
+static int read_line(char *buf, int size)
+{
   if (!fgets(buf, size, stdin)) {
     buf[0] = '\0';
     return 0;
@@ -83,9 +109,17 @@ static int read_line(char *buf, int size) {
   return 1;
 }
 
+/* Read a file path, substituting def when the user enters an empty line. */
+static void read_path_with_default(char *buf, int size, const char *def)
+{
+    read_line(buf, size);
+    if (buf[0] == '\0') snprintf(buf, (size_t)size, "%s", def);
+}
+
 /* ── Main ─────────────────────────────────────────────────────────── */
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   const char *locale = (argc > 1) ? argv[1] : "en";
   const char *settings_path = (argc > 2) ? argv[2] : NULL;
   if (!valid_locale_id(locale)) {

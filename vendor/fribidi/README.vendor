@@ -1,0 +1,13 @@
+# Vendored GNU FriBidi
+
+Upstream: https://github.com/fribidi/fribidi  
+Version: **1.0.16** (LGPL-2.1+)  
+License: see [COPYING](COPYING)
+
+Sources under `lib/` are copied from the upstream release tarball. `lib/fribidi-config.h` and `config.h` are generated for this tree (normally produced by configure/meson).
+
+## Refresh
+
+```bash
+./scripts/vendor-fribidi.sh
+```

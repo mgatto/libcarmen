@@ -75,6 +75,7 @@ All third-party code is vendored under `vendor/` -- there are no external depend
 - **cJSON** (`vendor/cjson/`, MIT) -- parses the locale JSON files
 - **toml-c** (`vendor/toml-c/`, MIT) -- parses optional case settings files
 - **utf8.h** (`vendor/utf8/`, public domain) -- UTF-8 helpers
+- **GNU FriBidi** (`vendor/fribidi/`, LGPL-2.1+) -- bidirectional text and Arabic shaping for terminal display (`carmen_utf8_bidi_visual`); see `vendor/fribidi/README.vendor`
 - **Unity** (`vendor/unity/`, MIT) -- unit test framework (test builds only)
 - Any C17-compliant compiler (GCC 8+, Clang 7+, MSVC 2019+) -- Linux and macOS are built and tested with both Make and CMake in CI; Windows/MSVC and WebAssembly (emscripten) are built and tested with CMake in CI (see `.github/workflows/ci.yml`)
 
@@ -157,7 +158,7 @@ include/carmen/
   carmen.h                 Umbrella header (includes everything below)
   carmen_version.h         Version macros (CARMEN_VERSION_MAJOR/MINOR/PATCH)
   carmen_export.h          Symbol visibility / DLL export macros
-  utf8.h                   UTF-8 helper API
+  utf8.h                   UTF-8 helpers and BiDi visual-order conversion
   clue.h                   Clue struct
   site.h                   Site struct and API
   connection.h             Connection struct and API
@@ -172,7 +173,7 @@ include/carmen/
   save.h                   Session JSON save/load (serialize/restore)
   i18n.h                   Locale loading and string lookup
 src/
-  utf8.c                   UTF-8 helpers
+  utf8.c                   UTF-8 helpers and BiDi visual-order conversion
   site.c                   Site implementation
   connection.c             Connection implementation
   city.c                   City implementation
@@ -208,12 +209,14 @@ test/
   test_villain.c           Villain unit tests
   test_world_islamic.c     Built-in world golden-value tests
   test_i18n.c              i18n loading (file + buffer) tests
+  test_utf8.c              UTF-8 / BiDi helper tests
   fixtures/                Invalid presets the generator must reject
 vendor/
   stb/stb_ds.h             Hash map / dynamic array library (vendored)
+  fribidi/                 GNU FriBidi (vendored; LGPL-2.1+)
   unity/                   Unity test framework (vendored)
 ```
 
 ## License
 
-MIT -- see [LICENSE](LICENSE).
+MIT -- see [LICENSE](LICENSE). Vendored [GNU FriBidi](vendor/fribidi/) is LGPL-2.1+; see [vendor/fribidi/COPYING](vendor/fribidi/COPYING).

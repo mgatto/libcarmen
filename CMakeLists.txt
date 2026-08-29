@@ -94,6 +94,27 @@ add_custom_command(
 #  Library
 # --------------------------------------------------------------------------- #
 
+set(CARMEN_FRIBIDI_SOURCES
+    vendor/fribidi/lib/fribidi.c
+    vendor/fribidi/lib/fribidi-arabic.c
+    vendor/fribidi/lib/fribidi-bidi.c
+    vendor/fribidi/lib/fribidi-bidi-types.c
+    vendor/fribidi/lib/fribidi-char-sets.c
+    vendor/fribidi/lib/fribidi-char-sets-cap-rtl.c
+    vendor/fribidi/lib/fribidi-char-sets-cp1255.c
+    vendor/fribidi/lib/fribidi-char-sets-cp1256.c
+    vendor/fribidi/lib/fribidi-char-sets-iso8859-6.c
+    vendor/fribidi/lib/fribidi-char-sets-iso8859-8.c
+    vendor/fribidi/lib/fribidi-char-sets-utf8.c
+    vendor/fribidi/lib/fribidi-deprecated.c
+    vendor/fribidi/lib/fribidi-joining.c
+    vendor/fribidi/lib/fribidi-joining-types.c
+    vendor/fribidi/lib/fribidi-mirroring.c
+    vendor/fribidi/lib/fribidi-brackets.c
+    vendor/fribidi/lib/fribidi-run.c
+    vendor/fribidi/lib/fribidi-shape.c
+)
+
 set(CARMEN_SOURCES
     src/utf8.c
     src/site.c
@@ -109,6 +130,7 @@ set(CARMEN_SOURCES
     src/save.c
     src/i18n.c
     vendor/cjson/cJSON.c
+    ${CARMEN_FRIBIDI_SOURCES}
 )
 
 set(CARMEN_PUBLIC_HEADERS
@@ -146,7 +168,11 @@ target_include_directories(carmen
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/utf8
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cjson
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/toml-c
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fribidi
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fribidi/lib
 )
+
+target_compile_definitions(carmen PRIVATE HAVE_CONFIG_H)
 
 set_target_properties(carmen PROPERTIES
     VERSION                 ${PROJECT_VERSION}
@@ -271,6 +297,7 @@ if(CARMEN_BUILD_TESTS)
     carmen_add_test(test_site              test/test_site.c)
     carmen_add_test(test_connection        test/test_connection.c)
     carmen_add_test(test_city              test/test_city.c)
+    carmen_add_test(test_utf8              test/test_utf8.c)
     carmen_add_test(test_game_world        test/test_game_world.c)
     carmen_add_test(test_carmen_scenarios  test/test_carmen_scenarios.c)
     carmen_add_test(test_artifact          test/test_artifact.c)
