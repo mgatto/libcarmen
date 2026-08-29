@@ -128,6 +128,8 @@ Run from the repository root -- the demo loads its locale file via the relative 
 ./build/trail_demo en case.toml # optional case settings file
 ```
 
+At each city you can investigate a numbered site or enter a letter command: `(t)ravel`, `(w)arrant`, `(a)rrest`, `(s)ave` / `(l)oad` a game to/from a JSON file, or `(r)estart` with a fresh case.
+
 ## Installing
 
 ```sh
