@@ -28,6 +28,8 @@ jobs:
   windows:
     name: Windows (CMake + MSVC)
     runs-on: windows-latest
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows
     steps:
       - uses: actions/checkout@v4
 
@@ -36,18 +38,24 @@ jobs:
       # runner. CMake + MSVC is the actually-supported path on Windows, so it
       # is what's tested -- see .cursor/rules/build-parity.mdc ("a claimed
       # platform is a CI-tested platform").
+      #
+      # FriBidi is taken from vcpkg rather than vendor/fribidi: the vendored
+      # Autotools sources are not MSVC-clean (strings.h and friends).
+      - name: Install FriBidi via vcpkg
+        run: vcpkg install fribidi:x64-windows
+
       - name: Configure, build, and test (CMake, MSVC)
         run: |
-          cmake -S . -B build-cmake
+          cmake -S . -B build-cmake -A x64 -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
           cmake --build build-cmake --config Debug -j
           ctest --test-dir build-cmake -C Debug --output-on-failure
 
       # Packaging uses a separate Release shared build so the zip ships
-      # carmen.dll next to trail_demo.exe. The Debug static step above is
-      # unchanged and remains the Windows test coverage.
+      # carmen.dll (and fribidi*.dll) next to trail_demo.exe. The Debug
+      # static step above is unchanged and remains the Windows test coverage.
       - name: Package Windows demo (Release shared)
         run: |
-          cmake -S . -B build-cmake-package -DBUILD_SHARED_LIBS=ON
+          cmake -S . -B build-cmake-package -A x64 -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
           cmake --build build-cmake-package --config Release --target demo_package -j
 
       - name: Upload Windows demo zip

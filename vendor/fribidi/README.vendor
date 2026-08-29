@@ -4,7 +4,7 @@ Upstream: https://github.com/fribidi/fribidi
 Version: **1.0.16** (LGPL-2.1+)  
 License: see [COPYING](COPYING)
 
-Sources under `lib/` are copied from the upstream release tarball. `lib/fribidi-config.h` and `config.h` are generated for this tree (normally produced by configure/meson). `config.h` omits `HAVE_STRINGS_H` on MSVC (`strings.h` is POSIX-only).
+Sources under `lib/` are copied from the upstream release tarball. `lib/fribidi-config.h` and `config.h` are generated for this tree (normally produced by configure/meson). `config.h` omits `HAVE_STRINGS_H` on MSVC (`strings.h` is POSIX-only). MSVC CMake does not compile these sources -- it links the vcpkg `fribidi:x64-windows` port instead (see `.github/workflows/ci.yml`).
 
 ## Refresh
 

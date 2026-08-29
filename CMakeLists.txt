@@ -131,8 +131,52 @@ set(CARMEN_SOURCES
     src/save.c
     src/i18n.c
     vendor/cjson/cJSON.c
-    ${CARMEN_FRIBIDI_SOURCES}
 )
+
+# FriBidi: vendored sources are Autotools/POSIX-shaped (strings.h, etc.) and
+# do not compile as-is under MSVC. Windows/MSVC links the vcpkg port instead
+# (see .github/workflows/ci.yml: vcpkg install fribidi:x64-windows plus the
+# vcpkg CMake toolchain). Unix, MinGW, and emscripten keep compiling the
+# vendored tree so those builds stay zero-install.
+set(CARMEN_FRIBIDI_DLL "")
+if(MSVC)
+    find_path(FRIBIDI_INCLUDE_DIR NAMES fribidi.h PATH_SUFFIXES fribidi)
+    find_library(FRIBIDI_LIBRARY NAMES fribidi)
+    if(NOT FRIBIDI_INCLUDE_DIR OR NOT FRIBIDI_LIBRARY)
+        message(FATAL_ERROR
+            "MSVC builds need FriBidi from vcpkg (the vendored sources are not MSVC-clean).\n"
+            "  vcpkg install fribidi:x64-windows\n"
+            "  cmake -S . -B build -A x64 "
+            "-DCMAKE_TOOLCHAIN_FILE=<vcpkg>/scripts/buildsystems/vcpkg.cmake "
+            "-DVCPKG_TARGET_TRIPLET=x64-windows")
+    endif()
+    get_filename_component(_carmen_fribidi_libdir "${FRIBIDI_LIBRARY}" DIRECTORY)
+    get_filename_component(_carmen_fribidi_prefix "${_carmen_fribidi_libdir}" DIRECTORY)
+    find_file(FRIBIDI_DLL
+        NAMES fribidi-0.dll fribidi.dll libfribidi-0.dll
+        HINTS
+            "${_carmen_fribidi_prefix}/bin"
+            "$ENV{VCPKG_INSTALLATION_ROOT}/installed/x64-windows/bin"
+            "$ENV{VCPKG_INSTALLATION_ROOT}/installed/x64-windows/debug/bin"
+        NO_DEFAULT_PATH)
+    add_library(carmen_fribidi SHARED IMPORTED)
+    set_target_properties(carmen_fribidi PROPERTIES
+        IMPORTED_IMPLIB             "${FRIBIDI_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${FRIBIDI_INCLUDE_DIR}"
+    )
+    if(FRIBIDI_DLL)
+        set_target_properties(carmen_fribidi PROPERTIES
+            IMPORTED_LOCATION "${FRIBIDI_DLL}")
+        set(CARMEN_FRIBIDI_DLL "${FRIBIDI_DLL}")
+    else()
+        message(WARNING
+            "FriBidi import lib found at ${FRIBIDI_LIBRARY} but no fribidi*.dll in "
+            "${_carmen_fribidi_prefix}/bin -- tests and the demo zip need that DLL "
+            "on the x64-windows triplet")
+    endif()
+else()
+    list(APPEND CARMEN_SOURCES ${CARMEN_FRIBIDI_SOURCES})
+endif()
 
 set(CARMEN_PUBLIC_HEADERS
     include/carmen/carmen.h
@@ -169,13 +213,16 @@ target_include_directories(carmen
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/utf8
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cjson
         ${CMAKE_CURRENT_SOURCE_DIR}/vendor/toml-c
-        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fribidi
-        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fribidi/lib
 )
 
-target_compile_definitions(carmen PRIVATE HAVE_CONFIG_H)
-
-if(NOT MSVC)
+if(MSVC)
+    target_link_libraries(carmen PRIVATE carmen_fribidi)
+else()
+    target_include_directories(carmen PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fribidi
+        ${CMAKE_CURRENT_SOURCE_DIR}/vendor/fribidi/lib
+    )
+    target_compile_definitions(carmen PRIVATE HAVE_CONFIG_H)
     target_link_libraries(carmen PUBLIC m)
 endif()
 
@@ -260,6 +307,12 @@ if(CARMEN_BUILD_EXAMPLES)
                     $<TARGET_SONAME_FILE:carmen> "${CARMEN_DIST_DIR}/"
         )
     endif()
+    if(CARMEN_FRIBIDI_DLL)
+        list(APPEND _dist_commands
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    "${CARMEN_FRIBIDI_DLL}" "${CARMEN_DIST_DIR}/"
+        )
+    endif()
     list(APPEND _dist_commands
         COMMAND ${CMAKE_COMMAND} -E copy_directory
                 "${CMAKE_SOURCE_DIR}/locales" "${CARMEN_DIST_DIR}/locales"
@@ -315,14 +368,14 @@ if(CARMEN_BUILD_EXAMPLES)
 Run from inside this folder:
   trail_demo.exe en settings.toml
 
-carmen.dll must stay next to trail_demo.exe. The demo loads
-locales/en.json relative to the current directory.
+carmen.dll and fribidi*.dll must stay next to trail_demo.exe.
+The demo loads locales/en.json relative to the current directory.
 
 If Windows reports a missing VCRUNTIME or MSVCP DLL, install
 the Microsoft Visual C++ Redistributable for 64-bit Windows.
 ")
 
-        add_custom_target(demo_package
+        set(_demo_pkg_commands
             COMMAND ${CMAKE_COMMAND} -E remove_directory "${CARMEN_DIST_DIR}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CARMEN_DIST_DIR}/locales"
             COMMAND ${CMAKE_COMMAND} -E copy
@@ -337,13 +390,28 @@ the Microsoft Visual C++ Redistributable for 64-bit Windows.
             COMMAND ${CMAKE_COMMAND} -E copy
                     "${CMAKE_SOURCE_DIR}/LICENSE" "${CARMEN_DIST_DIR}/"
             COMMAND ${CMAKE_COMMAND} -E copy
+                    "${CMAKE_SOURCE_DIR}/vendor/fribidi/COPYING"
+                    "${CARMEN_DIST_DIR}/COPYING.fribidi"
+            COMMAND ${CMAKE_COMMAND} -E copy
                     "${CARMEN_DEMO_README}" "${CARMEN_DIST_DIR}/README.txt"
+        )
+        if(CARMEN_FRIBIDI_DLL)
+            list(APPEND _demo_pkg_commands
+                COMMAND ${CMAKE_COMMAND} -E copy
+                        "${CARMEN_FRIBIDI_DLL}" "${CARMEN_DIST_DIR}/"
+            )
+        endif()
+        list(APPEND _demo_pkg_commands
             COMMAND ${CMAKE_COMMAND} -E remove_directory "${CARMEN_DEMO_PKG_DIR}"
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                     "${CARMEN_DIST_DIR}" "${CARMEN_DEMO_PKG_DIR}"
             COMMAND ${CMAKE_COMMAND} -E tar cf "${CARMEN_DEMO_ZIP}"
                     --format=zip -- "${CARMEN_DEMO_PKG_NAME}"
             COMMAND ${CMAKE_COMMAND} -E echo "Package ready: ${CARMEN_DEMO_ZIP}"
+        )
+
+        add_custom_target(demo_package
+            ${_demo_pkg_commands}
             DEPENDS dist trail_demo carmen
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMENT "Packaging Windows demo zip ${CARMEN_DEMO_PKG_NAME}.zip"

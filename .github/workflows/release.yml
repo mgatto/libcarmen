@@ -13,6 +13,8 @@ jobs:
   windows-demo:
     name: Windows demo zip
     runs-on: windows-latest
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows
     steps:
       - uses: actions/checkout@v4
 
@@ -36,9 +38,13 @@ jobs:
             throw "Tag $tag does not match CMake project VERSION $fromCMake -- tag v$fromCMake or v$fromCMake-<prerelease>"
           }
 
+      # Same FriBidi path as ci.yml: vcpkg, not the vendored Autotools tree.
+      - name: Install FriBidi via vcpkg
+        run: vcpkg install fribidi:x64-windows
+
       - name: Configure and package (Release shared)
         run: |
-          cmake -S . -B build-cmake-package -DBUILD_SHARED_LIBS=ON
+          cmake -S . -B build-cmake-package -A x64 -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
           cmake --build build-cmake-package --config Release --target demo_package -j
 
       - name: SHA256 checksum

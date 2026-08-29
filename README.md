@@ -71,13 +71,13 @@ The core exposes read-only queries for rendering (current city, connections, act
 
 ## Dependencies
 
-All third-party code is vendored under `vendor/` -- there are no external dependencies to install.
+All third-party code is vendored under `vendor/` on Unix, macOS, and WebAssembly -- those builds have no packages to install. Windows/MSVC CMake links GNU FriBidi from [vcpkg](https://vcpkg.io/) instead of compiling the vendored Autotools sources (they are not MSVC-clean).
 
 - **stb_ds.h** (`vendor/stb/`, MIT / public domain) -- string hash map / dynamic arrays
 - **cJSON** (`vendor/cjson/`, MIT) -- parses the locale JSON files
 - **toml-c** (`vendor/toml-c/`, MIT) -- parses optional case settings files
 - **utf8.h** (`vendor/utf8/`, public domain) -- UTF-8 helpers
-- **GNU FriBidi** (`vendor/fribidi/`, LGPL-2.1+) -- bidirectional text and Arabic shaping for terminal display (`carmen_utf8_bidi_visual`); see `vendor/fribidi/README.vendor`
+- **GNU FriBidi** (`vendor/fribidi/`, LGPL-2.1+) -- bidirectional text and Arabic shaping for terminal display (`carmen_utf8_bidi_visual`); see `vendor/fribidi/README.vendor`. Make, Unix CMake, and emscripten compile this tree; MSVC uses `vcpkg install fribidi:x64-windows`.
 - **Unity** (`vendor/unity/`, MIT) -- unit test framework (test builds only)
 - Any C17-compliant compiler (GCC 8+, Clang 7+, MSVC 2019+) -- Linux and macOS are built and tested with both Make and CMake in CI; Windows/MSVC and WebAssembly (emscripten) are built and tested with CMake in CI (see `.github/workflows/ci.yml`)
 
@@ -92,10 +92,11 @@ make coverage      # test coverage report (requires lcov)
 make package       # self-contained macOS demo tarball (libcarmen-demo-<version>-macos-<arch>.tar.gz)
 ```
 
-Windows demo zip (MSVC/CMake; produced in CI and on version tags):
+Windows demo zip (MSVC/CMake; produced in CI and on version tags). FriBidi comes from vcpkg (`x64-windows` is a dynamic triplet, so the zip includes `fribidi*.dll` next to `carmen.dll`):
 
 ```sh
-cmake -S . -B build -DBUILD_SHARED_LIBS=ON
+vcpkg install fribidi:x64-windows
+cmake -S . -B build -A x64 -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
 cmake --build build --config Release --target demo_package
 # -> build/libcarmen-demo-<version>-windows-x64.zip
 ```
@@ -131,7 +132,7 @@ cc -std=c17 -Wall -Wextra -pedantic -O2 \
 
 ## Running
 
-Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`) and, from `make package`, the macOS tarball. Unpack, `cd` into the folder, and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS). Keep the shipped library (`carmen.dll` / `libcarmen.dylib`) next to the demo.
+Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`) and, from `make package`, the macOS tarball. Unpack, `cd` into the folder, and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS). Keep the shipped libraries (`carmen.dll` and `fribidi*.dll` on Windows, `libcarmen.dylib` on macOS) next to the demo.
 
 From a source checkout, run from the repository root -- the demo loads its locale file via the relative path `locales/<locale>.json`:
 
