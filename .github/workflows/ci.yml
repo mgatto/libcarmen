@@ -42,6 +42,21 @@ jobs:
           cmake --build build-cmake --config Debug -j
           ctest --test-dir build-cmake -C Debug --output-on-failure
 
+      # Packaging uses a separate Release shared build so the zip ships
+      # carmen.dll next to trail_demo.exe. The Debug static step above is
+      # unchanged and remains the Windows test coverage.
+      - name: Package Windows demo (Release shared)
+        run: |
+          cmake -S . -B build-cmake-package -DBUILD_SHARED_LIBS=ON
+          cmake --build build-cmake-package --config Release --target demo_package -j
+
+      - name: Upload Windows demo zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcarmen-demo-windows
+          path: build-cmake-package/libcarmen-demo-*-windows-*.zip
+          if-no-files-found: error
+
   sanitize:
     name: Sanitizers (ASan + UBSan)
     runs-on: ubuntu-latest

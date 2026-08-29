@@ -1,0 +1,61 @@
+name: Release
+
+# Tagged releases only -- ordinary pushes/PRs stay on ci.yml.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  windows-demo:
+    name: Windows demo zip
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Zip name uses PROJECT_VERSION from CMakeLists.txt; the Release is
+      # named from the git tag. Fail early if they disagree (tag vX.Y.Z
+      # must match project(carmen VERSION X.Y.Z)).
+      - name: Check tag matches CMake PROJECT_VERSION
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          if ($tag -notmatch '^v(\d+\.\d+\.\d+)(?:-.*)?$') {
+            throw "Tag '$tag' is not vX.Y.Z or vX.Y.Z-<prerelease>"
+          }
+          $fromTag = $Matches[1]
+          $cmake = Get-Content -Raw CMakeLists.txt
+          if ($cmake -notmatch 'project\(\s*carmen[\s\S]*?VERSION\s+(\d+\.\d+\.\d+)') {
+            throw "Could not read project VERSION from CMakeLists.txt"
+          }
+          $fromCMake = $Matches[1]
+          if ($fromTag -ne $fromCMake) {
+            throw "Tag $tag does not match CMake project VERSION $fromCMake -- tag v$fromCMake or v$fromCMake-<prerelease>"
+          }
+
+      - name: Configure and package (Release shared)
+        run: |
+          cmake -S . -B build-cmake-package -DBUILD_SHARED_LIBS=ON
+          cmake --build build-cmake-package --config Release --target demo_package -j
+
+      - name: SHA256 checksum
+        shell: pwsh
+        run: |
+          $zip = Get-Item build-cmake-package/libcarmen-demo-*-windows-*.zip
+          if (-not $zip) { throw "demo zip not found" }
+          $hash = (Get-FileHash -Algorithm SHA256 $zip.FullName).Hash.ToLower()
+          $line = "$hash  $($zip.Name)"
+          Set-Content -Path build-cmake-package/SHA256SUMS -Value $line -NoNewline:$false
+          Write-Host $line
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build-cmake-package/libcarmen-demo-*-windows-*.zip
+            build-cmake-package/SHA256SUMS
+          fail_on_unmatched_files: true
+          generate_release_notes: true

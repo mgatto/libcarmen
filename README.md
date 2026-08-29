@@ -92,6 +92,14 @@ make coverage      # test coverage report (requires lcov)
 make package       # self-contained macOS demo tarball (libcarmen-demo-<version>-macos-<arch>.tar.gz)
 ```
 
+Windows demo zip (MSVC/CMake; produced in CI and on version tags):
+
+```sh
+cmake -S . -B build -DBUILD_SHARED_LIBS=ON
+cmake --build build --config Release --target demo_package
+# -> build/libcarmen-demo-<version>-windows-x64.zip
+```
+
 Or with CMake (also how the WebAssembly and Windows/MSVC builds are configured -- see [Building](#building) below and `.github/workflows/ci.yml`):
 
 ```sh
@@ -123,7 +131,9 @@ cc -std=c17 -Wall -Wextra -pedantic -O2 \
 
 ## Running
 
-Run from the repository root -- the demo loads its locale file via the relative path `locales/<locale>.json`:
+Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`) and, from `make package`, the macOS tarball. Unpack, `cd` into the folder, and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS). Keep the shipped library (`carmen.dll` / `libcarmen.dylib`) next to the demo.
+
+From a source checkout, run from the repository root -- the demo loads its locale file via the relative path `locales/<locale>.json`:
 
 ```sh
 ./build/trail_demo              # default locale "en"
