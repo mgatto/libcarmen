@@ -8,9 +8,11 @@
 //
 // Clue design: clues are not baked onto sites.  Each city owns an inbound
 // clue pool -- targetless descriptor keys that "point to it".  At case
-// generation the engine draws positives from the next trail city's pool and
-// decoys from wrong neighbors' pools, assigning target_city_id at runtime
-// (see src/case.c).
+// generation the engine builds a 3-regular flight graph, then draws
+// positives from the next trail city's pool and red herrings from the two
+// decoy neighbors' pools, assigning target_city_id at runtime (see src/case.c).
+// Connections are not listed here: carmen_world_generate_connections()
+// produces a fresh flight graph per case.
 //
 // "sphere" tags a city with its internal cultural sub-sphere grouping id
 // (see doc/future/cross-sphere-connectivity.md); it is seed-only metadata,
@@ -415,92 +417,5 @@
         "clue.yogyakarta.inbound.2", "clue.yogyakarta.inbound.3"
       ]
     }
-  ],
-
-  // This graph mirrors the reference network in
-  // doc/future/cross-sphere-connectivity.md: 22 cities, 46 undirected edges,
-  // every city in the 3-5 degree range and reaching at least two other
-  // cultural sub-spheres.  Distances are great-circle estimates.  Each edge is
-  // listed once; the loader mirrors the reverse edge.
-  "routes": [
-    // A - Maghreb (Casablanca, Fez, Tunis)
-    { "from": "tunis",        "to": "fez",          "km": 1350,  "mode": "flight" },
-
-    // B - Turkey / Balkans (Istanbul, Konya, Sarajevo)
-    { "from": "istanbul",     "to": "sarajevo",     "km": 950,   "mode": "flight" },
-
-    // C - Arab East (Cairo, Damascus, Dubai, Muscat)
-    { "from": "dubai",        "to": "muscat",       "km": 450,   "mode": "boat" },
-
-    // D - Sub-Saharan Africa (Dakar, Zanzibar, Kano)
-    { "from": "zanzibar",     "to": "dakar",        "km": 6200,  "mode": "flight" },
-    { "from": "dakar",        "to": "kano",         "km": 2850,  "mode": "flight" },
-
-    // E - Iran / Central Asia (Isfahan, Samarkand, Kabul)
-    { "from": "isfahan",      "to": "samarkand",    "km": 1650,  "mode": "flight" },
-    { "from": "kabul",        "to": "samarkand",    "km": 600,   "mode": "train" },
-    { "from": "kabul",        "to": "isfahan",      "km": 1600,  "mode": "flight" },
-
-    // F - South Asia (Lahore, Dhaka, Hyderabad)
-    { "from": "lahore",       "to": "dhaka",        "km": 1800,  "mode": "flight" },
-    { "from": "hyderabad",    "to": "lahore",       "km": 1500,  "mode": "flight" },
-    { "from": "hyderabad",    "to": "dhaka",        "km": 1500,  "mode": "flight" },
-
-    // G - Southeast Asia (Kuala Lumpur, Jakarta, Yogyakarta)
-    { "from": "kuala_lumpur", "to": "jakarta",      "km": 1200,  "mode": "flight" },
-    { "from": "yogyakarta",   "to": "kuala_lumpur", "km": 1550,  "mode": "flight" },
-
-    // Cross-sphere: Turkey/Balkans - Arab East - Maghreb
-    { "from": "istanbul",     "to": "cairo",        "km": 1250,  "mode": "flight" },
-    { "from": "istanbul",     "to": "casablanca",   "km": 3150,  "mode": "flight" },
-    { "from": "istanbul",     "to": "kabul",        "km": 3700,  "mode": "flight" },
-    { "from": "cairo",        "to": "casablanca",   "km": 3350,  "mode": "flight" },
-
-    // Cross-sphere: Arab East - Sub-Saharan Africa
-    { "from": "cairo",        "to": "zanzibar",     "km": 3800,  "mode": "flight" },
-    { "from": "cairo",        "to": "dakar",        "km": 4700,  "mode": "flight" },
-    { "from": "cairo",        "to": "kano",         "km": 3050,  "mode": "flight" },
-    { "from": "casablanca",   "to": "dakar",        "km": 2600,  "mode": "flight" },
-
-    // Cross-sphere: Maghreb links
-    { "from": "fez",          "to": "sarajevo",     "km": 2200,  "mode": "flight" },
-    { "from": "fez",          "to": "kuala_lumpur", "km": 11400, "mode": "flight" },
-    { "from": "fez",          "to": "kano",         "km": 2700,  "mode": "flight" },
-    { "from": "fez",          "to": "damascus",     "km": 3800,  "mode": "flight" },
-
-    // Cross-sphere: Gulf - South Asia / Iran / Southeast Asia
-    { "from": "dubai",        "to": "lahore",       "km": 2400,  "mode": "flight" },
-    { "from": "dubai",        "to": "isfahan",      "km": 1200,  "mode": "flight" },
-    { "from": "dubai",        "to": "yogyakarta",   "km": 7300,  "mode": "flight" },
-
-    // Cross-sphere: Iran / Central Asia links
-    { "from": "isfahan",      "to": "konya",        "km": 2200,  "mode": "flight" },
-    { "from": "samarkand",    "to": "lahore",       "km": 1150,  "mode": "flight" },
-    { "from": "samarkand",    "to": "damascus",     "km": 2800,  "mode": "flight" },
-
-    // Cross-sphere: South Asia - Southeast Asia
-    { "from": "dhaka",        "to": "kuala_lumpur", "km": 3200,  "mode": "flight" },
-    { "from": "hyderabad",    "to": "kuala_lumpur", "km": 3900,  "mode": "flight" },
-
-    // Cross-sphere: Tunis reach
-    { "from": "tunis",        "to": "sarajevo",     "km": 1050,  "mode": "flight" },
-    { "from": "tunis",        "to": "konya",        "km": 1950,  "mode": "flight" },
-    { "from": "tunis",        "to": "dhaka",        "km": 8600,  "mode": "flight" },
-
-    // Cross-sphere: Damascus reach
-    { "from": "damascus",     "to": "isfahan",      "km": 1450,  "mode": "flight" },
-    { "from": "damascus",     "to": "konya",        "km": 650,   "mode": "train" },
-    { "from": "damascus",     "to": "sarajevo",     "km": 2050,  "mode": "flight" },
-
-    // Cross-sphere: Kabul / South Asia
-    { "from": "kabul",        "to": "lahore",       "km": 640,   "mode": "train" },
-    { "from": "kabul",        "to": "hyderabad",    "km": 2100,  "mode": "flight" },
-
-    // Cross-sphere: Southeast Asia - South Asia - Arab East
-    { "from": "jakarta",      "to": "dhaka",        "km": 3400,  "mode": "flight" },
-    { "from": "jakarta",      "to": "hyderabad",    "km": 4300,  "mode": "flight" },
-    { "from": "jakarta",      "to": "muscat",       "km": 6600,  "mode": "flight" },
-    { "from": "muscat",       "to": "zanzibar",     "km": 3200,  "mode": "boat" },
-    { "from": "zanzibar",     "to": "yogyakarta",   "km": 7900,  "mode": "flight" }
   ]
 }

@@ -67,6 +67,26 @@ CARMEN_API int   carmen_world_shortest_path(CarmenWorld *w,
                                             const char **out_path,
                                             int max_path);
 
+/*
+ * Wipe every city's connection list. Used before regenerating a per-case
+ * graph and when restoring a saved graph onto a world. Does not touch
+ * cities, sites, or inbound clue pools.
+ */
+CARMEN_API void carmen_world_clear_connections(CarmenWorld *w);
+
+/*
+ * Build a connected 3-regular undirected flight graph over w's cities.
+ * Sphere-aware configuration model with restart: in-sphere seeding (~1
+ * edge per city), then cross-sphere stub matching. Every edge is mode
+ * "flight" with haversine kilometres. Uses carmen_random() so each call
+ * yields a fresh map.
+ *
+ * No-ops (leaves existing connections) when the city count cannot support
+ * a simple 3-regular graph: fewer than 4 cities, or an odd count.
+ * Ownership of w is unchanged.
+ */
+CARMEN_API void carmen_world_generate_connections(CarmenWorld *w);
+
 CARMEN_API int   carmen_world_continent_count(const CarmenWorld *w);
 
 /* Write one "  continent\n" line per continent into buf.  Returns the

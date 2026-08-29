@@ -21,6 +21,8 @@ The built-in world covers 22 important Muslim cities globally, aiming for a tast
 
 The criminal organization behind each case is **FITNA** — a roster of 16 thieves defined in [`include/carmen/villain.h`](include/carmen/villain.h) with names drawn from Arabic, Persian, and Urdu traditions: Qamar Samarkandi ("The Moon"), Layla Lapis ("Midnight Blue"), Tariq al-Tariq ("The Morning Star"), Soraya Samum ("The Sandstorm"), Rumi the Riddle ("The Poet"), and eleven others. Each villain carries four identity clues the player collects at the hideout in order to issue a warrant.
 
+Connections are not authored in the preset. `carmen_world_generate_connections()` builds a connected 3-regular flight graph (33 undirected edges, every city degree 3) at case generation; every edge is mode `"flight"` with haversine kilometres. Save files persist that graph as an `"edges"` array (schema version 2) and rewrite the world's connections on load.
+
 ## Data Model
 
 The static world (built once, read-only during play):
@@ -113,9 +115,10 @@ cc -std=c17 -O2 -Iinclude -Ivendor/cjson \
 cc -std=c17 -Wall -Wextra -pedantic -O2 \
    -Iinclude -Isrc -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c \
    src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
+   src/connection_gen.c \
    world_islamic_generated.c src/villain.c src/artifact.c src/case.c \
    src/session.c src/settings.c src/i18n.c vendor/cjson/cJSON.c \
-   examples/trail_demo.c -o trail_demo
+   examples/trail_demo.c -lm -o trail_demo
 ```
 
 ## Running
@@ -172,7 +175,7 @@ include/carmen/
   case.h                   Case (villain + trail + settings) API
   session.h                Play session state and actions
   settings.h               Case settings (difficulty, TOML loading)
-  save.h                   Session JSON save/load (serialize/restore)
+  save.h                   Session JSON save/load (schema v2; includes generated edges)
   i18n.h                   Locale loading and string lookup
 src/
   utf8.c                   UTF-8 helpers and BiDi visual-order conversion
@@ -180,6 +183,7 @@ src/
   connection.c             Connection implementation
   city.c                   City implementation
   game_world.c             Hash map, secondary indices, BFS, shortest path
+  connection_gen.c         Per-case 3-regular flight graph generator
   seed_helpers.h           Inline helpers used by the generated world builder
   villain.c                Villain roster
   artifact.c               Stolen artifact implementation
@@ -200,6 +204,7 @@ locales/
 test/
   test_site.c              Site unit tests
   test_connection.c        Connection unit tests
+  test_connection_gen.c    Runtime 3-regular graph generator tests
   test_city.c              City unit tests
   test_game_world.c        GameWorld unit tests
   test_carmen_scenarios.c  Full-world integration tests

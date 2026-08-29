@@ -3,8 +3,9 @@
  * Reads a JSONC world preset (presets/<name>.jsonc), validates it against the
  * library's CARMEN_MAX_* caps and reference integrity, and emits a C source
  * that defines carmen_world_build_islamic() by replaying the same
- * carmen_world_add_city()/set_sphere()/add_site()/add_inbound_clues()/
- * add_route() calls the hand-written seed used to make.
+ * carmen_world_add_city()/set_sphere()/add_site()/add_inbound_clues()
+ * calls the hand-written seed used to make. Connections are not compiled
+ * in: carmen_world_generate_connections() builds a per-case flight graph.
  *
  * This is a host build tool, not part of the shipped library, so (unlike the
  * library) it is allowed to print diagnostics and exit non-zero: any invalid
@@ -143,8 +144,7 @@ int main(int argc, char **argv)
         fail("too many cities (exceeds CARMEN_MAX_CITIES)", NULL);
 
     char **ids = calloc((size_t)ncities, sizeof *ids);
-    int   *deg = calloc((size_t)ncities, sizeof *deg);
-    if (!ids || !deg) fail("out of memory", NULL);
+    if (!ids) fail("out of memory", NULL);
 
     /* --- validate cities --- */
     int ci = 0;
@@ -190,28 +190,13 @@ int main(int argc, char **argv)
         ci++;
     }
 
-    /* --- validate routes (reference integrity + per-city degree cap) --- */
-    cJSON *routes = cJSON_GetObjectItemCaseSensitive(root, "routes");
-    if (routes && !cJSON_IsArray(routes))
-        fail("\"routes\" must be an array", NULL);
-    cJSON *route = NULL;
-    cJSON_ArrayForEach(route, routes) {
-        if (!cJSON_IsObject(route)) fail("each route must be an object", NULL);
-        const char *from = req_str(route, "from", CARMEN_MAX_NAME_LEN, "route");
-        const char *to   = req_str(route, "to",   CARMEN_MAX_NAME_LEN, "route");
-        (void)req_num(route, "km", "route");
-        (void)req_str(route, "mode", CARMEN_MAX_NAME_LEN, "route");
-
-        int fi = find_id(ids, ncities, from);
-        int ti = find_id(ids, ncities, to);
-        if (fi < 0) fail("route \"from\" names an unknown city", from);
-        if (ti < 0) fail("route \"to\" names an unknown city", to);
-        if (fi == ti) fail("route connects a city to itself", from);
-        if (++deg[fi] > CARMEN_MAX_CONNECTIONS)
-            fail("city exceeds CARMEN_MAX_CONNECTIONS", from);
-        if (++deg[ti] > CARMEN_MAX_CONNECTIONS)
-            fail("city exceeds CARMEN_MAX_CONNECTIONS", to);
-    }
+    /* Static graphs are no longer compiled in. A leftover "routes" or
+     * "corridors" array is a preset error so an old static graph cannot
+     * sneak back into the generated builder. */
+    if (cJSON_GetObjectItemCaseSensitive(root, "routes"))
+        fail("\"routes\" is no longer accepted; connections are generated at case time", NULL);
+    if (cJSON_GetObjectItemCaseSensitive(root, "corridors"))
+        fail("\"corridors\" is not accepted; connections are generated at case time", NULL);
 
     /* --- emit --- */
     FILE *out = fopen(outpath, "wb");
@@ -292,24 +277,11 @@ int main(int argc, char **argv)
         fprintf(out, ", k, %d); }\n", n);
     }
 
-    fprintf(out, "\n    /* ---------------------------------------------------------- connections */\n");
-    cJSON_ArrayForEach(route, routes) {
-        fprintf(out, "    add_route(w, ");
-        emit_cstr(out, cJSON_GetObjectItemCaseSensitive(route, "from")->valuestring);
-        fprintf(out, ", ");
-        emit_cstr(out, cJSON_GetObjectItemCaseSensitive(route, "to")->valuestring);
-        fprintf(out, ", %d, ",
-                (int)cJSON_GetObjectItemCaseSensitive(route, "km")->valuedouble);
-        emit_cstr(out, cJSON_GetObjectItemCaseSensitive(route, "mode")->valuestring);
-        fprintf(out, ");\n");
-    }
-
     fprintf(out, "}\n");
 
     if (fclose(out) != 0) fail("error writing output", outpath);
 
     free(ids);
-    free(deg);
     cJSON_Delete(root);
     free(buf);
     return 0;

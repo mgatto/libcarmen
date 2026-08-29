@@ -9,6 +9,7 @@ void setUp(void)
 {
     srand(42);
     carmen_world_build_islamic(&world);
+    carmen_world_generate_connections(&world);
 }
 
 void tearDown(void)
@@ -46,11 +47,11 @@ static void test_cairo_has_sites(void)
     TEST_ASSERT_TRUE(cairo->site_count > 0);
 }
 
-static void test_cairo_has_connections(void)
+static void test_cairo_has_three_connections(void)
 {
     CarmenCity *cairo = carmen_world_find(&world, "cairo");
     TEST_ASSERT_NOT_NULL(cairo);
-    TEST_ASSERT_TRUE(cairo->connection_count > 0);
+    TEST_ASSERT_EQUAL_INT(3, cairo->connection_count);
 }
 
 /* ------------------------- continent query */
@@ -90,17 +91,12 @@ static void test_cairo_has_mosque(void)
 
 /* -------------------- destinations from */
 
-static void test_dubai_has_direct_flights(void)
+static void test_dubai_has_exactly_three_destinations(void)
 {
     CarmenCity *out[CARMEN_MAX_CITIES];
     int n = carmen_world_destinations_from(&world, "dubai",
                                            out, CARMEN_MAX_CITIES);
-    TEST_ASSERT_TRUE(n >= 1);
-
-    int found_muscat = 0;
-    for (int i = 0; i < n; i++)
-        if (strcmp(out[i]->id, "muscat") == 0) found_muscat = 1;
-    TEST_ASSERT_TRUE(found_muscat);
+    TEST_ASSERT_EQUAL_INT(3, n);
 }
 
 /* -------------------- reachable within */
@@ -151,14 +147,18 @@ static void test_istanbul_first_site_is_suleymaniye(void)
 
 /* ---------------------- bidirectional routes */
 
-static void test_routes_are_bidirectional(void)
+static void test_generated_graph_is_bidirectional(void)
 {
-    CarmenCity *ist = carmen_world_find(&world, "istanbul");
-    CarmenCity *sar = carmen_world_find(&world, "sarajevo");
-    TEST_ASSERT_NOT_NULL(ist);
-    TEST_ASSERT_NOT_NULL(sar);
-    TEST_ASSERT_EQUAL_INT(1, carmen_city_has_connection_to(ist, "sarajevo"));
-    TEST_ASSERT_EQUAL_INT(1, carmen_city_has_connection_to(sar, "istanbul"));
+    for (int i = 0; i < world.city_count; i++) {
+        CarmenCity *a = &world.storage[i];
+        TEST_ASSERT_EQUAL_INT(3, a->connection_count);
+        for (int k = 0; k < a->connection_count; k++) {
+            CarmenCity *b = carmen_world_find(&world,
+                                             a->connections[k].destination_id);
+            TEST_ASSERT_NOT_NULL(b);
+            TEST_ASSERT_EQUAL_INT(1, carmen_city_has_connection_to(b, a->id));
+        }
+    }
 }
 
 /* ---------------------- convenience clue API */
@@ -201,7 +201,9 @@ static void test_destroy_and_reinit(void)
     TEST_ASSERT_EQUAL_INT(0, world.city_count);
     TEST_ASSERT_NULL(world.city_map);
     carmen_world_build_islamic(&world);
+    carmen_world_generate_connections(&world);
     TEST_ASSERT_TRUE(world.city_count > 0);
+    TEST_ASSERT_EQUAL_INT(3, world.storage[0].connection_count);
 }
 
 /* ------------------------------------------------------------------- runner */
@@ -213,17 +215,17 @@ int main(void)
     RUN_TEST(test_world_has_continent_index);
     RUN_TEST(test_find_cairo);
     RUN_TEST(test_cairo_has_sites);
-    RUN_TEST(test_cairo_has_connections);
+    RUN_TEST(test_cairo_has_three_connections);
     RUN_TEST(test_continent_query_returns_city);
     RUN_TEST(test_both_continents_have_cities);
     RUN_TEST(test_cairo_has_mosque);
-    RUN_TEST(test_dubai_has_direct_flights);
+    RUN_TEST(test_dubai_has_exactly_three_destinations);
     RUN_TEST(test_istanbul_reachable_within_2_hops);
     RUN_TEST(test_shortest_path_istanbul_to_isfahan);
     RUN_TEST(test_istanbul_has_inbound_pool);
     RUN_TEST(test_istanbul_inbound_clues_have_keys);
     RUN_TEST(test_istanbul_first_site_is_suleymaniye);
-    RUN_TEST(test_routes_are_bidirectional);
+    RUN_TEST(test_generated_graph_is_bidirectional);
     RUN_TEST(test_city_random_inbound_clue_from_cairo);
     RUN_TEST(test_city_random_inbound_clue_from_istanbul);
     RUN_TEST(test_every_city_has_sites_and_inbound_clues);

@@ -16,6 +16,5 @@
       ],
       "inbound_clues": [ "clue.x.inbound.0" ]
     }
-  ],
-  "routes": []
+  ]
 }

@@ -1,7 +1,13 @@
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include "carmen/connection.h"
 #include "carmen/utf8.h"
+
+#ifndef CARMEN_PI
+#define CARMEN_PI 3.14159265358979323846
+#endif
+#define CARMEN_EARTH_RADIUS_KM 6371.0
 
 void carmen_connection_init(CarmenConnection *c, const char *dest_id,
                             int distance_km, const char *transport_mode)
@@ -47,4 +53,19 @@ int carmen_connection_travel_hrs(const CarmenConnection *c)
     if (!c || c->distance_km <= 0) return 0;
     int speed = carmen_transport_speed_kph(c->transport_mode);
     return (c->distance_km + speed - 1) / speed;
+}
+
+int carmen_geo_distance_km(double lat1, double lon1, double lat2, double lon2)
+{
+    const double phi1 = lat1 * (CARMEN_PI / 180.0);
+    const double phi2 = lat2 * (CARMEN_PI / 180.0);
+    const double dphi = (lat2 - lat1) * (CARMEN_PI / 180.0);
+    const double dlam = (lon2 - lon1) * (CARMEN_PI / 180.0);
+    const double sin_dphi = sin(dphi / 2.0);
+    const double sin_dlam = sin(dlam / 2.0);
+    const double a = sin_dphi * sin_dphi
+                   + cos(phi1) * cos(phi2) * sin_dlam * sin_dlam;
+    const double c = 2.0 * atan2(sqrt(a), sqrt(1.0 - a));
+    const double km = CARMEN_EARTH_RADIUS_KM * c;
+    return (int)(km + 0.5);
 }

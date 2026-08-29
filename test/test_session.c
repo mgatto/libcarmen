@@ -1018,6 +1018,40 @@ static void test_connections_returns_current_city_edges(void)
         TEST_ASSERT_EQUAL_PTR(&city->connections[i], conns[i]);
 }
 
+/* Islamic roster: generated graph is degree-3; next trail city is an edge. */
+
+static void test_islamic_on_trail_stop_has_three_connections(void)
+{
+    carmen_set_rand(NULL, NULL);
+    srand(42);
+    CarmenWorld *w = carmen_world_create();
+    TEST_ASSERT_NOT_NULL(w);
+    carmen_world_build_islamic(w);
+
+    CarmenCaseSettings settings = carmen_case_settings_default();
+    settings.difficulty = CARMEN_DIFFICULTY_MEDIUM;
+    CarmenSession s;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_start(&s, w, &settings));
+
+    const CarmenCity *city = carmen_session_current_city(&s);
+    TEST_ASSERT_NOT_NULL(city);
+    TEST_ASSERT_EQUAL_INT(3, city->connection_count);
+
+    const CarmenConnection *conns[CARMEN_MAX_CONNECTIONS];
+    int n = carmen_session_connections(&s, conns, CARMEN_MAX_CONNECTIONS);
+    TEST_ASSERT_EQUAL_INT(3, n);
+
+    const char *next = s.active_case.trail[1];
+    int found = 0;
+    for (int i = 0; i < n; i++)
+        if (strcmp(conns[i]->destination_id, next) == 0)
+            found = 1;
+    TEST_ASSERT_TRUE_MESSAGE(found, "next trail city must be among the 3 edges");
+
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_travel(&s, next));
+    carmen_world_free(w);
+}
+
 /* ================================================== villain getters */
 
 static void test_session_villain_matches_case_villain(void)
@@ -1152,6 +1186,7 @@ int main(void)
     RUN_TEST(test_notebook_at_out_of_range_returns_null);
     RUN_TEST(test_evidence_count_and_at_at_hideout);
     RUN_TEST(test_connections_returns_current_city_edges);
+    RUN_TEST(test_islamic_on_trail_stop_has_three_connections);
 
     /* Villain / artifact getters */
     RUN_TEST(test_session_villain_matches_case_villain);

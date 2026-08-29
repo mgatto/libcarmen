@@ -200,6 +200,8 @@ static void build_json(char *buf, size_t cap, int schema, int status, const char
              "\"time_budget_hrs\":0,\"active_sites_per_city\":0,"
              "\"positive_clues_per_stop\":0,\"move_limit\":0,"
              "\"visited_history_size\":0},"
+             "\"edges\":[{\"from\":\"a\",\"to\":\"b\",\"km\":400,\"mode\":\"flight\"},"
+             "{\"from\":\"b\",\"to\":\"c\",\"km\":200,\"mode\":\"train\"}],"
              "\"case\":{"
              "\"villain_id\":\"%s\",\"artifact_id\":\"%s\","
              "\"origin_id\":\"%s\",\"hideout_id\":\"%s\","
@@ -222,7 +224,7 @@ static void build_json_case(char *buf, size_t cap, const char *villain, const ch
                             const char *trail_json, const char *stops_json)
 {
     snprintf(buf, cap,
-             "{\"schema_version\":1,\"status\":0,\"current_city_id\":\"a\","
+             "{\"schema_version\":2,\"status\":0,\"current_city_id\":\"a\","
              "\"time_remaining_hrs\":40,\"moves\":0,\"warrant_villain_idx\":-1,"
              "\"hideout_investigated_sites\":0,\"visited\":[\"a\"],"
              "\"notebook\":[],\"evidence\":[],"
@@ -230,6 +232,8 @@ static void build_json_case(char *buf, size_t cap, const char *villain, const ch
              "\"time_budget_hrs\":0,\"active_sites_per_city\":0,"
              "\"positive_clues_per_stop\":0,\"move_limit\":0,"
              "\"visited_history_size\":0},"
+             "\"edges\":[{\"from\":\"a\",\"to\":\"b\",\"km\":400,\"mode\":\"flight\"},"
+             "{\"from\":\"b\",\"to\":\"c\",\"km\":200,\"mode\":\"train\"}],"
              "\"case\":{\"villain_id\":\"%s\",\"artifact_id\":\"%s\","
              "\"origin_id\":\"a\",\"hideout_id\":\"a\","
              "\"time_budget_hrs\":48,\"difficulty\":0,"
@@ -349,6 +353,57 @@ static void test_round_trip_won_session_preserves_score(void)
     TEST_ASSERT_EQUAL_INT(score, carmen_session_score(&loaded));
 }
 
+static void test_round_trip_restores_world_graph(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    CarmenCity *a = carmen_world_find(world, "a");
+    TEST_ASSERT_EQUAL_INT(1, carmen_city_has_connection_to(a, "b"));
+
+    char buf[16384];
+    carmen_session_save(&s, buf, sizeof(buf));
+
+    carmen_world_clear_connections(world);
+    TEST_ASSERT_EQUAL_INT(0, a->connection_count);
+
+    CarmenSession loaded;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_load(&loaded, world, buf, strlen(buf)));
+    TEST_ASSERT_EQUAL_INT(1, carmen_city_has_connection_to(a, "b"));
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_travel(&loaded, "b"));
+}
+
+static void test_islamic_save_load_graph_and_travel(void)
+{
+    carmen_set_rand(NULL, NULL);
+    srand(42);
+    CarmenWorld *w = carmen_world_create();
+    TEST_ASSERT_NOT_NULL(w);
+    carmen_world_build_islamic(w);
+
+    CarmenCaseSettings settings = carmen_case_settings_default();
+    settings.difficulty = CARMEN_DIFFICULTY_EASY;
+    CarmenSession s;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_start(&s, w, &settings));
+
+    char next[CARMEN_MAX_NAME_LEN];
+    carmen_utf8_copy(next, CARMEN_MAX_NAME_LEN, s.active_case.trail[1]);
+
+    char buf[16384];
+    TEST_ASSERT_GREATER_THAN(0, carmen_session_save(&s, buf, sizeof(buf)));
+
+    carmen_world_clear_connections(w);
+    CarmenSession loaded;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_load(&loaded, w, buf, strlen(buf)));
+
+    const CarmenCity *origin = carmen_world_find(w, loaded.current_city_id);
+    TEST_ASSERT_NOT_NULL(origin);
+    TEST_ASSERT_EQUAL_INT(3, origin->connection_count);
+    TEST_ASSERT_EQUAL_INT(1, carmen_city_has_connection_to(origin, next));
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_travel(&loaded, next));
+    carmen_world_free(w);
+}
+
 static void test_load_resolves_villain_to_catalog_pointer(void)
 {
     CarmenSession s;
@@ -373,7 +428,7 @@ static void test_load_resolves_villain_to_catalog_pointer(void)
 static void test_load_null_session_returns_neg1(void)
 {
     char json[2048];
-    build_json(json, sizeof(json), 1, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
+    build_json(json, sizeof(json), 2, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
                "b", 0, 1);
     TEST_ASSERT_EQUAL_INT(-1, carmen_session_load(NULL, world, json, strlen(json)));
 }
@@ -382,7 +437,7 @@ static void test_load_null_world_returns_neg1(void)
 {
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
+    build_json(json, sizeof(json), 2, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
                "b", 0, 1);
     TEST_ASSERT_EQUAL_INT(-1, carmen_session_load(&s, NULL, json, strlen(json)));
 }
@@ -425,13 +480,47 @@ static void test_load_wrong_schema_returns_neg3(void)
     TEST_ASSERT_EQUAL_INT(-3, carmen_session_load(&s, world, json, strlen(json)));
 }
 
+static void test_load_v1_schema_returns_neg3(void)
+{
+    CarmenSession s;
+    char          json[2048];
+    build_json(json, sizeof(json), 1, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0,
+               "a", "b", 0, 1);
+    TEST_ASSERT_EQUAL_INT(-3, carmen_session_load(&s, world, json, strlen(json)));
+}
+
+static void test_load_missing_edges_returns_neg4(void)
+{
+    CarmenSession s;
+    char          json[2048];
+    snprintf(json, sizeof(json),
+             "{\"schema_version\":2,\"status\":0,\"current_city_id\":\"a\","
+             "\"time_remaining_hrs\":40,\"moves\":0,\"warrant_villain_idx\":-1,"
+             "\"hideout_investigated_sites\":0,\"visited\":[\"a\"],"
+             "\"notebook\":[],\"evidence\":[],"
+             "\"settings\":{\"difficulty\":0,\"trail_length\":0,"
+             "\"time_budget_hrs\":0,\"active_sites_per_city\":0,"
+             "\"positive_clues_per_stop\":0,\"move_limit\":0,"
+             "\"visited_history_size\":0},"
+             "\"case\":{\"villain_id\":\"%s\",\"artifact_id\":\"%s\","
+             "\"origin_id\":\"a\",\"hideout_id\":\"b\","
+             "\"time_budget_hrs\":48,\"difficulty\":0,"
+             "\"trail\":[\"a\",\"b\"],"
+             "\"stops\":[{\"sites\":[{\"site_idx\":0,\"clue\":{\"text\":\"\","
+             "\"target_city_id\":\"b\",\"type\":1}}]},"
+             "{\"sites\":[{\"site_idx\":0,\"clue\":{\"text\":\"\","
+             "\"target_city_id\":\"\",\"type\":1}}]}]}}",
+             cat_villain_id(), cat_artifact_id());
+    TEST_ASSERT_EQUAL_INT(-4, carmen_session_load(&s, world, json, strlen(json)));
+}
+
 /* --- carmen_session_load: malformed field (-4) --- */
 
 static void test_load_bad_status_returns_neg4(void)
 {
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 99, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0,
+    build_json(json, sizeof(json), 2, 99, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0,
                "a", "b", 0, 1);
     TEST_ASSERT_EQUAL_INT(-4, carmen_session_load(&s, world, json, strlen(json)));
 }
@@ -440,7 +529,7 @@ static void test_load_bad_site_idx_returns_neg4(void)
 {
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
+    build_json(json, sizeof(json), 2, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
                "b", 99, 1);
     TEST_ASSERT_EQUAL_INT(-4, carmen_session_load(&s, world, json, strlen(json)));
 }
@@ -449,7 +538,7 @@ static void test_load_bad_clue_type_returns_neg4(void)
 {
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
+    build_json(json, sizeof(json), 2, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
                "b", 0, 5);
     TEST_ASSERT_EQUAL_INT(-4, carmen_session_load(&s, world, json, strlen(json)));
 }
@@ -478,7 +567,7 @@ static void test_load_unknown_villain_returns_neg5(void)
 {
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 0, "a", "no_such_villain", cat_artifact_id(), "a", "b", 0,
+    build_json(json, sizeof(json), 2, 0, "a", "no_such_villain", cat_artifact_id(), "a", "b", 0,
                "a", "b", 0, 1);
     TEST_ASSERT_EQUAL_INT(-5, carmen_session_load(&s, world, json, strlen(json)));
 }
@@ -487,7 +576,7 @@ static void test_load_unknown_artifact_returns_neg6(void)
 {
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 0, "a", cat_villain_id(), "no_such_artifact", "a", "b", 0,
+    build_json(json, sizeof(json), 2, 0, "a", cat_villain_id(), "no_such_artifact", "a", "b", 0,
                "a", "b", 0, 1);
     TEST_ASSERT_EQUAL_INT(-6, carmen_session_load(&s, world, json, strlen(json)));
 }
@@ -496,7 +585,7 @@ static void test_load_current_city_not_in_world_returns_neg7(void)
 {
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 0, "zzz", cat_villain_id(), cat_artifact_id(), "a", "b", 0,
+    build_json(json, sizeof(json), 2, 0, "zzz", cat_villain_id(), cat_artifact_id(), "a", "b", 0,
                "a", "b", 0, 1);
     TEST_ASSERT_EQUAL_INT(-7, carmen_session_load(&s, world, json, strlen(json)));
 }
@@ -505,7 +594,7 @@ static void test_load_trail_city_not_in_world_returns_neg7(void)
 {
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
+    build_json(json, sizeof(json), 2, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
                "zzz", 0, 1);
     TEST_ASSERT_EQUAL_INT(-7, carmen_session_load(&s, world, json, strlen(json)));
 }
@@ -515,7 +604,7 @@ static void test_load_leaves_session_unchanged_on_failure(void)
     /* Load a valid session first, then a bad one into the same struct. */
     CarmenSession s;
     char          json[2048];
-    build_json(json, sizeof(json), 1, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
+    build_json(json, sizeof(json), 2, 0, "a", cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a",
                "b", 0, 1);
     TEST_ASSERT_EQUAL_INT(1, carmen_session_load(&s, world, json, strlen(json)));
 
@@ -606,6 +695,8 @@ int main(void)
     RUN_TEST(test_round_trip_fresh_session);
     RUN_TEST(test_round_trip_after_play);
     RUN_TEST(test_round_trip_won_session_preserves_score);
+    RUN_TEST(test_round_trip_restores_world_graph);
+    RUN_TEST(test_islamic_save_load_graph_and_travel);
     RUN_TEST(test_load_resolves_villain_to_catalog_pointer);
 
     RUN_TEST(test_load_null_session_returns_neg1);
@@ -616,6 +707,8 @@ int main(void)
     RUN_TEST(test_load_non_object_root_returns_neg2);
     RUN_TEST(test_load_missing_schema_returns_neg3);
     RUN_TEST(test_load_wrong_schema_returns_neg3);
+    RUN_TEST(test_load_v1_schema_returns_neg3);
+    RUN_TEST(test_load_missing_edges_returns_neg4);
 
     RUN_TEST(test_load_bad_status_returns_neg4);
     RUN_TEST(test_load_bad_site_idx_returns_neg4);

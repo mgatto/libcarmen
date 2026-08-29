@@ -6,10 +6,10 @@
 #include "session.h"
 
 /* Save schema version emitted by carmen_session_save(). carmen_session_load()
-   accepts this exact version and rejects anything else with -3. Bump it when
-   the on-the-wire shape changes (e.g. once per-case procedural connection
-   graphs need to be persisted alongside the case). */
-#define CARMEN_SAVE_SCHEMA_VERSION 1
+   accepts this exact version and rejects anything else with -3. Version 2
+   persists the per-case generated connection graph as an "edges" array;
+   v1 saves (static seed routes) are rejected. */
+#define CARMEN_SAVE_SCHEMA_VERSION 2
 
 /* Upper bound on a save file carmen_session_load_file() will read, as a guard
    against pathological inputs. Comfortably larger than any real session, whose
@@ -30,11 +30,14 @@
  * Returns 0 if s is NULL or serialization fails (e.g. out of memory), in which
  * case buf is only touched to write a NUL terminator.
  *
- * The world pointer is NOT serialized; on load the caller re-attaches a world
- * (see carmen_session_load). Only string ids for the villain, artifact and
- * cities are stored, so a save is portable across processes as long as it is
- * loaded against a world containing the same city ids and the same built-in
- * villain/artifact catalogs.
+ * The world pointer is NOT serialized; the generated connection graph is
+ * stored as an "edges" array of {from, to, km, mode} (each undirected pair
+ * once). On load the caller re-attaches a world (see carmen_session_load)
+ * and that world's connections are rewritten from the saved edges. Only
+ * string ids for the villain, artifact and cities are stored, so a save is
+ * portable across processes as long as it is loaded against a world
+ * containing the same city ids and the same built-in villain/artifact
+ * catalogs.
  */
 CARMEN_API int carmen_session_save(const CarmenSession *s, char *buf, int buf_size);
 
@@ -57,7 +60,8 @@ CARMEN_API int carmen_session_save_file(const CarmenSession *s, const char *path
  * pointer is set to w; the case, trail and current-city ids are resolved
  * against w at play time, so w must contain the same city ids the save was
  * made against. The villain and artifact are re-resolved from the built-in
- * catalogs by id. On any failure *s is left unchanged.
+ * catalogs by id. The world's connection graph is cleared and rebuilt from
+ * the saved "edges" array. On any failure *s is left unchanged.
  *
  * len is the number of bytes in json (json need not be NUL-terminated).
  *

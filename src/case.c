@@ -18,8 +18,8 @@ static int trail_length_for(CarmenDifficulty d)
 
 /*
  * Correct positive clues per non-hideout stop, derived from difficulty.
- * The remaining active sites carry herrings/negatives, so this also sets
- * the herring ratio: EASY 3/0, MEDIUM 2/1, HARD 1/2 (with 3 active sites).
+ * The remaining active sites carry herrings/negatives: EASY 3/0/0,
+ * MEDIUM 2/1/0, HARD 1/1/1 (with 3 active sites).
  */
 static int positive_clues_for(CarmenDifficulty d)
 {
@@ -29,6 +29,16 @@ static int positive_clues_for(CarmenDifficulty d)
         case CARMEN_DIFFICULTY_HARD:   return 1;
     }
     return 2;
+}
+
+static int negative_clues_for(CarmenDifficulty d)
+{
+    switch (d) {
+        case CARMEN_DIFFICULTY_EASY:   return 0;
+        case CARMEN_DIFFICULTY_MEDIUM: return 0;
+        case CARMEN_DIFFICULTY_HARD:   return 1;
+    }
+    return 0;
 }
 
 static int time_budget_hrs_for(CarmenDifficulty d, int trail_travel_hrs)
@@ -48,54 +58,76 @@ static int city_slot(const CarmenWorld *w, const CarmenCity *c)
     return (int)(c - w->storage);
 }
 
-/*
- * Build a trail of directly-connected cities (max_hops = 1) starting at
- * the given city slot.  Returns the number of cities placed (== target_len
- * on full success, less if the walk dead-ended).
- */
-static int build_trail_from(CarmenWorld *w,
-                            char trail[][CARMEN_MAX_NAME_LEN],
-                            int target_len,
-                            int start)
-{
-    CarmenCity *cur = &w->storage[start];
-    carmen_utf8_copy(trail[0], CARMEN_MAX_NAME_LEN, cur->id);
-
-    bool on_trail[CARMEN_MAX_CITIES] = {false};
-    on_trail[start] = true;
-
-    for (int i = 1; i < target_len; i++) {
-        CarmenCity *reach[CARMEN_MAX_CITIES];
-        int n = carmen_world_reachable_within(w, cur->id, 1,
-                                              reach, CARMEN_MAX_CITIES);
-
-        const char *cand[CARMEN_MAX_CITIES];
-        int nc = 0;
-        for (int j = 0; j < n; j++) {
-            if (!on_trail[city_slot(w, reach[j])])
-                cand[nc++] = reach[j]->id;
-        }
-
-        if (nc == 0)
-            return i;
-
-        const char *chosen = cand[carmen_random() % nc];
-        carmen_utf8_copy(trail[i], CARMEN_MAX_NAME_LEN, chosen);
-
-        cur = carmen_world_find(w, chosen);
-        if (!cur)
-            return i;
-        on_trail[city_slot(w, cur)] = true;
-    }
-    return target_len;
-}
-
 static void shuffle(int *arr, int n)
 {
     for (int j = n - 1; j > 0; j--) {
         int k = carmen_random() % (j + 1);
         int tmp = arr[j]; arr[j] = arr[k]; arr[k] = tmp;
     }
+}
+
+/*
+ * Randomized DFS: extend trail[] from depth until target_len, never
+ * revisiting a city. Neighbors are shuffled so each search is a random
+ * simple path, not a fixed DFS order. Returns target_len on success.
+ */
+static int dfs_trail(CarmenWorld *w,
+                     char trail[][CARMEN_MAX_NAME_LEN],
+                     bool on_trail[CARMEN_MAX_CITIES],
+                     int depth, int target_len)
+{
+    if (depth == target_len)
+        return target_len;
+
+    CarmenCity *cur = carmen_world_find(w, trail[depth - 1]);
+    if (!cur)
+        return depth;
+
+    int cand[CARMEN_MAX_CONNECTIONS];
+    int nc = 0;
+    for (int k = 0; k < cur->connection_count; k++) {
+        CarmenCity *nb = carmen_world_find(w, cur->connections[k].destination_id);
+        if (!nb)
+            continue;
+        int slot = city_slot(w, nb);
+        if (slot < 0 || slot >= w->city_count)
+            continue;
+        if (!on_trail[slot])
+            cand[nc++] = slot;
+    }
+    shuffle(cand, nc);
+
+    for (int i = 0; i < nc; i++) {
+        int slot = cand[i];
+        carmen_utf8_copy(trail[depth], CARMEN_MAX_NAME_LEN, w->storage[slot].id);
+        on_trail[slot] = true;
+        if (dfs_trail(w, trail, on_trail, depth + 1, target_len) == target_len)
+            return target_len;
+        on_trail[slot] = false;
+    }
+    return depth;
+}
+
+/*
+ * Build a simple path of directly-connected cities starting at the given
+ * city slot. Returns the number of cities placed (== target_len on full
+ * success, less if no simple path of that length exists).
+ */
+static int build_trail_from(CarmenWorld *w,
+                            char trail[][CARMEN_MAX_NAME_LEN],
+                            int target_len,
+                            int start)
+{
+    if (start < 0 || start >= w->city_count)
+        return 0;
+
+    CarmenCity *cur = &w->storage[start];
+    carmen_utf8_copy(trail[0], CARMEN_MAX_NAME_LEN, cur->id);
+
+    bool on_trail[CARMEN_MAX_CITIES] = {false};
+    on_trail[start] = true;
+
+    return dfs_trail(w, trail, on_trail, 1, target_len);
 }
 
 /*
@@ -126,19 +158,21 @@ static void negative_clue(CarmenClue *out)
 
 /*
  * For each trail stop, select up to active_sites sites and assign one
- * deterministic clue per site, sourced from destination cities' inbound
- * clue pools (no seed-baked source-to-target clue pairs):
+ * clue per site from the current city's outgoing edges:
  *   - positive_clues sites get a positive clue pointing to the next trail
  *     city, drawn from that city's inbound pool.
- *   - the remaining sites become decoy destinations, each pointing to a
- *     distinct wrong (but directly connected) neighbor, drawn from that
- *     neighbor's inbound pool.  When there are not enough distinct wrong
- *     neighbors, the leftover sites get a generic negative.
- * The hideout stop stores site indices only (evidence, not clues).
+ *   - herring sites get a positive-looking clue pointing to a distinct
+ *     wrong-but-connected neighbor (red herring).
+ *   - remaining sites get a generic negative ("never saw anyone").
+ * Counts are difficulty-driven (EASY 3/0/0, MEDIUM 2/1/0, HARD 1/1/1)
+ * with positive_clues honoring the settings override. The hideout stop
+ * stores site indices only (evidence, not clues).
  */
 static void assign_trail_clues(CarmenCase *c, CarmenWorld *w,
                                int active_sites, int positive_clues)
 {
+    const int negative_want = negative_clues_for(c->difficulty);
+
     for (int i = 0; i < c->trail_len; i++) {
         CarmenCity *city = carmen_world_find(w, c->trail[i]);
         if (!city) continue;
@@ -179,25 +213,33 @@ static void assign_trail_clues(CarmenCase *c, CarmenWorld *w,
                 wrong[nw++] = k;
         shuffle(wrong, nw);
 
+        int npos = positive_clues;
+        if (npos > ns) npos = ns;
+        int nneg = negative_want;
+        if (npos + nneg > ns) nneg = ns - npos;
+        int nherr = ns - npos - nneg;
+        if (nherr > nw) {
+            nneg += nherr - nw;
+            nherr = nw;
+        }
+
         stop->site_count = ns;
         for (int j = 0; j < ns; j++) {
             stop->sites[j].site_idx = sites[j];
 
-            if (j < positive_clues) {
+            if (j < npos) {
                 int pick = pool_n > 0 ? pool_order[j % pool_n] : 0;
                 positive_clue_from(&stop->sites[j].clue, next_city,
                                    next_id, pick);
+            } else if (j < npos + nherr) {
+                int d = j - npos;
+                const char *wrong_id =
+                    city->connections[wrong[d]].destination_id;
+                CarmenCity *wc = carmen_world_find(w, wrong_id);
+                positive_clue_from(&stop->sites[j].clue, wc, wrong_id,
+                                   carmen_random());
             } else {
-                int d = j - positive_clues;
-                if (d < nw) {
-                    const char *wrong_id =
-                        city->connections[wrong[d]].destination_id;
-                    CarmenCity *wc = carmen_world_find(w, wrong_id);
-                    positive_clue_from(&stop->sites[j].clue, wc, wrong_id,
-                                       carmen_random());
-                } else {
-                    negative_clue(&stop->sites[j].clue);
-                }
+                negative_clue(&stop->sites[j].clue);
             }
         }
     }
@@ -231,6 +273,8 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
 
     memset(c, 0, sizeof(*c));
 
+    carmen_world_generate_connections(w);
+
     CarmenDifficulty diff = settings->difficulty;
     int target_len = settings->trail_length > 0
                    ? settings->trail_length
@@ -263,6 +307,8 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
     int have_artifact = 0;
     for (int attempt = 0; usable_count > 0 && attempt < CASE_MAX_RETRIES;
          attempt++) {
+        if (attempt > 0)
+            carmen_world_generate_connections(w);
         const CarmenArtifact *art =
             &CARMEN_ARTIFACTS[usable[carmen_random() % usable_count]];
         CarmenCity *origin = carmen_world_find(w, art->origin_city_id);
@@ -283,6 +329,8 @@ int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
      */
     if (!have_artifact) {
         for (int attempt = 0; attempt < CASE_MAX_RETRIES; attempt++) {
+            if (attempt > 0)
+                carmen_world_generate_connections(w);
             built = build_trail_from(w, c->trail, target_len,
                                      carmen_random() % w->city_count);
             if (built == target_len)

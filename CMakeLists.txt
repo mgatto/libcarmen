@@ -121,6 +121,7 @@ set(CARMEN_SOURCES
     src/connection.c
     src/city.c
     src/game_world.c
+    src/connection_gen.c
     ${CARMEN_GEN_WORLD_SRC}
     src/villain.c
     src/artifact.c
@@ -173,6 +174,10 @@ target_include_directories(carmen
 )
 
 target_compile_definitions(carmen PRIVATE HAVE_CONFIG_H)
+
+if(NOT MSVC)
+    target_link_libraries(carmen PUBLIC m)
+endif()
 
 set_target_properties(carmen PROPERTIES
     VERSION                 ${PROJECT_VERSION}
@@ -299,6 +304,7 @@ if(CARMEN_BUILD_TESTS)
     carmen_add_test(test_city              test/test_city.c)
     carmen_add_test(test_utf8              test/test_utf8.c)
     carmen_add_test(test_game_world        test/test_game_world.c)
+    carmen_add_test(test_connection_gen    test/test_connection_gen.c)
     carmen_add_test(test_carmen_scenarios  test/test_carmen_scenarios.c)
     carmen_add_test(test_artifact          test/test_artifact.c)
     carmen_add_test(test_case              test/test_case.c)
@@ -311,7 +317,7 @@ if(CARMEN_BUILD_TESTS)
     # The generator must reject invalid presets at build time.  These cases
     # only apply when gen_world is an ordinary (native) target.
     if(NOT CMAKE_CROSSCOMPILING)
-        foreach(_bad bad_json over_cap_sites dangling_route)
+        foreach(_bad bad_json over_cap_sites leftover_routes)
             add_test(NAME gen_world_rejects_${_bad}
                 COMMAND gen_world
                         ${CMAKE_CURRENT_SOURCE_DIR}/test/fixtures/${_bad}.jsonc

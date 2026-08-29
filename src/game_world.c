@@ -316,3 +316,10 @@ void carmen_world_print_continents(const CarmenWorld *w)
     carmen_world_continents_to_string(w, buf, (int)sizeof(buf));
     fputs(buf, stdout);
 }
+
+void carmen_world_clear_connections(CarmenWorld *w)
+{
+    if (!w) return;
+    for (int i = 0; i < w->city_count; i++)
+        w->storage[i].connection_count = 0;
+}

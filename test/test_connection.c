@@ -50,6 +50,35 @@ static void test_connection_init_truncates_long_destination(void)
                           (int)strlen(c.destination_id));
 }
 
+/* --------------------------------------------------------- carmen_geo_distance_km */
+
+static void test_geo_distance_same_point_is_zero(void)
+{
+    TEST_ASSERT_EQUAL_INT(0, carmen_geo_distance_km(41.01, 28.98, 41.01, 28.98));
+}
+
+static void test_geo_distance_paris_london(void)
+{
+    /* Great-circle Paris (48.8566, 2.3522) ↔ London (51.5074, -0.1278) is
+       about 344 km; ±25 km covers rounding of the 6371 km radius model. */
+    int km = carmen_geo_distance_km(48.8566, 2.3522, 51.5074, -0.1278);
+    TEST_ASSERT_INT_WITHIN(25, 344, km);
+}
+
+static void test_geo_distance_new_york_london(void)
+{
+    int km = carmen_geo_distance_km(40.7128, -74.0060, 51.5074, -0.1278);
+    TEST_ASSERT_INT_WITHIN(50, 5570, km);
+}
+
+static void test_geo_distance_is_symmetric(void)
+{
+    int ab = carmen_geo_distance_km(41.01, 28.98, 30.04, 31.24);
+    int ba = carmen_geo_distance_km(30.04, 31.24, 41.01, 28.98);
+    TEST_ASSERT_EQUAL_INT(ab, ba);
+    TEST_ASSERT_GREATER_THAN(1000, ab);
+}
+
 /* ------------------------------------------------------------------- runner */
 
 int main(void)
@@ -60,5 +89,9 @@ int main(void)
     RUN_TEST(test_connection_init_custom_transport);
     RUN_TEST(test_connection_init_zero_distance);
     RUN_TEST(test_connection_init_truncates_long_destination);
+    RUN_TEST(test_geo_distance_same_point_is_zero);
+    RUN_TEST(test_geo_distance_paris_london);
+    RUN_TEST(test_geo_distance_new_york_london);
+    RUN_TEST(test_geo_distance_is_symmetric);
     return UNITY_END();
 }

@@ -27,4 +27,12 @@ CARMEN_API int  carmen_transport_speed_kph(const char *mode);
 /* Estimated travel time in hours for this connection (rounded up). */
 CARMEN_API int  carmen_connection_travel_hrs(const CarmenConnection *c);
 
+/*
+ * Great-circle (haversine) distance in kilometres between two WGS-84
+ * points, rounded to the nearest kilometre. Used for generated flight
+ * edges. Returns 0 when the points coincide.
+ */
+CARMEN_API int carmen_geo_distance_km(double lat1, double lon1,
+                                      double lat2, double lon2);
+
 #endif

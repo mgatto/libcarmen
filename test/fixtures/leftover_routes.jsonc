@@ -1,6 +1,6 @@
-// A route whose "to" names a city that does not exist: must be rejected.
+// Leftover static routes are rejected: connections are generated at case time.
 {
-  "id": "dangling",
+  "id": "leftover",
   "cities": [
     { "id": "a", "name": "na", "local_name": "la", "country": "ca", "continent": "coa",
       "sphere": "sa", "lat": 1.0, "lon": 2.0, "sites": [], "inbound_clues": [] },
@@ -8,6 +8,6 @@
       "sphere": "sb", "lat": 3.0, "lon": 4.0, "sites": [], "inbound_clues": [] }
   ],
   "routes": [
-    { "from": "a", "to": "nowhere", "km": 100, "mode": "flight" }
+    { "from": "a", "to": "b", "km": 100, "mode": "flight" }
   ]
 }

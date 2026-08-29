@@ -18,14 +18,6 @@ void tearDown(void)
     carmen_world_destroy(&world);
 }
 
-static const CarmenConnection *conn_to(const CarmenCity *c, const char *dest)
-{
-    for (int i = 0; i < c->connection_count; i++)
-        if (strcmp(c->connections[i].destination_id, dest) == 0)
-            return &c->connections[i];
-    return NULL;
-}
-
 /* --- carmen_world_build_islamic --- */
 
 static void test_build_islamic_city_count(void)
@@ -69,34 +61,11 @@ static void test_build_islamic_inbound_clues(void)
     TEST_ASSERT_EQUAL_STRING("clue.istanbul.inbound.3", c->inbound_clues[3]);
 }
 
-static void test_build_islamic_route_and_mirror(void)
+static void test_build_islamic_has_no_connections_until_generated(void)
 {
-    CarmenCity *ist = carmen_world_find(&world, "istanbul");
-    CarmenCity *sar = carmen_world_find(&world, "sarajevo");
-    TEST_ASSERT_NOT_NULL(ist);
-    TEST_ASSERT_NOT_NULL(sar);
-
-    const CarmenConnection *fwd = conn_to(ist, "sarajevo");
-    TEST_ASSERT_NOT_NULL(fwd);
-    TEST_ASSERT_EQUAL_INT(950, fwd->distance_km);
-    TEST_ASSERT_EQUAL_STRING("flight", fwd->transport_mode);
-
-    /* add_route mirrors the reverse edge with the same distance/mode. */
-    const CarmenConnection *rev = conn_to(sar, "istanbul");
-    TEST_ASSERT_NOT_NULL(rev);
-    TEST_ASSERT_EQUAL_INT(950, rev->distance_km);
-    TEST_ASSERT_EQUAL_STRING("flight", rev->transport_mode);
-}
-
-static void test_build_islamic_non_flight_mode(void)
-{
-    /* Dubai <-> Muscat is a 450 km boat hop in the preset. */
-    CarmenCity *dubai = carmen_world_find(&world, "dubai");
-    TEST_ASSERT_NOT_NULL(dubai);
-    const CarmenConnection *c = conn_to(dubai, "muscat");
-    TEST_ASSERT_NOT_NULL(c);
-    TEST_ASSERT_EQUAL_INT(450, c->distance_km);
-    TEST_ASSERT_EQUAL_STRING("boat", c->transport_mode);
+    for (int i = 0; i < world.city_count; i++)
+        TEST_ASSERT_EQUAL_INT_MESSAGE(0, world.storage[i].connection_count,
+                                      world.storage[i].id);
 }
 
 int main(void)
@@ -107,7 +76,6 @@ int main(void)
     RUN_TEST(test_build_islamic_city_fields);
     RUN_TEST(test_build_islamic_sites);
     RUN_TEST(test_build_islamic_inbound_clues);
-    RUN_TEST(test_build_islamic_route_and_mirror);
-    RUN_TEST(test_build_islamic_non_flight_mode);
+    RUN_TEST(test_build_islamic_has_no_connections_until_generated);
     return UNITY_END();
 }

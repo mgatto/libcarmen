@@ -149,6 +149,34 @@ static cJSON *case_to_json(const CarmenCase *c)
     return o;
 }
 
+static cJSON *edges_to_json(const CarmenWorld *w)
+{
+    cJSON *arr = cJSON_CreateArray();
+    if (!arr) return NULL;
+    if (!w) return arr;
+
+    for (int i = 0; i < w->city_count; i++) {
+        const CarmenCity *a = &w->storage[i];
+        for (int k = 0; k < a->connection_count; k++) {
+            const CarmenConnection *conn = &a->connections[k];
+            /* Emit each undirected pair once (lexicographic from < to). */
+            if (strcmp(a->id, conn->destination_id) >= 0)
+                continue;
+            cJSON *e = cJSON_CreateObject();
+            if (!e) {
+                cJSON_Delete(arr);
+                return NULL;
+            }
+            cJSON_AddItemToArray(arr, e);
+            cJSON_AddStringToObject(e, "from", a->id);
+            cJSON_AddStringToObject(e, "to", conn->destination_id);
+            cJSON_AddNumberToObject(e, "km", conn->distance_km);
+            cJSON_AddStringToObject(e, "mode", conn->transport_mode);
+        }
+    }
+    return arr;
+}
+
 static cJSON *session_to_json(const CarmenSession *s)
 {
     cJSON *root = cJSON_CreateObject();
@@ -206,6 +234,13 @@ static cJSON *session_to_json(const CarmenSession *s)
         return NULL;
     }
     cJSON_AddItemToObject(root, "case", active);
+
+    cJSON *edges = edges_to_json(s->world);
+    if (!edges) {
+        cJSON_Delete(root);
+        return NULL;
+    }
+    cJSON_AddItemToObject(root, "edges", edges);
 
     return root;
 }
@@ -421,6 +456,32 @@ static int session_from_json(const cJSON *root, CarmenSession *t, CarmenWorld *w
     if (!carmen_world_find(w, t->current_city_id)) return -7;
     for (int i = 0; i < t->active_case.trail_len; i++)
         if (!carmen_world_find(w, t->active_case.trail[i])) return -7;
+
+    const cJSON *edges = cJSON_GetObjectItemCaseSensitive(root, "edges");
+    if (!cJSON_IsArray(edges)) return -4;
+    carmen_world_clear_connections(w);
+    int nedges = cJSON_GetArraySize(edges);
+    if (nedges < 0) return -4;
+    for (int i = 0; i < nedges; i++) {
+        const cJSON *e = cJSON_GetArrayItem(edges, i);
+        if (!cJSON_IsObject(e)) return -4;
+        char from[CARMEN_MAX_NAME_LEN];
+        char to[CARMEN_MAX_NAME_LEN];
+        char mode[CARMEN_MAX_NAME_LEN];
+        int  km;
+        if (!read_str(e, "from", from, sizeof(from))) return -4;
+        if (!read_str(e, "to", to, sizeof(to))) return -4;
+        if (!read_int(e, "km", &km)) return -4;
+        if (!read_str(e, "mode", mode, sizeof(mode))) return -4;
+        CarmenCity *fc = carmen_world_find(w, from);
+        CarmenCity *tc = carmen_world_find(w, to);
+        if (!fc || !tc) return -7;
+        CarmenConnection conn;
+        carmen_connection_init(&conn, to, km, mode);
+        carmen_city_add_connection(fc, &conn);
+        carmen_connection_init(&conn, from, km, mode);
+        carmen_city_add_connection(tc, &conn);
+    }
 
     t->world = w;
     return 1;

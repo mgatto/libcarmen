@@ -1,6 +1,8 @@
 # Cross-Sphere Connectivity Analysis
 
-Canonical cultural sub-sphere taxonomy and a fully cross-connected reference network for the Islamic-world city set. Every city belongs to one sub-sphere and connects to at least two *other* sub-spheres, so no city is culturally isolated. This is the taxonomy the future procedural connection generator uses to guarantee at least one cross-sphere link per city. **Does not modify the plan.**
+**Status: realized at runtime.** Sphere tags in `presets/islamic.jsonc` still name the seven cultural groups below. The connection graph itself is no longer this 46-edge static list: `carmen_world_generate_connections()` produces a connected 3-regular 33-edge flight graph per case (in-sphere seed plus cross-sphere stub matching). The edge lists, degree distribution, and per-city audits below are a **reference sketch** of a fully cross-connected static network and are not compiled into the library.
+
+Canonical cultural sub-sphere taxonomy and a fully cross-connected reference network for the Islamic-world city set. Every city belongs to one sub-sphere and connects to at least two *other* sub-spheres, so no city is culturally isolated. This is the taxonomy the runtime connection generator uses to seed in-sphere edges and prefer cross-sphere stubs. **Does not modify the plan.**
 
 Recompute note: this revision drops Doha and Amman from the roster (they were removed from the Arab East group and not reassigned), adds Kano (Nigeria) to Sub-Saharan Africa, moves Sarajevo into Turkey/Balkans, and renames Maghreb/Balkans to Maghreb. Six edges were introduced to keep every city in the 3-5 degree range and reaching at least two external spheres after the removals; they are marked below. Result: 22 cities, 46 edges.
 

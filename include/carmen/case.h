@@ -63,11 +63,12 @@ typedef struct {
  * origin city, so the crime scene the player starts in (trail[0] ==
  * origin_id) matches the case briefing. Builds a trail of directly-
  * connected cities whose length is determined by difficulty
- * (EASY=3, MEDIUM=5, HARD=7), picks a random villain, assigns
- * deterministic clues to 3 sites per trail stop where the number of
- * correct positive clues is derived from difficulty (EASY=3, MEDIUM=2,
- * HARD=1; the rest are herrings/negatives), and sets a time budget
- * based on difficulty and total trail travel time.
+ * (EASY=3, MEDIUM=5, HARD=7), picks a random villain, regenerates a
+ * 3-regular flight graph over the world, assigns deterministic clues to
+ * 3 sites per trail stop where the number of correct positive clues is
+ * derived from difficulty (EASY=3/0/0, MEDIUM=2/1/0, HARD=1/1/1
+ * positive/herring/negative; the rest are herrings/negatives), and sets
+ * a time budget based on difficulty and total trail travel time.
  *
  * In worlds that contain none of the artifact origin cities, generation
  * falls back to a random start city and a random artifact (narrative may
