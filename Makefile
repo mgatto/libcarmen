@@ -13,7 +13,7 @@ DEPFLAGS = -MMD -MP
 
 BUILD_DIR = build
 DIST_DIR  = dist
-VERSION   = 0.1.0
+VERSION   = 0.8.1
 
 # Distributable demo tarball naming: libcarmen-demo-<version>-macos-<arch>.tar.gz
 ARCH        := $(shell uname -m)

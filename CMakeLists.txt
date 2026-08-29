@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(carmen
-    VERSION     0.1.0
+    VERSION     0.8.1
     LANGUAGES   C
     DESCRIPTION "C library for building Carmen Sandiego-style world exploration games"
 )
