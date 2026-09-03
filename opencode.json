@@ -1,0 +1,22 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "instructions": [
+        "AGENTS.md",
+        "doc/clean-api-checklist.md",
+        ".cursor/rules/*.md"
+    ],
+    "lsp": {
+        "clangd": {
+            "command": [
+                "clangd",
+                "--background-index",
+                "--fallback-style=llvm"
+            ],
+            "extensions": [
+                ".c",
+                ".h"
+            ],
+            "initialization": {}
+        }
+    }
+}
