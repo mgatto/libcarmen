@@ -34,9 +34,24 @@ Match the existing code exactly rather than introducing a new style. Concretely:
 - Favor clear, readable test code over clever/compact test code -- tests double as usage examples for library consumers, so prefer explicit setup and descriptive assertions over shared magic fixtures.
 - Aim for thorough coverage of new and changed code, not just the happy path; genuinely unreachable defensive code (e.g. an impossible NULL check) doesn't need a contrived test to hit it.
 
+## Codegen
+
+`presets/islamic.jsonc` is the single source of truth for the built-in world. `make` automatically builds `tools/gen_world` and runs it to produce `build/gen/world_islamic_generated.c`; you never edit that generated file directly. If you change the preset, just re-run `make`.
+
+## Running a single test suite
+
+Each test binary is built to `build/test_<module>` (or `build/test/<module>` depending on `Makefile` variable). After `make test` has built them you can re-run one suite directly:
+
+```sh
+./build/test/test_session   # run only session tests
+```
+
+Check the `TEST_BINS` variable in the Makefile for the exact paths.
+
 ## Before finishing a task
 
 1. Build cleanly: `make` (and `make lib` if you touched anything that affects the shared library) with no new warnings.
 2. `make test` -- all suites must pass.
-3. If you added/changed library logic, run `make coverage` (requires `lcov`) and skim the report for the files you touched to catch untested branches, especially new error paths.
-4. Update `README.md` / `doc/tier*.md` when you change the public API surface, project layout, or feature status they describe.
+3. For logic changes, also run `make test-sanitize` (ASan + UBSan; GCC/Clang only) to catch memory and UB issues.
+4. If you added/changed library logic, run `make coverage` (requires `lcov`) and skim the report for the files you touched to catch untested branches, especially new error paths.
+5. Update `README.md` / `doc/tier*.md` when you change the public API surface, project layout, or feature status they describe.
