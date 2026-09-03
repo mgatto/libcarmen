@@ -22,7 +22,13 @@ CARMEN_API CarmenI18n *carmen_i18n_load(const char *json_path);
    filesystem.  Returns NULL on parse failure or if json is NULL.  Caller
    frees with carmen_i18n_free(). */
 CARMEN_API CarmenI18n *carmen_i18n_load_json(const char *json, size_t len);
+
+/* Look up key and return the translated string, or key itself if not found.
+   The returned pointer is borrowed: it points into ctx's internal table and
+   remains valid until carmen_i18n_free(ctx) is called.  Returns NULL if
+   ctx or key is NULL.  Callers must not free the pointer. */
 CARMEN_API const char *carmen_i18n_get(const CarmenI18n *ctx, const char *key);
+
 CARMEN_API void        carmen_i18n_free(CarmenI18n *ctx);
 
 #endif

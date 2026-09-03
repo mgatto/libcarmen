@@ -1,6 +1,7 @@
 #ifndef CARMEN_GAME_WORLD_H
 #define CARMEN_GAME_WORLD_H
 
+#include <stdint.h>
 #include "carmen_export.h"
 #include "city.h"
 
@@ -9,20 +10,20 @@
 #define CARMEN_MAX_IDS_PER_INDEX   16
 
 typedef struct {
-    char key[CARMEN_MAX_NAME_LEN];
-    int  slots[CARMEN_MAX_IDS_PER_INDEX];
-    int  count;
+    char    key[CARMEN_MAX_NAME_LEN];
+    int32_t slots[CARMEN_MAX_IDS_PER_INDEX]; /* fixed-width for cross-platform ABI */
+    int32_t count;                           /* fixed-width for cross-platform ABI */
 } CarmenIndexEntry;
 
 typedef struct {
     CarmenCity       storage[CARMEN_MAX_CITIES];
-    int              city_count;
-    void            *city_map;   /* opaque; backed by stb_ds string hash map */
+    int32_t          city_count;       /* fixed-width for cross-platform ABI */
+    void            *city_map;         /* opaque; backed by stb_ds string hash map */
 
     CarmenIndexEntry continent_index[CARMEN_MAX_INDEX_ENTRIES];
-    int              continent_count;
+    int32_t          continent_count;  /* fixed-width for cross-platform ABI */
     CarmenIndexEntry country_index[CARMEN_MAX_INDEX_ENTRIES];
-    int              country_count;
+    int32_t          country_count;    /* fixed-width for cross-platform ABI */
 } CarmenWorld;
 
 CARMEN_API void         carmen_world_init(CarmenWorld *w);
@@ -33,14 +34,29 @@ CARMEN_API void         carmen_world_destroy(CarmenWorld *w);
    WASM, threaded, or embedded environments.  Free with carmen_world_free(). */
 CARMEN_API CarmenWorld *carmen_world_create(void);
 CARMEN_API void         carmen_world_free(CarmenWorld *w);
+/* Add a city to the world and return a pointer to its slot in w->storage[].
+   The returned pointer is borrowed: it is owned by the world and remains
+   valid for the lifetime of w, provided no subsequent call to
+   carmen_world_add_city() causes the storage array to be exhausted (the
+   array is fixed-capacity; on overflow the city is not added and NULL is
+   returned).  Callers must not free the pointer. */
 CARMEN_API CarmenCity *carmen_world_add_city(CarmenWorld *w, const char *id,
                                              const char *name,
                                              const char *local_name,
                                              const char *country,
                                              const char *continent,
                                              double lat, double lon);
+
+/* Look up a city by its id string.  Returns a borrowed pointer into
+   w->storage[], owned by the world and valid for the lifetime of w.
+   Returns NULL if id is not found or w/id is NULL.  Callers must not
+   free the pointer. */
 CARMEN_API CarmenCity *carmen_world_find(CarmenWorld *w, const char *id);
 
+/* Write up to max_out borrowed CarmenCity pointers for cities on the named
+   continent/country into out[]; returns the count written.  Each pointer is
+   owned by the world and remains valid for the lifetime of w.  Returns 0
+   when w or the filter string is NULL, or no cities match. */
 CARMEN_API int   carmen_world_cities_in_continent(CarmenWorld *w,
                                                    const char *continent,
                                                    CarmenCity **out,
@@ -49,18 +65,31 @@ CARMEN_API int   carmen_world_cities_in_country(CarmenWorld *w,
                                                   const char *country,
                                                   CarmenCity **out,
                                                   int max_out);
+
+/* Write up to max_out borrowed CarmenCity pointers for cities directly
+   reachable from city_id into out[]; returns the count written.  Each
+   pointer is owned by the world and remains valid for the lifetime of w.
+   Returns 0 if city_id is not found or w/city_id is NULL. */
 CARMEN_API int   carmen_world_destinations_from(CarmenWorld *w,
                                                 const char *city_id,
                                                 CarmenCity **out,
                                                 int max_out);
+
+/* Write up to max_out borrowed CarmenCity pointers for cities reachable
+   from city_id within max_hops hops into out[]; returns the count written.
+   Each pointer is owned by the world and remains valid for the lifetime of w.
+   Returns 0 if city_id is not found or w/city_id is NULL. */
 CARMEN_API int   carmen_world_reachable_within(CarmenWorld *w,
                                                const char *city_id,
                                                int max_hops,
                                                CarmenCity **out,
                                                int max_out);
 
-/* Returns hop count (path_len - 1), or -1 if no path.
-   Writes city ID strings into out_path[]. */
+/* Write up to max_path borrowed city-id C-string pointers into out_path[],
+   forming the shortest hop path from from_id to to_id (inclusive).  Each
+   pointer is borrowed from the world's city storage and remains valid for
+   the lifetime of w.  Returns the hop count (path_len - 1), or -1 if no
+   path exists.  Callers must not free the pointers. */
 CARMEN_API int   carmen_world_shortest_path(CarmenWorld *w,
                                             const char *from_id,
                                             const char *to_id,
