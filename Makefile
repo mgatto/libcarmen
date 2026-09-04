@@ -564,4 +564,27 @@ $(COV_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)
 DEPS = $(LIB_OBJS:.o=.d) $(TRAIL_DEMO_OBJ:.o=.d)
 -include $(DEPS)
 
-.PHONY: all lib dist package clean distclean test test-sanitize coverage install uninstall
+# --------------------------------------------------------------------------- #
+#  Static analysis (SEI CERT C / CWE via GCC -fanalyzer)
+#  Needs real GCC (Homebrew gcc-16); Apple's /usr/bin/gcc is clang and
+#  silently ignores -fanalyzer.  Vendor sources are exempt per AGENTS.md.
+# --------------------------------------------------------------------------- #
+
+ANALYZER_CC   ?= gcc-16
+ANALYZE_SRCS   = $(filter src/%.c,$(LIB_SRCS))
+ANALYZE_FLAGS  = -fanalyzer -std=c17 -Wall -Wextra -pedantic -DHAVE_CONFIG_H
+ifeq ($(UNAME_S),Darwin)
+  ANALYZE_SYSROOT := -isysroot $(shell xcrun --show-sdk-path)
+endif
+
+analyze:
+	@echo "== $(ANALYZER_CC) -fanalyzer : SEI CERT / CWE audit =="
+	@fail=0; \
+	for f in $(ANALYZE_SRCS); do \
+	    echo "--- $$f ---"; \
+	    $(ANALYZER_CC) $(ANALYZE_FLAGS) $(ANALYZE_SYSROOT) $(INCLUDES) \
+	        -c $$f -o /dev/null || fail=1; \
+	done; \
+	exit $$fail
+
+.PHONY: all lib dist package clean distclean test test-sanitize coverage analyze install uninstall
