@@ -1,0 +1,21 @@
+name: Check tag matches VERSION file
+description: Fail if the release tag (vX.Y.Z) does not match the VERSION file.
+
+runs:
+  using: composite
+  steps:
+    - name: Check tag matches VERSION file
+      shell: pwsh
+      run: |
+        $tag = $env:GITHUB_REF_NAME
+        if ($tag -notmatch '^v(\d+\.\d+\.\d+)(?:-.*)?$') {
+          throw "Tag '$tag' is not vX.Y.Z or vX.Y.Z-<prerelease>"
+        }
+        $fromTag = $Matches[1]
+        $fromVersion = (Get-Content -Raw VERSION).Trim()
+        if ($fromVersion -notmatch '^\d+\.\d+\.\d+$') {
+          throw "Could not read MAJOR.MINOR.PATCH from VERSION file: '$fromVersion'"
+        }
+        if ($fromTag -ne $fromVersion) {
+          throw "Tag $tag does not match VERSION file $fromVersion -- tag v$fromVersion or v$fromVersion-<prerelease>"
+        }
