@@ -93,8 +93,11 @@ make test-sanitize # run all unit tests under ASan + UBSan (GCC/Clang only)
 make coverage      # test coverage report (requires lcov)
 make analyze       # SEI CERT / CWE static analysis via gcc-16 -fanalyzer (requires Homebrew gcc-16)
 make analyze 2> doc/analyzer_log.txt  # same, capturing diagnostics (gcc emits them on stderr)
+make verify-soname # assert the shared lib's SONAME/install_name matches CMake's
 make package       # self-contained macOS demo tarball (libcarmen-demo-<version>-macos-<arch>.tar.gz)
 ```
+
+The version lives in the top-level `VERSION` file alone (`carmen_version.h` is generated from it); `make test` runs a `version-check` that fails if anything drifts. See `doc/versioning.md` for the semver + ABI policy.
 
 Demo archives (`demo_package`; produced in CI and on version tags):
 
@@ -128,13 +131,17 @@ cmake --build build-sanitize -j && ctest --test-dir build-sanitize
 Or manually:
 
 ```sh
-# 1. Build the world generator and compile the preset into C.  The built-in
+# 1. Generate the version header (carmen_version.h is derived from VERSION,
+#    never committed -- see doc/versioning.md).
+sh tools/gen_version.sh VERSION include/carmen/carmen_version.h
+
+# 2. Build the world generator and compile the preset into C.  The built-in
 #    world lives in presets/islamic.jsonc; gen_world validates it and emits C.
 cc -std=c17 -O2 -Iinclude -Ivendor/cjson \
    tools/gen_world.c vendor/cjson/cJSON.c -o gen_world
 ./gen_world presets/islamic.jsonc world_islamic_generated.c
 
-# 2. Build the demo (note -Isrc so the generated file finds seed_helpers.h).
+# 3. Build the demo (note -Isrc so the generated file finds seed_helpers.h).
 cc -std=c17 -Wall -Wextra -pedantic -O2 \
    -Iinclude -Isrc -Ivendor/stb -Ivendor/utf8 -Ivendor/cjson -Ivendor/toml-c \
    src/utf8.c src/site.c src/connection.c src/city.c src/game_world.c \
@@ -192,10 +199,11 @@ Consumer code includes the library with the `carmen/` prefix:
 ```BASH
 Makefile                   Build rules (static/shared lib, tests, coverage, install)
 LICENSE                    MIT license
+VERSION                    Single source of truth for the version (see doc/versioning.md)
 carmen.pc.in               pkg-config template
 include/carmen/
   carmen.h                 Umbrella header (includes everything below)
-  carmen_version.h         Version macros (CARMEN_VERSION_MAJOR/MINOR/PATCH)
+  carmen_version.h         Version macros (generated from VERSION at build time, not committed)
   carmen_export.h          Symbol visibility / DLL export macros
   utf8.h                   UTF-8 helpers and BiDi visual-order conversion
   clue.h                   Clue struct
@@ -230,6 +238,8 @@ presets/
   islamic.jsonc            Built-in world data (single source of truth, JSONC)
 tools/
   gen_world.c              Host tool: validates a preset and emits it as C
+  gen_version.sh           Generates carmen_version.h from VERSION (used by Make + CMake)
+  check_version.sh         Fails if VERSION / generated header / resolved version disagree
   CMakeLists.txt           Standalone build for the host tool (used when cross-compiling)
 examples/
   trail_demo.c             main() demo driver (interactive terminal game)
