@@ -337,7 +337,7 @@ test: $(TEST_BINS) $(GEN_WORLD) version-check
 		exit 1; \
 	fi
 
-$(TEST_DIR):
+$(TEST_DIR): $(GEN_VERSION_H)
 	mkdir -p $(TEST_DIR)
 
 $(TEST_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
@@ -428,7 +428,7 @@ test-sanitize: $(SANITIZE_BINS)
 		exit 1; \
 	fi
 
-$(SANITIZE_DIR):
+$(SANITIZE_DIR): $(GEN_VERSION_H)
 	mkdir -p $(SANITIZE_DIR)
 
 $(SANITIZE_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
@@ -529,7 +529,7 @@ $(COV_DIR)/llvm-gcov.sh: | $(COV_DIR)
 	@printf '#!/bin/sh\nexec xcrun llvm-cov gcov "$$@"\n' > $@
 	@chmod +x $@
 
-$(COV_DIR):
+$(COV_DIR): $(GEN_VERSION_H)
 	mkdir -p $(COV_DIR)
 
 $(COV_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
