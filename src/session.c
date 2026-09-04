@@ -46,6 +46,21 @@ static void collect_evidence(CarmenSession *s, const char *id_clue_key)
                      id_clue_key);
 }
 
+/*
+ * Deduct hrs from the remaining time budget, flipping the session to
+ * CARMEN_STATUS_LOST_TIME when the clock runs out. Returns 1 if the session
+ * is still PLAYING afterwards, 0 if the deduction ended it.
+ */
+static int apply_time_cost(CarmenSession *s, int hrs)
+{
+    s->time_remaining_hrs -= hrs;
+    if (s->time_remaining_hrs <= 0) {
+        s->status = CARMEN_STATUS_LOST_TIME;
+        return 0;
+    }
+    return 1;
+}
+
 static void record_visit(CarmenSession *s, const char *city_id)
 {
     int cap = s->settings.visited_history_size;
@@ -247,16 +262,12 @@ int carmen_session_travel(CarmenSession *s, const char *dest_id)
     if (!conn) return -1;
 
     int hrs = carmen_connection_travel_hrs(conn);
-    s->time_remaining_hrs -= hrs;
     s->moves++;
 
     carmen_utf8_copy(s->current_city_id, CARMEN_MAX_NAME_LEN, dest_id);
     record_visit(s, dest_id);
 
-    if (s->time_remaining_hrs <= 0) {
-        s->status = CARMEN_STATUS_LOST_TIME;
-        return -2;
-    }
+    if (!apply_time_cost(s, hrs)) return -2;
     if (s->settings.move_limit > 0 && s->moves >= s->settings.move_limit) {
         s->status = CARMEN_STATUS_LOST_MOVES;
         return -4;
@@ -284,7 +295,9 @@ const CarmenClue *carmen_session_investigate(CarmenSession *s, int site_idx)
                          "clue.generic.negative");
         neg.type = CARMEN_CLUE_NEGATIVE;
         s->notebook[s->notebook_count] = neg;
-        return &s->notebook[s->notebook_count++];
+        const CarmenClue *result = &s->notebook[s->notebook_count++];
+        apply_time_cost(s, s->settings.investigation_hrs);
+        return result;
     }
 
     /* On-trail: look up the pre-assigned clue for this site */
@@ -307,7 +320,9 @@ const CarmenClue *carmen_session_investigate(CarmenSession *s, int site_idx)
     if (clue->type == CARMEN_CLUE_IDENTITY)
         collect_evidence(s, clue->text);
     s->notebook[s->notebook_count] = *clue;
-    return &s->notebook[s->notebook_count++];
+    const CarmenClue *result = &s->notebook[s->notebook_count++];
+    apply_time_cost(s, s->settings.investigation_hrs);
+    return result;
 }
 
 int carmen_session_issue_warrant(CarmenSession *s, int villain_idx)
@@ -340,4 +355,11 @@ CarmenSessionStatus carmen_session_arrest(CarmenSession *s)
         s->status = CARMEN_STATUS_LOST_WRONG_ARREST;
 
     return s->status;
+}
+
+int carmen_session_advance_time(CarmenSession *s, int hours)
+{
+    if (!s || s->status != CARMEN_STATUS_PLAYING) return -3;
+    if (hours <= 0) return -1;
+    return apply_time_cost(s, hours) ? 0 : -2;
 }

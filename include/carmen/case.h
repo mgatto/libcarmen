@@ -41,6 +41,7 @@ typedef struct {
     int32_t positive_clues_per_stop; /* 0 = derive from difficulty; else clamped to [1, active_sites_per_city]; fixed-width for ABI */
     int32_t move_limit;              /* 0 = unlimited; fixed-width for ABI */
     int32_t visited_history_size;    /* 0 = use full CARMEN_MAX_VISITED; else clamped to [1, CARMEN_MAX_VISITED]; fixed-width for ABI */
+    int32_t investigation_hrs;       /* hours deducted per site investigation; 0 = free; negatives reset to default at load; fixed-width for ABI */
 } CarmenCaseSettings;
 
 typedef struct {

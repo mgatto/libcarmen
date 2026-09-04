@@ -659,6 +659,121 @@ static void test_investigate_full_notebook_returns_null(void)
     TEST_ASSERT_NULL(carmen_session_investigate(&s, indices[0]));
 }
 
+/* --- carmen_session_investigate (time cost) --- */
+
+static void test_investigate_deducts_default_two_hours(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    TEST_ASSERT_EQUAL_INT(2, s.settings.investigation_hrs);
+
+    int indices[CARMEN_TRAIL_SITES];
+    carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
+
+    int before = carmen_session_time_remaining(&s);
+    carmen_session_investigate(&s, indices[0]);
+    TEST_ASSERT_EQUAL_INT(before - 2, carmen_session_time_remaining(&s));
+}
+
+static void test_investigate_deducts_configured_hours(void)
+{
+    CarmenSession s;
+    CarmenCaseSettings settings = carmen_case_settings_default();
+    settings.difficulty       = CARMEN_DIFFICULTY_EASY;
+    settings.investigation_hrs = 5;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_start(&s, world, &settings));
+
+    int indices[CARMEN_TRAIL_SITES];
+    carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
+
+    int before = carmen_session_time_remaining(&s);
+    carmen_session_investigate(&s, indices[0]);
+    TEST_ASSERT_EQUAL_INT(before - 5, carmen_session_time_remaining(&s));
+}
+
+static void test_investigate_free_when_hours_zero(void)
+{
+    CarmenSession s;
+    CarmenCaseSettings settings = carmen_case_settings_default();
+    settings.difficulty       = CARMEN_DIFFICULTY_EASY;
+    settings.investigation_hrs = 0;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_start(&s, world, &settings));
+
+    int indices[CARMEN_TRAIL_SITES];
+    carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
+
+    int before = carmen_session_time_remaining(&s);
+    carmen_session_investigate(&s, indices[0]);
+    TEST_ASSERT_EQUAL_INT(before, carmen_session_time_remaining(&s));
+}
+
+static void test_investigate_exhausting_time_loses(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    int indices[CARMEN_TRAIL_SITES];
+    carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
+
+    /* Exactly the per-site cost remains: the clue is still returned, but the
+       investigation drives time to 0 and ends the game. */
+    s.time_remaining_hrs = s.settings.investigation_hrs;
+    const CarmenClue *clue = carmen_session_investigate(&s, indices[0]);
+    TEST_ASSERT_NOT_NULL(clue);
+    TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_LOST_TIME, carmen_session_status(&s));
+}
+
+/* --- carmen_session_advance_time --- */
+
+static void test_advance_time_deducts_hours(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    int before = carmen_session_time_remaining(&s);
+    int rc     = carmen_session_advance_time(&s, 8);
+    TEST_ASSERT_EQUAL_INT(0, rc);
+    TEST_ASSERT_EQUAL_INT(before - 8, carmen_session_time_remaining(&s));
+}
+
+static void test_advance_time_does_not_count_as_move(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    carmen_session_advance_time(&s, 8);
+    TEST_ASSERT_EQUAL_INT(0, carmen_session_moves(&s));
+}
+
+static void test_advance_time_null_returns_minus_three(void)
+{
+    TEST_ASSERT_EQUAL_INT(-3, carmen_session_advance_time(NULL, 8));
+}
+
+static void test_advance_time_non_positive_returns_minus_one(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    TEST_ASSERT_EQUAL_INT(-1, carmen_session_advance_time(&s, 0));
+    TEST_ASSERT_EQUAL_INT(-1, carmen_session_advance_time(&s, -3));
+}
+
+static void test_advance_time_not_playing_returns_minus_three(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    s.status = CARMEN_STATUS_WON;
+    TEST_ASSERT_EQUAL_INT(-3, carmen_session_advance_time(&s, 8));
+}
+
+static void test_advance_time_exhausting_time_loses(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    int remaining = carmen_session_time_remaining(&s);
+    int rc        = carmen_session_advance_time(&s, remaining);
+    TEST_ASSERT_EQUAL_INT(-2, rc);
+    TEST_ASSERT_EQUAL_INT(CARMEN_STATUS_LOST_TIME, carmen_session_status(&s));
+}
+
 /* ================================================== warrant tests */
 
 static void test_issue_warrant_succeeds(void)
@@ -1204,6 +1319,16 @@ int main(void)
     RUN_TEST(test_identity_clues_in_distinct_trail_cities);
     RUN_TEST(test_evidence_required_matches_identity_count);
     RUN_TEST(test_investigate_full_notebook_returns_null);
+    RUN_TEST(test_investigate_deducts_default_two_hours);
+    RUN_TEST(test_investigate_deducts_configured_hours);
+    RUN_TEST(test_investigate_free_when_hours_zero);
+    RUN_TEST(test_investigate_exhausting_time_loses);
+    RUN_TEST(test_advance_time_deducts_hours);
+    RUN_TEST(test_advance_time_does_not_count_as_move);
+    RUN_TEST(test_advance_time_null_returns_minus_three);
+    RUN_TEST(test_advance_time_non_positive_returns_minus_one);
+    RUN_TEST(test_advance_time_not_playing_returns_minus_three);
+    RUN_TEST(test_advance_time_exhausting_time_loses);
 
     /* Warrant */
     RUN_TEST(test_issue_warrant_succeeds);

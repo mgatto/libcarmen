@@ -80,6 +80,7 @@ static cJSON *settings_to_json(const CarmenCaseSettings *st)
     cJSON_AddNumberToObject(o, "positive_clues_per_stop", st->positive_clues_per_stop);
     cJSON_AddNumberToObject(o, "move_limit", st->move_limit);
     cJSON_AddNumberToObject(o, "visited_history_size", st->visited_history_size);
+    cJSON_AddNumberToObject(o, "investigation_hrs", st->investigation_hrs);
     return o;
 }
 
@@ -307,6 +308,11 @@ static int settings_from_json(const cJSON *o, CarmenCaseSettings *out)
     if (!read_int(o, "difficulty", &d)) return 0;
     if (d < CARMEN_DIFFICULTY_EASY || d > CARMEN_DIFFICULTY_HARD) return 0;
     out->difficulty = (CarmenDifficulty)d;
+    /* investigation_hrs was added after the initial save format; treat it as
+       optional so pre-existing savegames still load, defaulting to the 2-hour
+       cost carmen_case_settings_default() uses. */
+    if (!read_int(o, "investigation_hrs", &out->investigation_hrs))
+        out->investigation_hrs = 2;
     return read_int(o, "trail_length", &out->trail_length) &&
            read_int(o, "time_budget_hrs", &out->time_budget_hrs) &&
            read_int(o, "active_sites_per_city", &out->active_sites_per_city) &&

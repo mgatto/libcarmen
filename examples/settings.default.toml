@@ -11,4 +11,5 @@ active_sites_per_city = 0       # 0 = derive from difficulty; else 1..3
 positive_clues_per_stop = 0     # 0 = derive from difficulty (easy 3, medium 2, hard 1); else 1..active_sites_per_city
 move_limit = 0                  # 0 = unlimited
 visited_history_size = 24       # 0 = full (CARMEN_MAX_VISITED); else 1..24
+investigation_hrs = 2           # hours deducted per site investigation; 0 = free
 # (warrant always requires full evidence collected at the hideout -- not configurable)

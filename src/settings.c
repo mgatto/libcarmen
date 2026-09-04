@@ -84,6 +84,14 @@ static void settings_clamp(CarmenCaseSettings *s)
         s->visited_history_size = clamp_warn("visited_history_size",
                                              s->visited_history_size,
                                              1, CARMEN_MAX_VISITED);
+
+    /* 0 means "free investigation"; negatives are meaningless and reset to the
+       default 2-hour cost. */
+    if (s->investigation_hrs < 0) {
+        fprintf(stderr, "settings: investigation_hrs=%d invalid, using 2\n",
+                s->investigation_hrs);
+        s->investigation_hrs = 2;
+    }
 }
 
 CarmenCaseSettings carmen_case_settings_default(void)
@@ -96,6 +104,7 @@ CarmenCaseSettings carmen_case_settings_default(void)
     s.positive_clues_per_stop = 0;                 /* derive from difficulty */
     s.move_limit             = 0;                  /* unlimited */
     s.visited_history_size   = CARMEN_MAX_VISITED; /* 24 */
+    s.investigation_hrs      = 2;                  /* 2 hours per site */
     return s;
 }
 
@@ -147,6 +156,9 @@ int carmen_case_settings_load(CarmenCaseSettings *out, const char *toml_path)
 
     v = toml_table_int(tbl, "visited_history_size");
     if (v.ok) s.visited_history_size = (int)v.u.i;
+
+    v = toml_table_int(tbl, "investigation_hrs");
+    if (v.ok) s.investigation_hrs = (int)v.u.i;
 
     toml_free(tbl);
 

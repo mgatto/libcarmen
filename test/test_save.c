@@ -199,6 +199,7 @@ static void assert_sessions_equal(const CarmenSession *a, const CarmenSession *b
     TEST_ASSERT_EQUAL_INT(a->settings.positive_clues_per_stop, b->settings.positive_clues_per_stop);
     TEST_ASSERT_EQUAL_INT(a->settings.move_limit, b->settings.move_limit);
     TEST_ASSERT_EQUAL_INT(a->settings.visited_history_size, b->settings.visited_history_size);
+    TEST_ASSERT_EQUAL_INT(a->settings.investigation_hrs, b->settings.investigation_hrs);
 
     TEST_ASSERT_EQUAL_PTR(a->active_case.villain, b->active_case.villain);
     TEST_ASSERT_EQUAL_STRING(a->active_case.artifact.id, b->active_case.artifact.id);
@@ -468,6 +469,19 @@ static void test_load_resolves_villain_to_catalog_pointer(void)
         if (carmen_villain_at(i) == loaded.active_case.villain) found = 1;
     TEST_ASSERT_TRUE(found);
     TEST_ASSERT_EQUAL_PTR(s.active_case.villain, loaded.active_case.villain);
+}
+
+static void test_load_legacy_settings_without_investigation_hrs_defaults_to_two(void)
+{
+    /* build_json emits a settings block lacking investigation_hrs, matching a
+       savegame written before the field existed; load must default it to 2. */
+    char json[2048];
+    build_json(json, sizeof(json), CARMEN_SAVE_SCHEMA_VERSION, 0, "a",
+               cat_villain_id(), cat_artifact_id(), "a", "b", 0, "a", "b", 0, 1);
+
+    CarmenSession loaded;
+    TEST_ASSERT_EQUAL_INT(1, carmen_session_load(&loaded, world, json, strlen(json)));
+    TEST_ASSERT_EQUAL_INT(2, loaded.settings.investigation_hrs);
 }
 
 /* --- carmen_session_load: argument guards --- */
@@ -777,6 +791,7 @@ int main(void)
     RUN_TEST(test_round_trip_restores_world_graph);
     RUN_TEST(test_islamic_save_load_graph_and_travel);
     RUN_TEST(test_load_resolves_villain_to_catalog_pointer);
+    RUN_TEST(test_load_legacy_settings_without_investigation_hrs_defaults_to_two);
 
     RUN_TEST(test_load_null_session_returns_neg1);
     RUN_TEST(test_load_null_world_returns_neg1);

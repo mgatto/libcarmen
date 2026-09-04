@@ -218,6 +218,11 @@ CARMEN_API int carmen_session_travel(CarmenSession *s, const char *dest_id);
  * site_idx must be one of the active site indices returned by
  * carmen_session_active_sites, or a valid site index if off-trail.
  *
+ * A successful investigation deducts settings.investigation_hrs (default 2,
+ * 0 = free) from the remaining time. If that exhausts the time budget the
+ * session transitions to CARMEN_STATUS_LOST_TIME; the clue just found is
+ * still returned, and the next carmen_session_status() call reports the loss.
+ *
  * The returned pointer points into the session's notebook and remains
  * valid for the lifetime of the session.
  *
@@ -226,6 +231,21 @@ CARMEN_API int carmen_session_travel(CarmenSession *s, const char *dest_id);
  */
 CARMEN_API const CarmenClue *carmen_session_investigate(CarmenSession *s,
                                                         int site_idx);
+
+/*
+ * Advance the session clock by an arbitrary number of hours, independent of
+ * travel or investigation. Intended for front-end-driven time costs the core
+ * doesn't model itself (e.g. a client deducting sleep time at "bedtime").
+ *
+ * Deducts hours from the remaining time and, if that exhausts the budget,
+ * transitions the session to CARMEN_STATUS_LOST_TIME. Does not count as a
+ * move (moves is unchanged).
+ *
+ * Returns 0 on success, -1 if hours <= 0, -2 if the deduction exhausted the
+ * time budget (status is now CARMEN_STATUS_LOST_TIME), -3 if the session is
+ * not in PLAYING state (including a NULL session).
+ */
+CARMEN_API int carmen_session_advance_time(CarmenSession *s, int hours);
 
 /*
  * Issue (or change) an arrest warrant for a villain.

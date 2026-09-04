@@ -42,6 +42,7 @@ static void test_defaults_are_valid(void)
     TEST_ASSERT_EQUAL_INT(0, s.positive_clues_per_stop);
     TEST_ASSERT_EQUAL_INT(0, s.move_limit);
     TEST_ASSERT_EQUAL_INT(CARMEN_MAX_VISITED, s.visited_history_size);
+    TEST_ASSERT_EQUAL_INT(2, s.investigation_hrs);
 }
 
 /* ---------------------------------------------------------- load */
@@ -154,6 +155,33 @@ static void test_load_visited_history_size_clamps(void)
     CarmenCaseSettings s;
     TEST_ASSERT_EQUAL_INT(1, carmen_case_settings_load(&s, TMP));
     TEST_ASSERT_EQUAL_INT(CARMEN_MAX_VISITED, s.visited_history_size);
+}
+
+static void test_load_investigation_hrs_override(void)
+{
+    write_tmp("investigation_hrs = 4\n");
+
+    CarmenCaseSettings s;
+    TEST_ASSERT_EQUAL_INT(1, carmen_case_settings_load(&s, TMP));
+    TEST_ASSERT_EQUAL_INT(4, s.investigation_hrs);
+}
+
+static void test_load_investigation_hrs_zero_is_free(void)
+{
+    write_tmp("investigation_hrs = 0\n");
+
+    CarmenCaseSettings s;
+    TEST_ASSERT_EQUAL_INT(1, carmen_case_settings_load(&s, TMP));
+    TEST_ASSERT_EQUAL_INT(0, s.investigation_hrs);
+}
+
+static void test_load_investigation_hrs_negative_resets_to_default(void)
+{
+    write_tmp("investigation_hrs = -5\n");
+
+    CarmenCaseSettings s;
+    TEST_ASSERT_EQUAL_INT(1, carmen_case_settings_load(&s, TMP));
+    TEST_ASSERT_EQUAL_INT(2, s.investigation_hrs);
 }
 
 /* ----------------------------------------------- behavioral wiring */
@@ -338,6 +366,9 @@ int main(void)
     RUN_TEST(test_load_visited_history_size);
     RUN_TEST(test_load_visited_history_size_zero_means_full);
     RUN_TEST(test_load_visited_history_size_clamps);
+    RUN_TEST(test_load_investigation_hrs_override);
+    RUN_TEST(test_load_investigation_hrs_zero_is_free);
+    RUN_TEST(test_load_investigation_hrs_negative_resets_to_default);
     RUN_TEST(test_trail_length_override);
     RUN_TEST(test_time_budget_override);
     RUN_TEST(test_active_sites_and_positive_clues_override);

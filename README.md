@@ -51,7 +51,7 @@ Session            -- live play state over a Case
   status           -- PLAYING / WON / LOST_* outcome
 ```
 
-The core exposes read-only queries for rendering (current city, connections, active sites, notebook, evidence, time/moves) and discrete actions for input (`travel`, `investigate`, `issue_warrant`, `arrest`).
+The core exposes read-only queries for rendering (current city, connections, active sites, notebook, evidence, time/moves) and discrete actions for input (`travel`, `investigate`, `issue_warrant`, `arrest`). Both `travel` and `investigate` cost time (`investigate` deducts the configurable `settings.investigation_hrs`, default 2), and `advance_time` lets a front-end deduct arbitrary hours (e.g. sleep time) on its own schedule.
 
 ## Key Design Decisions
 
