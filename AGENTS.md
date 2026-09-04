@@ -53,5 +53,6 @@ Check the `TEST_BINS` variable in the Makefile for the exact paths.
 1. Build cleanly: `make` (and `make lib` if you touched anything that affects the shared library) with no new warnings.
 2. `make test` -- all suites must pass.
 3. For logic changes, also run `make test-sanitize` (ASan + UBSan; GCC/Clang only) to catch memory and UB issues.
-4. If you added/changed library logic, run `make coverage` (requires `lcov`) and skim the report for the files you touched to catch untested branches, especially new error paths.
-5. Update `README.md` / `doc/tier*.md` when you change the public API surface, project layout, or feature status they describe.
+4. Run `make analyze` to catch CWE-tagged null-dereference, buffer-overread, and use-after-free issues via `gcc-16 -fanalyzer` (requires Homebrew `gcc-16`; skip if unavailable). Override the compiler with `make analyze ANALYZER_CC=gcc-16`; add `-Werror` via `make analyze ANALYZE_FLAGS="-fanalyzer -std=c17 -Wall -Wextra -pedantic -DHAVE_CONFIG_H -Werror"` for a hard CI gate. Expected: warnings attributed to `vendor/stb/stb_ds.h` (unchecked `realloc` inside stb_ds internals) that show up when analyzing `src/game_world.c`; these are vendor noise and not actionable. Any warning attributed to a `src/` file is a real finding.
+5. If you added/changed library logic, run `make coverage` (requires `lcov`) and skim the report for the files you touched to catch untested branches, especially new error paths.
+6. Update `README.md` / `doc/tier*.md` when you change the public API surface, project layout, or feature status they describe.

@@ -1,12 +1,13 @@
 #ifndef CARMEN_CONNECTION_H
 #define CARMEN_CONNECTION_H
 
+#include <stdint.h>
 #include "clue.h" /* for CARMEN_MAX_NAME_LEN */
 
 typedef struct {
-    char destination_id[CARMEN_MAX_NAME_LEN];
-    int  distance_km;
-    char transport_mode[CARMEN_MAX_NAME_LEN];
+    char     destination_id[CARMEN_MAX_NAME_LEN];
+    int32_t  distance_km;   /* fixed-width for cross-platform ABI (FFI/WASM) */
+    char     transport_mode[CARMEN_MAX_NAME_LEN];
 } CarmenConnection;
 
 CARMEN_API void carmen_connection_init(CarmenConnection *c,

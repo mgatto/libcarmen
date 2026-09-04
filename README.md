@@ -89,6 +89,8 @@ make lib           # static + shared library
 make test          # run all unit tests
 make test-sanitize # run all unit tests under ASan + UBSan (GCC/Clang only)
 make coverage      # test coverage report (requires lcov)
+make analyze       # SEI CERT / CWE static analysis via gcc-16 -fanalyzer (requires Homebrew gcc-16)
+make analyze 2> doc/analyzer_log.txt  # same, capturing diagnostics (gcc emits them on stderr)
 make package       # self-contained macOS demo tarball (libcarmen-demo-<version>-macos-<arch>.tar.gz)
 ```
 

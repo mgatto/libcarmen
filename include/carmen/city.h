@@ -1,6 +1,7 @@
 #ifndef CARMEN_CITY_H
 #define CARMEN_CITY_H
 
+#include <stdint.h>
 #include "carmen_export.h"
 #include "site.h"
 #include "connection.h"
@@ -21,14 +22,14 @@ typedef struct {
     double           latitude;
     double           longitude;
     CarmenSite       sites[CARMEN_MAX_SITES];
-    int              site_count;
+    int32_t          site_count;        /* fixed-width for cross-platform ABI */
     CarmenConnection connections[CARMEN_MAX_CONNECTIONS];
-    int              connection_count;
+    int32_t          connection_count;  /* fixed-width for cross-platform ABI */
     /* Inbound clue pool: targetless descriptor strings that point to this
        city.  Reused by any source city routing here; a random subset is
        assigned at case generation with target_city_id set at runtime. */
     char             inbound_clues[CARMEN_MAX_INBOUND_CLUES][CARMEN_MAX_CLUE_LEN];
-    int              inbound_clue_count;
+    int32_t          inbound_clue_count; /* fixed-width for cross-platform ABI */
 } CarmenCity;
 
 CARMEN_API void              carmen_city_init(CarmenCity *c, const char *id,
@@ -53,7 +54,11 @@ CARMEN_API int               carmen_city_sites_of_type(
 /* Append a targetless descriptor clue to this city's inbound pool. */
 CARMEN_API void              carmen_city_add_inbound_clue(CarmenCity *c,
                                                           const char *clue_text);
-/* Return a random inbound descriptor string, or NULL if the pool is empty. */
+/* Return a random inbound descriptor string, or NULL if the pool is empty or
+   c is NULL.  The returned pointer is borrowed: it points into c's inbound
+   clue array and remains valid as long as no new inbound clue is added to c
+   (i.e. valid for the city's lifetime when the pool is not being mutated).
+   Callers must not free the pointer. */
 CARMEN_API const char       *carmen_city_random_inbound_clue(
                                   const CarmenCity *c);
 
