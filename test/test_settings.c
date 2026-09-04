@@ -27,7 +27,7 @@ static void write_tmp(const char *contents)
     FILE *f = fopen(TMP, "wb");
     TEST_ASSERT_NOT_NULL(f);
     fputs(contents, f);
-    fclose(f);
+    TEST_ASSERT_EQUAL(0, fclose(f));
 }
 
 /* ------------------------------------------------------- defaults */

@@ -662,7 +662,7 @@ static void test_load_file_oversized_returns_neg9(void)
     FILE *f = fopen(path, "wb");
     TEST_ASSERT_NOT_NULL(f);
     TEST_ASSERT_EQUAL(oversized, fwrite(buf, 1, oversized, f));
-    fclose(f);
+    TEST_ASSERT_EQUAL(0, fclose(f));
     free(buf);
 
     CarmenSession s;
@@ -689,7 +689,7 @@ static void test_load_file_empty_file_returns_neg9(void)
     const char *path = "test_save_empty.tmp.json";
     FILE       *f    = fopen(path, "wb");
     TEST_ASSERT_NOT_NULL(f);
-    fclose(f);
+    TEST_ASSERT_EQUAL(0, fclose(f));
 
     CarmenSession s;
     TEST_ASSERT_EQUAL_INT(-9, carmen_session_load_file(&s, world, path));
@@ -705,7 +705,7 @@ static void test_load_file_propagates_content_error(void)
     TEST_ASSERT_NOT_NULL(f);
     const char *doc = "{\"status\":0}";
     fwrite(doc, 1, strlen(doc), f);
-    fclose(f);
+    TEST_ASSERT_EQUAL(0, fclose(f));
 
     CarmenSession s;
     TEST_ASSERT_EQUAL_INT(-3, carmen_session_load_file(&s, world, path));

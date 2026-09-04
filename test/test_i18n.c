@@ -21,7 +21,7 @@ static void write_tmp(const void *data, size_t len)
     TEST_ASSERT_NOT_NULL(f);
     if (len > 0)
         TEST_ASSERT_EQUAL(len, fwrite(data, 1, len, f));
-    fclose(f);
+    TEST_ASSERT_EQUAL(0, fclose(f));
 }
 
 /* --- carmen_i18n_load_json --- */
