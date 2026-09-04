@@ -11,6 +11,7 @@ reviews:
     # - "src/components/public-utils/**"
     - "src/**"
     - "test/**"
+    - "Makefile"
     # Hard block sensitive directories, docs, data, and config files
     - "!vendor/**"
     - "!dist/**"
