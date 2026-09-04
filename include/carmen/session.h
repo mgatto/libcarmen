@@ -2,6 +2,7 @@
 #define CARMEN_SESSION_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "carmen_export.h"
 #include "case.h"
 
@@ -21,6 +22,11 @@
 #define CARMEN_SCORE_TIME_WEIGHT    10
 #define CARMEN_SCORE_MOVE_PENALTY   50
 
+/* ABI note: CarmenSessionStatus enum values fit in int32 and bindings may
+   read a CarmenSessionStatus struct field as a 32-bit signed integer.  The
+   enumerators are guaranteed to remain: PLAYING=0, WON=1, LOST_TIME=2,
+   LOST_MOVES=3, LOST_WRONG_ARREST=4, LOST_NO_WARRANT=5,
+   NOT_AT_HIDEOUT=6. */
 typedef enum {
   CARMEN_STATUS_PLAYING,
   CARMEN_STATUS_WON,
@@ -32,22 +38,25 @@ typedef enum {
 } CarmenSessionStatus;
 
 typedef struct {
+  /* Caller-supplied pointer; borrowed, not owned by the session.  Bindings
+     should not read this field by offset (pointer width is platform-dependent);
+     re-attach via carmen_session_start() / carmen_session_load(). */
   CarmenWorld *world;
-  CarmenCase active_case;
+  CarmenCase   active_case;
   CarmenCaseSettings settings;
   CarmenSessionStatus status;
-  char current_city_id[CARMEN_MAX_NAME_LEN];
-  char visited[CARMEN_MAX_VISITED][CARMEN_MAX_NAME_LEN];
-  int visited_count;
-  int time_remaining_hrs;
-  int moves;
+  char    current_city_id[CARMEN_MAX_NAME_LEN];
+  char    visited[CARMEN_MAX_VISITED][CARMEN_MAX_NAME_LEN];
+  int32_t visited_count;         /* fixed-width for cross-platform ABI */
+  int32_t time_remaining_hrs;    /* fixed-width for cross-platform ABI */
+  int32_t moves;                 /* fixed-width for cross-platform ABI */
   CarmenClue notebook[CARMEN_MAX_NOTEBOOK];
-  int notebook_count;
-  char evidence[FITNA_MAX_ID_CLUES][CARMEN_MAX_CLUE_LEN];
-  int evidence_count;
-  int warrant_villain_idx;                 /* -1 = no warrant issued */
-  unsigned int hideout_investigated_sites; /* bitmask: bit N = site N already
-                                              gave evidence */
+  int32_t    notebook_count;     /* fixed-width for cross-platform ABI */
+  char    evidence[FITNA_MAX_ID_CLUES][CARMEN_MAX_CLUE_LEN];
+  int32_t evidence_count;        /* fixed-width for cross-platform ABI */
+  int32_t warrant_villain_idx;   /* -1 = no warrant issued; fixed-width for ABI */
+  uint32_t hideout_investigated_sites; /* bitmask: bit N = site N already
+                                          gave evidence; fixed-width for ABI */
 } CarmenSession;
 
 /* Lifecycle */
@@ -70,9 +79,18 @@ CARMEN_API int carmen_session_reset(CarmenSession *s);
 
 /* Queries (read-only, for UI) */
 CARMEN_API CarmenSessionStatus carmen_session_status(const CarmenSession *s);
+
+/* Returns the current city, borrowed from the session's world.  The pointer
+   is valid for the lifetime of the world; it does not change ownership when
+   the player travels.  Returns NULL if s is NULL or the world is unset. */
 CARMEN_API const CarmenCity *
 carmen_session_current_city(const CarmenSession *s);
+
+/* Returns the active case embedded in the session.  The pointer is borrowed:
+   it points into s and remains valid for the lifetime of the session.
+   Returns NULL if s is NULL. */
 CARMEN_API const CarmenCase *carmen_session_case(const CarmenSession *s);
+
 CARMEN_API int carmen_session_time_remaining(const CarmenSession *s);
 CARMEN_API int carmen_session_moves(const CarmenSession *s);
 
@@ -98,15 +116,19 @@ CARMEN_API int carmen_session_moves(const CarmenSession *s);
 CARMEN_API int carmen_session_score(const CarmenSession *s);
 
 /*
- * The villain behind the active case. Returns NULL if s is NULL.
- * Convenience wrapper so clients don't dereference the embedded case.
+ * The villain behind the active case.  Returns a borrowed pointer into the
+ * static FITNA_VILLAINS[] catalog; valid for the program lifetime and never
+ * needs to be freed.  Returns NULL if s is NULL.  Convenience wrapper so
+ * clients don't dereference the embedded case.
  */
 CARMEN_API const FitnaVillain *carmen_session_villain(const CarmenSession *s);
 
 /*
  * Cities-visited history (chronological, includes the origin and any
  * revisits). Capped at the session's visited_history_size setting.
- * carmen_session_visited_at returns NULL for an out-of-range index.
+ * carmen_session_visited_at returns NULL for an out-of-range index or NULL s.
+ * The returned pointer is borrowed: it points into s->visited[] and remains
+ * valid for the lifetime of the session.  Callers must not free the pointer.
  */
 CARMEN_API int         carmen_session_visited_count(const CarmenSession *s);
 CARMEN_API const char *carmen_session_visited_at(const CarmenSession *s,
@@ -114,8 +136,10 @@ CARMEN_API const char *carmen_session_visited_at(const CarmenSession *s,
 
 /*
  * Clue notebook (clues dispensed by carmen_session_investigate, oldest
- * first). carmen_session_notebook_at returns NULL for an out-of-range
- * index.
+ * first).  carmen_session_notebook_at returns NULL for an out-of-range
+ * index or NULL s.  The returned pointer is borrowed: it points into
+ * s->notebook[] and remains valid for the lifetime of the session.
+ * Callers must not free the pointer.
  */
 CARMEN_API int               carmen_session_notebook_count(
                                  const CarmenSession *s);
@@ -123,9 +147,11 @@ CARMEN_API const CarmenClue *carmen_session_notebook_at(
                                  const CarmenSession *s, int index);
 
 /*
- * Villain identity evidence collected at the hideout. Each entry is an
- * i18n key for one id clue. carmen_session_evidence_at returns NULL for
- * an out-of-range index.
+ * Villain identity evidence collected at the hideout.  Each entry is an
+ * i18n key for one id clue.  carmen_session_evidence_at returns NULL for
+ * an out-of-range index or NULL s.  The returned pointer is borrowed: it
+ * points into s->evidence[] and remains valid for the lifetime of the
+ * session.  Callers must not free the pointer.
  */
 CARMEN_API int         carmen_session_evidence_count(const CarmenSession *s);
 CARMEN_API const char *carmen_session_evidence_at(const CarmenSession *s,

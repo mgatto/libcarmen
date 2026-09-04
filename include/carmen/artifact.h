@@ -17,6 +17,9 @@ CARMEN_API extern const CarmenArtifact CARMEN_ARTIFACTS[CARMEN_ARTIFACT_COUNT];
 /*
  * Read-only accessors for the artifact catalog, so clients (UI, bindings)
  * can list artifacts without reaching into the CARMEN_ARTIFACTS[] global.
+ * carmen_artifact_at returns a borrowed pointer into the static
+ * CARMEN_ARTIFACTS[] catalog; valid for the program lifetime and must not
+ * be freed.  Returns NULL for an out-of-range index.
  */
 CARMEN_API int                   carmen_artifact_count(void);
 CARMEN_API const CarmenArtifact *carmen_artifact_at(int index);

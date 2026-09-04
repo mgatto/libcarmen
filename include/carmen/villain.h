@@ -11,7 +11,8 @@ typedef struct {
     const char *id;
     const char *name;
     const char *alias;
-    char        gender;   /* 'M' or 'F' */
+    char        gender;   /* ASCII 'M' or 'F'; use carmen_villain_expand_clue()
+                             for pronoun expansion rather than reading directly */
     const char *id_clues[FITNA_MAX_ID_CLUES];
 } FitnaVillain;
 
@@ -20,6 +21,9 @@ CARMEN_API extern const FitnaVillain FITNA_VILLAINS[FITNA_VILLAIN_COUNT];
 /*
  * Read-only accessors for the villain catalog, so clients (UI, bindings)
  * can list villains without reaching into the FITNA_VILLAINS[] global.
+ * carmen_villain_at returns a borrowed pointer into the static
+ * FITNA_VILLAINS[] catalog; valid for the program lifetime and must not
+ * be freed.  Returns NULL for an out-of-range index.
  */
 CARMEN_API int                 carmen_villain_count(void);
 CARMEN_API const FitnaVillain *carmen_villain_at(int index);

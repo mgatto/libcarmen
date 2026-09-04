@@ -1,12 +1,16 @@
 #ifndef CARMEN_CASE_H
 #define CARMEN_CASE_H
 
+#include <stdint.h>
 #include "carmen_export.h"
 #include "artifact.h"
 #include "villain.h"
 #include "game_world.h"
 #include "i18n.h"
 
+/* ABI note: CarmenDifficulty enum values fit in int32 and bindings may read
+   a CarmenDifficulty struct field as a 32-bit signed integer.  The enumerators
+   are guaranteed to remain EASY=0, MEDIUM=1, HARD=2. */
 typedef enum {
     CARMEN_DIFFICULTY_EASY,
     CARMEN_DIFFICULTY_MEDIUM,
@@ -26,32 +30,35 @@ typedef enum {
  */
 typedef struct {
     CarmenDifficulty difficulty;
-    int  trail_length;            /* 0 = derive from difficulty; else clamped to [2, CARMEN_MAX_TRAIL] */
-    int  time_budget_hrs;         /* 0 = derive from difficulty + trail travel time */
-    int  active_sites_per_city;   /* 0 = derive from difficulty; else clamped to [1, CARMEN_TRAIL_SITES] */
-    int  positive_clues_per_stop; /* 0 = derive from difficulty; else clamped to [1, active_sites_per_city] */
-    int  move_limit;              /* 0 = unlimited */
-    int  visited_history_size;    /* 0 = use full CARMEN_MAX_VISITED; else clamped to [1, CARMEN_MAX_VISITED] */
+    int32_t trail_length;            /* 0 = derive from difficulty; else clamped to [2, CARMEN_MAX_TRAIL]; fixed-width for ABI */
+    int32_t time_budget_hrs;         /* 0 = derive from difficulty + trail travel time; fixed-width for ABI */
+    int32_t active_sites_per_city;   /* 0 = derive from difficulty; else clamped to [1, CARMEN_TRAIL_SITES]; fixed-width for ABI */
+    int32_t positive_clues_per_stop; /* 0 = derive from difficulty; else clamped to [1, active_sites_per_city]; fixed-width for ABI */
+    int32_t move_limit;              /* 0 = unlimited; fixed-width for ABI */
+    int32_t visited_history_size;    /* 0 = use full CARMEN_MAX_VISITED; else clamped to [1, CARMEN_MAX_VISITED]; fixed-width for ABI */
 } CarmenCaseSettings;
 
 typedef struct {
-    int        site_idx;   /* index into city->sites[] */
-    CarmenClue clue;       /* the single assigned clue  */
+    int32_t    site_idx;   /* index into city->sites[]; fixed-width for ABI */
+    CarmenClue clue;       /* the single assigned clue */
 } CarmenTrailSite;
 
 typedef struct {
     CarmenTrailSite sites[CARMEN_TRAIL_SITES];
-    int             site_count; /* actual count (<= CARMEN_TRAIL_SITES) */
+    int32_t         site_count; /* actual count (<= CARMEN_TRAIL_SITES); fixed-width for ABI */
 } CarmenTrailStop;
 
 typedef struct {
+    /* Borrowed pointer into the static FITNA_VILLAINS[] catalog; valid for
+       the program lifetime.  Bindings should use carmen_case_villain() rather
+       than reading this field by offset (pointer width is platform-dependent). */
     const FitnaVillain *villain;
     CarmenArtifact      artifact;
     char   trail[CARMEN_MAX_TRAIL][CARMEN_MAX_NAME_LEN];
-    int    trail_len;
+    int32_t trail_len;        /* fixed-width for ABI */
     char   origin_id[CARMEN_MAX_NAME_LEN];
     char   hideout_id[CARMEN_MAX_NAME_LEN];
-    int    time_budget_hrs;
+    int32_t time_budget_hrs;  /* fixed-width for ABI */
     CarmenDifficulty    difficulty;
     CarmenTrailStop     stops[CARMEN_MAX_TRAIL];
 } CarmenCase;
@@ -80,14 +87,18 @@ CARMEN_API int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
                                     const CarmenCaseSettings *settings);
 
 /*
- * The villain behind this case. Returns NULL if c is NULL. Lets clients
- * read the culprit without dereferencing c->villain directly.
+ * The villain behind this case.  Returns a borrowed pointer into the static
+ * FITNA_VILLAINS[] catalog; valid for the program lifetime and never needs to
+ * be freed.  Returns NULL if c is NULL.  Prefer this accessor over reading
+ * c->villain directly (the embedded pointer's offset is platform-dependent).
  */
 CARMEN_API const FitnaVillain *carmen_case_villain(const CarmenCase *c);
 
 /*
- * The artifact stolen in this case. Returns NULL if c is NULL. Lets
- * clients read the loot without reaching into c->artifact directly.
+ * The artifact stolen in this case.  Returns a borrowed pointer into
+ * c->artifact (embedded in the case struct itself); valid for the lifetime of
+ * the CarmenCase.  Returns NULL if c is NULL.  Prefer this accessor over
+ * reaching into c->artifact directly.
  */
 CARMEN_API const CarmenArtifact *carmen_case_artifact(const CarmenCase *c);
 
