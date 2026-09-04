@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 /*
  * Save/load tests reuse the same small deterministic world as the session
@@ -76,15 +77,63 @@ static void build_test_world(void)
     carmen_city_add_inbound_clue(c, "clue.c.inbound.1");
 }
 
+/* Temp files created by a test are registered here and removed in tearDown, so
+   cleanup runs even when a failed Unity assertion longjmps out of the test. */
+#define TMP_TRACK_MAX 8
+static char tmp_paths[TMP_TRACK_MAX][512];
+static int  tmp_count;
+
+/* Return a tracked path buffer; its contents are remove()d in tearDown. */
+static char *tmp_slot(void)
+{
+    TEST_ASSERT_TRUE(tmp_count < TMP_TRACK_MAX);
+    return tmp_paths[tmp_count++];
+}
+
+/* Create and reserve a uniquely-named empty temp file (it exists on return).
+   Uses C11 exclusive-create ("wbx"), which fails if the name already exists, so
+   the path cannot collide with a file left by (or racing against) another test
+   process.  The path is tracked for cleanup. */
+static const char *unique_tmp_file(void)
+{
+    static unsigned counter = 0;
+    char           *out     = tmp_slot();
+    for (int attempt = 0; attempt < 1000; attempt++) {
+        unsigned tag = (unsigned)time(NULL) + counter++;
+        int      n   = snprintf(out, 512, "carmen_save_test_%08x.tmp", tag);
+        TEST_ASSERT_TRUE(n > 0 && n < 512);
+        FILE *f = fopen(out, "wbx");
+        if (f) {
+            TEST_ASSERT_EQUAL(0, fclose(f));
+            return out;
+        }
+    }
+    TEST_FAIL_MESSAGE("could not create a unique temp file");
+    return out; /* unreachable */
+}
+
+/* Return a uniquely-named path that is guaranteed NOT to exist on return
+   (reserved via exclusive-create, then removed).  Tracked for cleanup. */
+static const char *unique_absent_path(void)
+{
+    const char *p = unique_tmp_file();
+    remove(p);
+    return p;
+}
+
 void setUp(void)
 {
-    det_idx = 0;
+    det_idx   = 0;
+    tmp_count = 0;
     carmen_set_rand(det_rand, NULL);
     build_test_world();
 }
 
 void tearDown(void)
 {
+    for (int i = 0; i < tmp_count; i++)
+        remove(tmp_paths[i]);
+    tmp_count = 0;
     carmen_set_rand(NULL, NULL);
     carmen_world_free(world);
     world = NULL;
@@ -623,14 +672,12 @@ static void test_save_file_and_load_file_round_trip(void)
     CarmenSession s;
     start_easy(&s);
 
-    const char *path = "test_save_roundtrip.tmp.json";
+    const char *path = unique_absent_path();
     TEST_ASSERT_EQUAL_INT(1, carmen_session_save_file(&s, path));
 
     CarmenSession loaded;
     TEST_ASSERT_EQUAL_INT(1, carmen_session_load_file(&loaded, world, path));
     assert_sessions_equal(&s, &loaded);
-
-    remove(path);
 }
 
 static void test_save_file_null_args(void)
@@ -643,18 +690,26 @@ static void test_save_file_null_args(void)
 
 static void test_save_file_unwritable_path_returns_neg3(void)
 {
-    /* fopen("no_such_dir/x.json", "wb") fails because the directory does not
-       exist, exercising the -3 branch in carmen_session_save_file. */
+    /* Build a path whose parent component is a regular file we just created, so
+       fopen(path, "wb") cannot succeed (ENOTDIR), deterministically exercising
+       the -3 branch in carmen_session_save_file without depending on the
+       absence of a fixed directory name. */
     CarmenSession s;
     start_easy(&s);
-    TEST_ASSERT_EQUAL_INT(-3, carmen_session_save_file(&s, "carmen_no_such_dir/x.json"));
+
+    const char *parent = unique_tmp_file();
+    char        path[600];
+    int         n = snprintf(path, sizeof path, "%s/x.json", parent);
+    TEST_ASSERT_TRUE(n > 0 && (size_t)n < sizeof path);
+
+    TEST_ASSERT_EQUAL_INT(-3, carmen_session_save_file(&s, path));
 }
 
 static void test_load_file_oversized_returns_neg9(void)
 {
     /* Write a file one byte beyond CARMEN_SAVE_MAX_FILE_SIZE.  The size guard
        fires before any JSON parsing, so content doesn't matter. */
-    const char *path     = "carmen_save_oversized.tmp.json";
+    const char  *path      = unique_absent_path();
     const size_t oversized = CARMEN_SAVE_MAX_FILE_SIZE + 1;
     char        *buf       = malloc(oversized);
     TEST_ASSERT_NOT_NULL(buf);
@@ -667,7 +722,6 @@ static void test_load_file_oversized_returns_neg9(void)
 
     CarmenSession s;
     TEST_ASSERT_EQUAL_INT(-9, carmen_session_load_file(&s, world, path));
-    remove(path);
 }
 
 static void test_load_file_null_args_returns_neg8(void)
@@ -681,26 +735,25 @@ static void test_load_file_null_args_returns_neg8(void)
 static void test_load_file_missing_file_returns_neg8(void)
 {
     CarmenSession s;
-    TEST_ASSERT_EQUAL_INT(-8, carmen_session_load_file(&s, world, "definitely_not_here.json"));
+    TEST_ASSERT_EQUAL_INT(-8, carmen_session_load_file(&s, world, unique_absent_path()));
 }
 
 static void test_load_file_empty_file_returns_neg9(void)
 {
-    const char *path = "test_save_empty.tmp.json";
+    const char *path = unique_absent_path();
     FILE       *f    = fopen(path, "wb");
     TEST_ASSERT_NOT_NULL(f);
     TEST_ASSERT_EQUAL(0, fclose(f));
 
     CarmenSession s;
     TEST_ASSERT_EQUAL_INT(-9, carmen_session_load_file(&s, world, path));
-    remove(path);
 }
 
 static void test_load_file_propagates_content_error(void)
 {
     /* A well-formed file whose contents fail validation returns the content
        error code (-3 here), not a file-level code. */
-    const char *path = "test_save_badcontent.tmp.json";
+    const char *path = unique_absent_path();
     FILE       *f    = fopen(path, "wb");
     TEST_ASSERT_NOT_NULL(f);
     const char *doc = "{\"status\":0}";
@@ -709,7 +762,6 @@ static void test_load_file_propagates_content_error(void)
 
     CarmenSession s;
     TEST_ASSERT_EQUAL_INT(-3, carmen_session_load_file(&s, world, path));
-    remove(path);
 }
 
 int main(void)
