@@ -1,5 +1,7 @@
 # libcarmen
 
+![Project Hero Image](libcarmen.png)
+
 Portable C17 core engine for Carmen Sandiego-style world exploration games, starting with an [Islamicate world](#built-in-world) and extensible to other cultural realms — zero external deps, clean C ABI, FFI- and WebAssembly-ready.
 
 ## Project Goal
