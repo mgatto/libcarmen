@@ -631,7 +631,7 @@ ifeq ($(UNAME_S),Darwin)
 	    && echo "ok: install_name = @rpath/$(SHARED_SONAME)" \
 	    || { echo "FAIL: install_name != @rpath/$(SHARED_SONAME)"; exit 1; }
 else
-	@readelf -d $(SHARED_LIB) | grep -q "$(SHARED_SONAME)" \
+	@readelf -d $(SHARED_LIB) | grep -q "\[$(SHARED_SONAME)\]" \
 	    && echo "ok: soname = $(SHARED_SONAME)" \
 	    || { echo "FAIL: soname != $(SHARED_SONAME)"; exit 1; }
 endif
