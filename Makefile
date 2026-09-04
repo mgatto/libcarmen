@@ -247,7 +247,7 @@ distclean: clean
 
 PREFIX ?= /usr/local
 
-$(BUILD_DIR)/carmen.pc: carmen.pc.in | $(BUILD_DIR)
+$(BUILD_DIR)/carmen.pc: carmen.pc.in VERSION | $(BUILD_DIR)
 	sed 's|@PREFIX@|$(PREFIX)|g; s|@VERSION@|$(VERSION)|g' $< > $@
 
 # --------------------------------------------------------------------------- #
