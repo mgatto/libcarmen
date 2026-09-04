@@ -96,13 +96,23 @@ make analyze 2> doc/analyzer_log.txt  # same, capturing diagnostics (gcc emits t
 make package       # self-contained macOS demo tarball (libcarmen-demo-<version>-macos-<arch>.tar.gz)
 ```
 
-Windows demo zip (MSVC/CMake; produced in CI and on version tags). FriBidi comes from vcpkg (`x64-windows` is a dynamic triplet, so the zip includes `fribidi*.dll` next to `carmen.dll`):
+Demo archives (`demo_package`; produced in CI and on version tags):
+
+- **Windows zip** (`libcarmen-demo-<version>-windows-x64.zip`). MSVC; FriBidi comes from vcpkg (`x64-windows` is a dynamic triplet, so the zip includes `fribidi*.dll` next to `carmen.dll`):
 
 ```sh
 vcpkg install fribidi:x64-windows
 cmake -S . -B build -A x64 -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
 cmake --build build --config Release --target demo_package
 # -> build/libcarmen-demo-<version>-windows-x64.zip
+```
+
+- **macOS / Linux tarballs** (`libcarmen-demo-<version>-{macos,linux}-<arch>.tar.gz`). A Release shared build on the native platform (no cross-compilation), so the archive ships the `libcarmen` shared library next to `trail_demo`:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+cmake --build build --target demo_package
+# -> build/libcarmen-demo-<version>-<os>-<arch>.tar.gz
 ```
 
 Or with CMake (also how the WebAssembly and Windows/MSVC builds are configured -- see [Building](#building) below and `.github/workflows/ci.yml`):
@@ -136,7 +146,7 @@ cc -std=c17 -Wall -Wextra -pedantic -O2 \
 
 ## Running
 
-Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`) and, from `make package`, the macOS tarball. Unpack, `cd` into the folder, and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS). Keep the shipped libraries (`carmen.dll` and `fribidi*.dll` on Windows, `libcarmen.dylib` on macOS) next to the demo.
+Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`) and the macOS/Linux tarballs (`libcarmen-demo-<version>-{macos,linux}-<arch>.tar.gz`). Unpack, `cd` into the folder, and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS/Linux). Keep the shipped libraries (`carmen.dll` and `fribidi*.dll` on Windows, the `libcarmen` shared library on macOS/Linux) next to the demo.
 
 From a source checkout, run from the repository root -- the demo loads its locale file via the relative path `locales/<locale>.json`:
 

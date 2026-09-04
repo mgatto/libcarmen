@@ -65,3 +65,67 @@ jobs:
             build-cmake-package/SHA256SUMS
           fail_on_unmatched_files: true
           generate_release_notes: true
+
+  # macOS and Linux demo tarballs. Built natively on each runner (no
+  # cross-compilation): the demo links the shared lib via rpath, so the
+  # archive ships it (and its soname symlink on Unix) next to trail_demo.
+  # `make package` is the local macOS equivalent; these matrices are what
+  # feed the tagged GitHub Release.
+  unix-demo:
+    name: ${{ matrix.os }} demo tarball
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Zip name uses PROJECT_VERSION from CMakeLists.txt; the Release is
+      # named from the git tag. Fail early if they disagree (tag vX.Y.Z
+      # must match project(carmen VERSION X.Y.Z)).
+      - name: Check tag matches CMake PROJECT_VERSION
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          if ($tag -notmatch '^v(\d+\.\d+\.\d+)(?:-.*)?$') {
+            throw "Tag '$tag' is not vX.Y.Z or vX.Y.Z-<prerelease>"
+          }
+          $fromTag = $Matches[1]
+          $cmake = Get-Content -Raw CMakeLists.txt
+          if ($cmake -notmatch 'project\(\s*carmen[\s\S]*?VERSION\s+(\d+\.\d+\.\d+)') {
+            throw "Could not read project VERSION from CMakeLists.txt"
+          }
+          $fromCMake = $Matches[1]
+          if ($fromTag -ne $fromCMake) {
+            throw "Tag $tag does not match CMake project VERSION $fromCMake -- tag v$fromCMake or v$fromCMake-<prerelease>"
+          }
+
+      # Release shared build so the tarball ships carmen's shared library (and
+      # its soname symlink) next to trail_demo. FriBidi is compiled from the
+      # vendored tree on Unix, so there is no vcpkg step here.
+      - name: Configure and package (Release shared)
+        run: |
+          cmake -S . -B build-cmake-package -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+          cmake --build build-cmake-package --target demo_package -j
+
+      - name: SHA256 checksum
+        run: |
+          archive=$(ls build-cmake-package/libcarmen-demo-*.tar.gz)
+          if [ -z "$archive" ]; then
+            echo "demo tarball not found"
+            exit 1
+          fi
+          name=$(basename "$archive")
+          printf '%s  %s\n' "$(shasum -a 256 "$archive" | cut -d' ' -f1)" "$name" \
+            > "build-cmake-package/$name.sha256"
+          cat "build-cmake-package/$name.sha256"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build-cmake-package/libcarmen-demo-*.tar.gz
+            build-cmake-package/*.sha256
+          fail_on_unmatched_files: true
+          generate_release_notes: true

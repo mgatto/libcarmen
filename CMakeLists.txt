@@ -332,14 +332,18 @@ if(CARMEN_BUILD_EXAMPLES)
     )
 
     # ----------------------------------------------------------------------- #
-    #  Windows demo zip
+    #  Demo release package (demo_package)
     #
-    #  Counterpart to `make package` on macOS. Wipes dist/ first so a stale
-    #  or edited bundle cannot leak in, restages a self-named folder, and
-    #  zips it with cmake -E tar (no extra tooling). Windows-only so the
-    #  artifact name never collides with the macOS tarball.
+    #  Self-contained runnable bundle built from a Release shared build and
+    #  archived next to the binary dir: a Windows .zip, or a macOS/Linux
+    #  .tar.gz (the `make package` counterpart, run natively in CI/release so
+    #  no cross-compilation is needed). Wipes dist/ first so a stale or edited
+    #  bundle cannot leak in, restages a self-named folder, and archives it
+    #  with cmake -E tar (no extra tooling).
     # ----------------------------------------------------------------------- #
+
     if(WIN32)
+        set(CARMEN_DEMO_OS windows)
         string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
         if(_carmen_proc MATCHES "^(amd64|x86_64|x64)$")
             set(CARMEN_DEMO_ARCH x64)
@@ -348,20 +352,47 @@ if(CARMEN_BUILD_EXAMPLES)
         else()
             set(CARMEN_DEMO_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
         endif()
-
-        set(CARMEN_DEMO_PKG_NAME
-            "libcarmen-demo-${PROJECT_VERSION}-windows-${CARMEN_DEMO_ARCH}")
-        set(CARMEN_DEMO_PKG_DIR
-            "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}")
-        set(CARMEN_DEMO_ZIP
-            "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}.zip")
-
-        if(NOT BUILD_SHARED_LIBS)
-            message(WARNING
-                "demo_package is intended for -DBUILD_SHARED_LIBS=ON so the zip contains carmen.dll next to trail_demo.exe")
+    elseif(APPLE)
+        set(CARMEN_DEMO_OS macos)
+        string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
+        if(_carmen_proc MATCHES "^(amd64|x86_64)$")
+            set(CARMEN_DEMO_ARCH x86_64)
+        elseif(_carmen_proc MATCHES "^(arm64|aarch64)$")
+            set(CARMEN_DEMO_ARCH arm64)
+        else()
+            set(CARMEN_DEMO_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
         endif()
+    else()
+        set(CARMEN_DEMO_OS linux)
+        string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
+        if(_carmen_proc MATCHES "^(amd64|x86_64)$")
+            set(CARMEN_DEMO_ARCH x86_64)
+        elseif(_carmen_proc MATCHES "^(arm64|aarch64)$")
+            set(CARMEN_DEMO_ARCH aarch64)
+        else()
+            set(CARMEN_DEMO_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+        endif()
+    endif()
 
-        set(CARMEN_DEMO_README "${CMAKE_BINARY_DIR}/demo_README.txt")
+    set(CARMEN_DEMO_PKG_NAME
+        "libcarmen-demo-${PROJECT_VERSION}-${CARMEN_DEMO_OS}-${CARMEN_DEMO_ARCH}")
+    set(CARMEN_DEMO_PKG_DIR
+        "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}")
+    if(WIN32)
+        set(CARMEN_DEMO_ARCHIVE
+            "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}.zip")
+    else()
+        set(CARMEN_DEMO_ARCHIVE
+            "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}.tar.gz")
+    endif()
+
+    if(NOT BUILD_SHARED_LIBS)
+        message(WARNING
+            "demo_package is intended for -DBUILD_SHARED_LIBS=ON so the archive ships the shared library next to the demo")
+    endif()
+
+    set(CARMEN_DEMO_README "${CMAKE_BINARY_DIR}/demo_README.txt")
+    if(WIN32)
         file(WRITE "${CARMEN_DEMO_README}"
 "libcarmen demo (${PROJECT_VERSION}, windows ${CARMEN_DEMO_ARCH})
 
@@ -374,50 +405,80 @@ The demo loads locales/en.json relative to the current directory.
 If Windows reports a missing VCRUNTIME or MSVCP DLL, install
 the Microsoft Visual C++ Redistributable for 64-bit Windows.
 ")
+    else()
+        file(WRITE "${CARMEN_DEMO_README}"
+"libcarmen demo (${PROJECT_VERSION}, ${CARMEN_DEMO_OS} ${CARMEN_DEMO_ARCH})
 
-        set(_demo_pkg_commands
-            COMMAND ${CMAKE_COMMAND} -E remove_directory "${CARMEN_DIST_DIR}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${CARMEN_DIST_DIR}/locales"
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    $<TARGET_FILE:trail_demo> "${CARMEN_DIST_DIR}/"
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    $<TARGET_FILE:carmen> "${CARMEN_DIST_DIR}/"
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${CMAKE_SOURCE_DIR}/locales" "${CARMEN_DIST_DIR}/locales"
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    "${CMAKE_SOURCE_DIR}/examples/settings.default.toml"
-                    "${CARMEN_DIST_DIR}/settings.toml"
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    "${CMAKE_SOURCE_DIR}/LICENSE" "${CARMEN_DIST_DIR}/"
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    "${CMAKE_SOURCE_DIR}/vendor/fribidi/COPYING"
-                    "${CARMEN_DIST_DIR}/COPYING.fribidi"
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    "${CARMEN_DEMO_README}" "${CARMEN_DIST_DIR}/README.txt"
-        )
-        if(CARMEN_FRIBIDI_DLL)
-            list(APPEND _demo_pkg_commands
-                COMMAND ${CMAKE_COMMAND} -E copy
-                        "${CARMEN_FRIBIDI_DLL}" "${CARMEN_DIST_DIR}/"
-            )
-        endif()
+Run from inside this folder:
+  ./trail_demo en settings.toml
+
+Keep the shipped carmen library next to trail_demo (the demo loads
+locales/<locale>.json relative to the current directory).
+")
+    endif()
+
+    set(_demo_pkg_commands
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CARMEN_DIST_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CARMEN_DIST_DIR}/locales"
+        COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE:trail_demo> "${CARMEN_DIST_DIR}/"
+        COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE:carmen> "${CARMEN_DIST_DIR}/"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_SOURCE_DIR}/locales" "${CARMEN_DIST_DIR}/locales"
+        COMMAND ${CMAKE_COMMAND} -E copy
+                "${CMAKE_SOURCE_DIR}/examples/settings.default.toml"
+                "${CARMEN_DIST_DIR}/settings.toml"
+        COMMAND ${CMAKE_COMMAND} -E copy
+                "${CMAKE_SOURCE_DIR}/LICENSE" "${CARMEN_DIST_DIR}/"
+        COMMAND ${CMAKE_COMMAND} -E copy
+                "${CMAKE_SOURCE_DIR}/vendor/fribidi/COPYING"
+                "${CARMEN_DIST_DIR}/COPYING.fribidi"
+        COMMAND ${CMAKE_COMMAND} -E copy
+                "${CARMEN_DEMO_README}" "${CARMEN_DIST_DIR}/README.txt"
+    )
+    # On Unix shared builds the demo references the soname (libcarmen.0.dylib
+    # / libcarmen.so.0), so ship that symlink alongside the full versioned
+    # file copied above -- mirroring the `dist` target.
+    if(BUILD_SHARED_LIBS AND NOT WIN32)
         list(APPEND _demo_pkg_commands
-            COMMAND ${CMAKE_COMMAND} -E remove_directory "${CARMEN_DEMO_PKG_DIR}"
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${CARMEN_DIST_DIR}" "${CARMEN_DEMO_PKG_DIR}"
-            COMMAND ${CMAKE_COMMAND} -E tar cf "${CARMEN_DEMO_ZIP}"
-                    --format=zip -- "${CARMEN_DEMO_PKG_NAME}"
-            COMMAND ${CMAKE_COMMAND} -E echo "Package ready: ${CARMEN_DEMO_ZIP}"
-        )
-
-        add_custom_target(demo_package
-            ${_demo_pkg_commands}
-            DEPENDS dist trail_demo carmen
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Packaging Windows demo zip ${CARMEN_DEMO_PKG_NAME}.zip"
-            VERBATIM
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    $<TARGET_SONAME_FILE:carmen> "${CARMEN_DIST_DIR}/"
         )
     endif()
+    if(CARMEN_FRIBIDI_DLL)
+        list(APPEND _demo_pkg_commands
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    "${CARMEN_FRIBIDI_DLL}" "${CARMEN_DIST_DIR}/"
+        )
+    endif()
+    list(APPEND _demo_pkg_commands
+        COMMAND ${CMAKE_COMMAND} -E remove_directory "${CARMEN_DEMO_PKG_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CARMEN_DIST_DIR}" "${CARMEN_DEMO_PKG_DIR}"
+    )
+    if(WIN32)
+        list(APPEND _demo_pkg_commands
+            COMMAND ${CMAKE_COMMAND} -E tar cf "${CARMEN_DEMO_ARCHIVE}"
+                    --format=zip -- "${CARMEN_DEMO_PKG_NAME}"
+        )
+    else()
+        list(APPEND _demo_pkg_commands
+            COMMAND ${CMAKE_COMMAND} -E tar czf "${CARMEN_DEMO_ARCHIVE}"
+                    -- "${CARMEN_DEMO_PKG_NAME}"
+        )
+    endif()
+    list(APPEND _demo_pkg_commands
+        COMMAND ${CMAKE_COMMAND} -E echo "Package ready: ${CARMEN_DEMO_ARCHIVE}"
+    )
+
+    add_custom_target(demo_package
+        ${_demo_pkg_commands}
+        DEPENDS dist trail_demo carmen
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        COMMENT "Packaging ${CARMEN_DEMO_OS} demo archive ${CARMEN_DEMO_PKG_NAME}"
+        VERBATIM
+    )
 endif()
 
 # --------------------------------------------------------------------------- #
