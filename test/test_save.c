@@ -641,6 +641,35 @@ static void test_save_file_null_args(void)
     TEST_ASSERT_EQUAL_INT(-1, carmen_session_save_file(&s, NULL));
 }
 
+static void test_save_file_unwritable_path_returns_neg3(void)
+{
+    /* fopen("no_such_dir/x.json", "wb") fails because the directory does not
+       exist, exercising the -3 branch in carmen_session_save_file. */
+    CarmenSession s;
+    start_easy(&s);
+    TEST_ASSERT_EQUAL_INT(-3, carmen_session_save_file(&s, "carmen_no_such_dir/x.json"));
+}
+
+static void test_load_file_oversized_returns_neg9(void)
+{
+    /* Write a file one byte beyond CARMEN_SAVE_MAX_FILE_SIZE.  The size guard
+       fires before any JSON parsing, so content doesn't matter. */
+    const char *path     = "carmen_save_oversized.tmp.json";
+    const size_t oversized = CARMEN_SAVE_MAX_FILE_SIZE + 1;
+    char        *buf       = malloc(oversized);
+    TEST_ASSERT_NOT_NULL(buf);
+    memset(buf, ' ', oversized);
+    FILE *f = fopen(path, "wb");
+    TEST_ASSERT_NOT_NULL(f);
+    TEST_ASSERT_EQUAL(oversized, fwrite(buf, 1, oversized, f));
+    fclose(f);
+    free(buf);
+
+    CarmenSession s;
+    TEST_ASSERT_EQUAL_INT(-9, carmen_session_load_file(&s, world, path));
+    remove(path);
+}
+
 static void test_load_file_null_args_returns_neg8(void)
 {
     CarmenSession s;
@@ -724,9 +753,11 @@ int main(void)
 
     RUN_TEST(test_save_file_and_load_file_round_trip);
     RUN_TEST(test_save_file_null_args);
+    RUN_TEST(test_save_file_unwritable_path_returns_neg3);
     RUN_TEST(test_load_file_null_args_returns_neg8);
     RUN_TEST(test_load_file_missing_file_returns_neg8);
     RUN_TEST(test_load_file_empty_file_returns_neg9);
+    RUN_TEST(test_load_file_oversized_returns_neg9);
     RUN_TEST(test_load_file_propagates_content_error);
 
     return UNITY_END();

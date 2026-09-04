@@ -24,6 +24,44 @@ static void test_utf8_copy_null_src(void)
     TEST_ASSERT_EQUAL_STRING("", buf);
 }
 
+static void test_utf8_copy_null_dst(void)
+{
+    /* NULL dst must not crash and must return 0. */
+    TEST_ASSERT_EQUAL_INT(0, (int)carmen_utf8_copy(NULL, 16, "hello"));
+}
+
+static void test_utf8_copy_zero_size(void)
+{
+    /* dst_size == 0: guard fires before any write; buffer is untouched. */
+    char buf[4] = "xyz";
+    TEST_ASSERT_EQUAL_INT(0, (int)carmen_utf8_copy(buf, 0, "hello"));
+    /* Buffer content must be untouched because nothing was written. */
+    TEST_ASSERT_EQUAL_UINT8('x', (unsigned char)buf[0]);
+}
+
+static void test_utf8_copy_truncates_ascii(void)
+{
+    /* buf holds at most 2 visible bytes + NUL. */
+    char   buf[3];
+    size_t n = carmen_utf8_copy(buf, sizeof buf, "hello");
+    TEST_ASSERT_EQUAL_STRING("he", buf);
+    TEST_ASSERT_EQUAL_INT(2, (int)n);
+}
+
+static void test_utf8_copy_truncates_multibyte_codepoint(void)
+{
+    /* src: ASCII 'a' followed by U+0627 ARABIC LETTER ALEF (2 bytes: 0xD8 0xA7).
+       With dst_size == 3 the copy fits 'a' plus the first byte of the 2-byte
+       codepoint.  The implementation must strip that incomplete trailing
+       codepoint so the result is the valid UTF-8 string "a" (1 byte). */
+    const char *src = "a\xD8\xA7";  /* 3 bytes of payload */
+    char        buf[3];              /* room for 2 payload bytes + NUL */
+    size_t      n = carmen_utf8_copy(buf, sizeof buf, src);
+    /* The split codepoint must be removed -- result is "a", not "a\xD8". */
+    TEST_ASSERT_EQUAL_STRING("a", buf);
+    TEST_ASSERT_EQUAL_INT(1, (int)n);
+}
+
 /* --- carmen_utf8_bidi_visual --- */
 
 static void test_bidi_ascii_passthrough(void)
@@ -79,6 +117,10 @@ int main(void)
     UNITY_BEGIN();
     RUN_TEST(test_utf8_copy_basic);
     RUN_TEST(test_utf8_copy_null_src);
+    RUN_TEST(test_utf8_copy_null_dst);
+    RUN_TEST(test_utf8_copy_zero_size);
+    RUN_TEST(test_utf8_copy_truncates_ascii);
+    RUN_TEST(test_utf8_copy_truncates_multibyte_codepoint);
     RUN_TEST(test_bidi_ascii_passthrough);
     RUN_TEST(test_bidi_null_src);
     RUN_TEST(test_bidi_null_dst);
