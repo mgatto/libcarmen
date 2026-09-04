@@ -20,11 +20,94 @@ static int valid_locale_id(const char *id)
     return id[0] != '\0';
 }
 
+/* How Arabic/RTL text is emitted to the terminal.
+ *
+ * BIDI_LOGICAL: print the raw logical-order UTF-8 and let the terminal do its
+ *   own bidi reordering and Arabic shaping (correct for Terminal.app, VTE, ...).
+ * BIDI_VISUAL:  pre-reorder to visual order and shape to presentation forms via
+ *   carmen_utf8_bidi_visual, for terminals that do NOT do their own bidi
+ *   (xterm.js/VSCode, iTerm2, legacy Windows consoles).
+ *
+ * There is no portable way to query a terminal for bidi support, so the mode is
+ * chosen by --bidi / CARMEN_BIDI / an env heuristic; see resolve_bidi_mode. */
+typedef enum { BIDI_LOGICAL, BIDI_VISUAL } BidiMode;
+
+static BidiMode g_bidi_mode = BIDI_LOGICAL;
+
+/* Map a mode string. Returns 1 on a recognized value (LOGICAL/VISUAL written to
+ * *out; "auto" sets *is_auto). Returns 0 for NULL/unknown values. */
+static int parse_bidi_mode(const char *s, BidiMode *out, int *is_auto)
+{
+    *is_auto = 0;
+    if (!s) return 0;
+    if (strcmp(s, "logical") == 0) {
+        *out = BIDI_LOGICAL;
+        return 1;
+    }
+    if (strcmp(s, "visual") == 0) {
+        *out = BIDI_VISUAL;
+        return 1;
+    }
+    if (strcmp(s, "auto") == 0) {
+        *is_auto = 1;
+        return 1;
+    }
+    return 0;
+}
+
+/* Best-effort guess from the environment. There is no capability query for bidi,
+ * so we key on emulator-specific variables and default to logical (the
+ * Unicode-correct byte stream, safe for pipes/copy-paste). */
+static BidiMode detect_bidi_auto(void)
+{
+    const char *term_program = getenv("TERM_PROGRAM");
+    if (term_program) {
+        if (strcmp(term_program, "Apple_Terminal") == 0) return BIDI_LOGICAL;
+        if (strcmp(term_program, "vscode") == 0) return BIDI_VISUAL;
+        if (strcmp(term_program, "iTerm.app") == 0) return BIDI_VISUAL;
+    }
+    if (getenv("WT_SESSION")) return BIDI_VISUAL;
+    if (getenv("VTE_VERSION")) return BIDI_LOGICAL;
+#ifdef _WIN32
+    return BIDI_VISUAL;
+#else
+    return BIDI_LOGICAL;
+#endif
+}
+
+/* Resolve the effective mode: --bidi=<mode> flag beats the CARMEN_BIDI env var,
+ * which beats the auto heuristic; "auto" (or an invalid value, with a warning)
+ * runs the heuristic. cli_value is the --bidi argument if present, else NULL. */
+static BidiMode resolve_bidi_mode(const char *cli_value)
+{
+    BidiMode mode    = BIDI_LOGICAL;
+    int      is_auto = 0;
+
+    if (cli_value) {
+        if (parse_bidi_mode(cli_value, &mode, &is_auto)) return is_auto ? detect_bidi_auto() : mode;
+        fprintf(stderr, "Invalid --bidi value: %s (using auto)\n", cli_value);
+        return detect_bidi_auto();
+    }
+
+    const char *env = getenv("CARMEN_BIDI");
+    if (env && env[0]) {
+        if (parse_bidi_mode(env, &mode, &is_auto)) return is_auto ? detect_bidi_auto() : mode;
+        fprintf(stderr, "Invalid CARMEN_BIDI value: %s (using auto)\n", env);
+        return detect_bidi_auto();
+    }
+
+    return detect_bidi_auto();
+}
+
 static void print_bidi(const char *s)
 {
-    char visual[EXPAND_BUF];
-    carmen_utf8_bidi_visual(s, visual, sizeof visual);
-    printf("%s", visual);
+    if (g_bidi_mode == BIDI_VISUAL) {
+        char visual[EXPAND_BUF];
+        carmen_utf8_bidi_visual(s, visual, sizeof visual);
+        printf("%s", visual);
+    } else {
+        printf("%s", s);
+    }
 }
 
 static void print_city_name(const CarmenI18n *i18n, const CarmenCity *c)
@@ -120,10 +203,60 @@ static void read_path_with_default(char *buf, int size, const char *def)
 
 /* ── Main ─────────────────────────────────────────────────────────── */
 
+static void print_usage(const char *prog)
+{
+    printf("Usage: %s [locale] [settings.toml] [--bidi=logical|visual|auto]\n\n", prog);
+    printf("Positional arguments:\n");
+    printf("  locale          locale id (default: en); loads locales/<locale>.json\n");
+    printf("  settings.toml   path to a game settings file (default: built-in defaults)\n\n");
+    printf("Options:\n");
+    printf("  --bidi=MODE     Arabic/RTL rendering mode (default: auto):\n");
+    printf("                    logical  emit raw logical order; the terminal reorders\n");
+    printf("                             and shapes (Terminal.app, GNOME Terminal/VTE)\n");
+    printf("                    visual   pre-reorder and shape for terminals that don't\n");
+    printf("                             (VSCode, iTerm2, legacy Windows consoles)\n");
+    printf("                    auto     guess from the environment (see below)\n");
+    printf("  --help, -h      show this help and exit\n\n");
+    printf("The CARMEN_BIDI environment variable accepts the same values and is used\n");
+    printf("when --bidi is absent. Precedence: --bidi > CARMEN_BIDI > auto heuristic.\n");
+}
+
 int main(int argc, char *argv[])
 {
-    const char *locale        = (argc > 1) ? argv[1] : "en";
-    const char *settings_path = (argc > 2) ? argv[2] : NULL;
+    const char *locale        = NULL;
+    const char *settings_path = NULL;
+    const char *bidi_value    = NULL;
+    int         positional    = 0;
+    for (int i = 1; i < argc; i++) {
+        const char *arg = argv[i];
+        if (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0) {
+            print_usage(argv[0]);
+            return 0;
+        }
+        if (strncmp(arg, "--bidi=", 7) == 0) {
+            bidi_value = arg + 7;
+            continue;
+        }
+        if (arg[0] == '-' && arg[1] != '\0') {
+            fprintf(stderr, "Unknown option: %s\n", arg);
+            print_usage(argv[0]);
+            return 1;
+        }
+        if (positional == 0)
+            locale = arg;
+        else if (positional == 1)
+            settings_path = arg;
+        else {
+            fprintf(stderr, "Unexpected argument: %s\n", arg);
+            print_usage(argv[0]);
+            return 1;
+        }
+        positional++;
+    }
+    if (!locale) locale = "en";
+
+    g_bidi_mode = resolve_bidi_mode(bidi_value);
+
     if (!valid_locale_id(locale)) {
         fprintf(stderr, "Invalid locale id: %s\n", locale);
         return 1;

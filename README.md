@@ -142,7 +142,16 @@ From a source checkout, run from the repository root -- the demo loads its local
 ./build/trail_demo              # default locale "en"
 ./build/trail_demo es           # use locales/es.json
 ./build/trail_demo en case.toml # optional case settings file
+./build/trail_demo --help       # full usage, including --bidi
 ```
+
+### Arabic / RTL rendering (`--bidi`)
+
+Terminals disagree on whether they reorder and shape right-to-left (Arabic) text themselves, and there is no portable way to query that capability. The demo therefore picks a rendering mode via `--bidi=logical|visual|auto` (long form only), or the `CARMEN_BIDI` environment variable, with precedence `--bidi` > `CARMEN_BIDI` > auto heuristic (default `auto`):
+
+- `logical` -- emit raw logical-order UTF-8 and let the terminal reorder/shape it. Correct for **macOS Terminal.app** and **GNOME Terminal / VTE**.
+- `visual` -- pre-reorder and shape to presentation forms (via `carmen_utf8_bidi_visual`). Correct for terminals that do *not* do their own bidi: **VSCode's integrated terminal (xterm.js)**, **iTerm2**, and **legacy Windows consoles**.
+- `auto` -- guess from the environment (`TERM_PROGRAM`, `WT_SESSION`, `VTE_VERSION`, platform). If Arabic city names look reversed or disconnected, override explicitly, e.g. `./build/trail_demo en --bidi=visual` or `CARMEN_BIDI=logical ./build/trail_demo`.
 
 At each city you can investigate a numbered site or enter a letter command: `(t)ravel`, `(w)arrant`, `(a)rrest`, `(s)ave` / `(l)oad` a game to/from a JSON file, or `(r)estart` with a fresh case.
 
