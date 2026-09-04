@@ -1,5 +1,4 @@
 #include "carmen/carmen.h"
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -358,7 +357,7 @@ int main(int argc, char *argv[])
                     snprintf(city_part, sizeof city_part, "%s (%s)", name, local);
                 else
                     snprintf(city_part, sizeof city_part, "%s", name);
-                snprintf(line, sizeof line, "    - %s (%s, %d km)", city_part,
+                snprintf(line, sizeof line, "    [%d] %s (%s, %d km)", c + 1, city_part,
                          carmen_i18n_get(i18n, conns[c]->transport_mode), conns[c]->distance_km);
                 print_bidi(line);
                 printf("\n");
@@ -378,13 +377,19 @@ int main(int argc, char *argv[])
         if (!read_line(input, sizeof input)) break;
 
         if (input[0] == 't' || input[0] == 'T') {
-            printf("  %s ", carmen_i18n_get(i18n, "ui.travel_prompt"));
-            char dest_buf[CARMEN_MAX_NAME_LEN];
-            if (!read_line(dest_buf, sizeof dest_buf)) break;
-            for (char *p = dest_buf; *p; p++)
-                *p = (char)tolower((unsigned char)*p);
+            if (nconns == 0) {
+                printf("  %s\n", carmen_i18n_get(i18n, "ui.travel_fail"));
+                continue;
+            }
+            printf("  ");
+            printf(carmen_i18n_get(i18n, "ui.travel_prompt"), nconns);
+            int choice = read_int();
+            if (choice < 1 || choice > nconns) {
+                printf("  %s\n", carmen_i18n_get(i18n, "ui.travel_cancel"));
+                continue;
+            }
 
-            int result = carmen_session_travel(&session, dest_buf);
+            int result = carmen_session_travel(&session, conns[choice - 1]->destination_id);
             if (result == 0) {
                 const CarmenCity *nc = carmen_session_current_city(&session);
                 if (nc) {
