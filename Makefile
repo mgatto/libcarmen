@@ -118,7 +118,7 @@ all: $(STATIC_LIB) $(TRAIL_DEMO) version-check verify-soname
 $(STATIC_LIB): $(LIB_OBJS) | $(BUILD_DIR)
 	ar rcs $@ $^
 
-$(SHARED_LIB): $(LIB_SRCS_ALL) | $(BUILD_DIR) $(GEN_VERSION_H)
+$(SHARED_LIB): $(LIB_SRCS_ALL) $(GEN_VERSION_H) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(FRIBIDI_CFLAGS) $(INCLUDES) $(SHARED_FLAGS) -fPIC -fvisibility=hidden \
 	    -o $@ $(LIB_SRCS_ALL) $(LDLIBS)
 	ln -sf $(SHARED_REAL) $(BUILD_DIR)/$(SHARED_SONAME)
@@ -133,10 +133,10 @@ lib: $(STATIC_LIB) $(SHARED_LIB) version-check verify-soname
 $(TRAIL_DEMO): $(TRAIL_DEMO_OBJ) $(STATIC_LIB)
 	$(CC) $(CFLAGS) -o $@ $(TRAIL_DEMO_OBJ) $(STATIC_LIB) $(LDLIBS)
 
-$(TRAIL_DEMO_OBJ): examples/trail_demo.c | $(BUILD_DIR) $(GEN_VERSION_H)
+$(TRAIL_DEMO_OBJ): examples/trail_demo.c $(GEN_VERSION_H) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: src/%.c | $(BUILD_DIR) $(GEN_VERSION_H)
+$(BUILD_DIR)/%.o: src/%.c $(GEN_VERSION_H) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(BUILD_DIR)/cJSON.o: vendor/cjson/cJSON.c | $(BUILD_DIR)
@@ -162,7 +162,7 @@ $(GEN_WORLD): tools/gen_world.c vendor/cjson/cJSON.c | $(BUILD_DIR)
 $(GEN_WORLD_SRC): $(PRESET) $(GEN_WORLD) | $(GEN_DIR)
 	$(GEN_WORLD) $(PRESET) $@
 
-$(GEN_DIR)/world_islamic_generated.o: $(GEN_WORLD_SRC) | $(GEN_DIR) $(GEN_VERSION_H)
+$(GEN_DIR)/world_islamic_generated.o: $(GEN_WORLD_SRC) $(GEN_VERSION_H) | $(GEN_DIR)
 	$(CC) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
 
 # Generated public header: carmen_version.h is derived from the VERSION file by
@@ -340,50 +340,50 @@ test: $(TEST_BINS) $(GEN_WORLD) version-check
 $(TEST_DIR): $(GEN_VERSION_H)
 	mkdir -p $(TEST_DIR)
 
-$(TEST_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(TEST_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(LDLIBS)
 
-$(TEST_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(LDLIBS)
 
-$(TEST_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(TEST_DIR)
+$(TEST_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
 	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(TEST_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_connection_gen: test/test_connection_gen.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_connection_gen: test/test_connection_gen.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(TEST_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(TEST_DIR)
-	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(TEST_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(TEST_DIR)
+	$(CC) $(TEST_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
 # --------------------------------------------------------------------------- #
 #  Sanitizers (ASan + UBSan)
@@ -431,50 +431,50 @@ test-sanitize: $(SANITIZE_BINS)
 $(SANITIZE_DIR): $(GEN_VERSION_H)
 	mkdir -p $(SANITIZE_DIR)
 
-$(SANITIZE_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
+$(SANITIZE_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
 	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(SANITIZE_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
+$(SANITIZE_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
 	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
+$(SANITIZE_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
 	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(SANITIZE_DIR)
+$(SANITIZE_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
 	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(SANITIZE_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_connection_gen: test/test_connection_gen.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_connection_gen: test/test_connection_gen.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
-$(SANITIZE_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(SANITIZE_DIR)
-	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $^ $(LDLIBS)
+$(SANITIZE_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(SANITIZE_DIR)
+	$(CC) $(SANITIZE_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $(filter-out $(GEN_VERSION_H),$^) $(LDLIBS)
 
 # --------------------------------------------------------------------------- #
 #  Code Coverage  (requires lcov:  brew install lcov)
@@ -532,49 +532,49 @@ $(COV_DIR)/llvm-gcov.sh: | $(COV_DIR)
 $(COV_DIR): $(GEN_VERSION_H)
 	mkdir -p $(COV_DIR)
 
-$(COV_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_site: test/test_site.c src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/site.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(COV_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_connection: test/test_connection.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_city: test/test_city.c src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/city.c src/site.c src/connection.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_utf8: test/test_utf8.c src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< src/utf8.c $(FRIBIDI_OBJS) $(UNITY_SRC)
 
-$(COV_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_game_world: test/test_game_world.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_connection_gen: test/test_connection_gen.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_connection_gen: test/test_connection_gen.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_carmen_scenarios: test/test_carmen_scenarios.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_artifact: test/test_artifact.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_case: test/test_case.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_session: test/test_session.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_save: test/test_save.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_settings: test/test_settings.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_villain: test/test_villain.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_world_islamic: test/test_world_islamic.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
-$(COV_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) | $(COV_DIR)/llvm-gcov.sh
+$(COV_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSION_H) | $(COV_DIR)/llvm-gcov.sh
 	$(CC) $(COV_FLAGS) $(INCLUDES) $(UNITY_INC) -o $@ $< $(LIB_SRCS_ALL) $(UNITY_SRC) $(LDLIBS)
 
 # --------------------------------------------------------------------------- #
