@@ -109,7 +109,7 @@ TRAIL_DEMO_OBJ = $(BUILD_DIR)/trail_demo.o
 #  Default: build the static library and the demo binary
 # --------------------------------------------------------------------------- #
 
-all: $(STATIC_LIB) $(TRAIL_DEMO)
+all: $(STATIC_LIB) $(TRAIL_DEMO) version-check verify-soname
 
 # --------------------------------------------------------------------------- #
 #  Library targets
@@ -124,7 +124,7 @@ $(SHARED_LIB): $(LIB_SRCS_ALL) | $(BUILD_DIR) $(GEN_VERSION_H)
 	ln -sf $(SHARED_REAL) $(BUILD_DIR)/$(SHARED_SONAME)
 	ln -sf $(SHARED_REAL) $(BUILD_DIR)/$(SHARED_LINKNAME)
 
-lib: $(STATIC_LIB) $(SHARED_LIB)
+lib: $(STATIC_LIB) $(SHARED_LIB) version-check verify-soname
 
 # --------------------------------------------------------------------------- #
 #  Demo binary
@@ -188,7 +188,7 @@ $(BUILD_DIR):
 
 DIST_DEMO = $(DIST_DIR)/trail_demo
 
-dist: $(SHARED_LIB) $(TRAIL_DEMO_OBJ)
+dist: $(SHARED_LIB) $(TRAIL_DEMO_OBJ) version-check verify-soname
 	mkdir -p $(DIST_DIR)/locales
 	$(CC) $(CFLAGS) -o $(DIST_DEMO) $(TRAIL_DEMO_OBJ) \
 	    -L$(BUILD_DIR) -lcarmen $(RPATH_FLAGS) $(LDLIBS)
@@ -269,7 +269,7 @@ INCLUDEDIR   = $(PREFIX)/include/carmen
 LIBDIR       = $(PREFIX)/lib
 PKGCONFIGDIR = $(LIBDIR)/pkgconfig
 
-install: $(STATIC_LIB) $(SHARED_LIB) $(GEN_VERSION_H) $(BUILD_DIR)/carmen.pc
+install: $(STATIC_LIB) $(SHARED_LIB) $(GEN_VERSION_H) $(BUILD_DIR)/carmen.pc version-check verify-soname
 	install -d $(INCLUDEDIR)
 	install -m 644 $(PUBLIC_HEADERS) $(INCLUDEDIR)
 	install -m 644 $(GEN_VERSION_H) $(INCLUDEDIR)/carmen_version.h
