@@ -82,6 +82,16 @@ static void test_find_among_many(void)
     TEST_ASSERT_EQUAL_STRING("B", b->name);
 }
 
+/* Regression: looking up an id in an empty world (NULL city_map) must not leak.
+ * shgeti on a NULL stb_ds map allocates a temp entry and reassigns the local
+ * map pointer; find must guard against that instead of orphaning the alloc. */
+static void test_find_on_empty_world_returns_null(void)
+{
+    TEST_ASSERT_NULL(world.city_map);
+    TEST_ASSERT_NULL(carmen_world_find(&world, "ghost"));
+    TEST_ASSERT_NULL(world.city_map);
+}
+
 /* ------------------------------------------------ cities_in_continent */
 
 static void test_cities_in_continent_returns_correct_set(void)
@@ -349,6 +359,7 @@ int main(void)
     RUN_TEST(test_find_existing_city);
     RUN_TEST(test_find_nonexistent_city);
     RUN_TEST(test_find_among_many);
+    RUN_TEST(test_find_on_empty_world_returns_null);
     RUN_TEST(test_cities_in_continent_returns_correct_set);
     RUN_TEST(test_cities_in_continent_unknown_returns_zero);
     RUN_TEST(test_cities_in_country_returns_correct_set);

@@ -117,6 +117,10 @@ CarmenCity *carmen_world_find(CarmenWorld *w, const char *id)
 {
     if (!w || !id) return NULL;
     CityMapEntry *m = map_ptr(w);
+    /* Empty world: nothing to find. Bail before shgeti, which would otherwise
+     * allocate a temp hash map on a NULL map (that we'd then leak, since find
+     * doesn't write the map pointer back into w). */
+    if (!m) return NULL;
     ptrdiff_t idx = shgeti(m, id);
     if (idx < 0) return NULL;
     return &w->storage[m[idx].value];
