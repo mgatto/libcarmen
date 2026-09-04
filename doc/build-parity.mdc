@@ -1,0 +1,41 @@
+---
+description: Keep Makefile, CMakeLists.txt, and CI in sync; supported platforms must actually be CI-tested
+globs: Makefile,CMakeLists.txt,.github/workflows/*.yml
+alwaysApply: false
+---
+
+# Build & CI Parity Rules
+
+This project ships two build systems (`Makefile` and `CMakeLists.txt`) and claims multiple platform/toolchain targets. Drift between them is the biggest real risk to "cross-platform" claims actually being true.
+
+## Every source/header change touches both build systems, in the same change
+
+Adding, removing, or renaming a file under `src/` or `include/carmen/` requires updating, in the same commit:
+
+- `Makefile`: `LIB_SRCS`, and `PUBLIC_HEADERS` if it's a public header
+- `CMakeLists.txt`: `CARMEN_SOURCES`, and `CARMEN_PUBLIC_HEADERS` if it's a public header
+- Both `TEST_BINS`/`COV_BINS` (Makefile) and a matching `carmen_add_test(...)` call (CMakeLists.txt) if it's a new test module
+
+A PR that updates only one build system is incomplete, even if it happens to build locally.
+
+## A platform claimed as "supported" must have a CI job that builds and tests it
+
+`README.md` currently claims GCC 8+, Clang 7+, and MSVC 2019+. If a platform/compiler isn't built and tested in `.github/workflows/ci.yml`, treat the README claim as aspirational and either add the CI job or fix the claim -- don't leave them silently out of sync.
+
+## New sanitizer/flag support belongs in both build systems
+
+If you add a flag or target to one build system (e.g. a `CARMEN_SANITIZE` CMake option, or a `test-sanitize` Makefile target for ASan/UBSan), add the equivalent capability to the other build system too, even if the mechanism necessarily differs between Make and CMake.
+
+## CI should exercise the sanitized build, not just plain `test`/`coverage`
+
+`make test` and `make coverage`/CTest tell you what ran; they don't tell you if what ran hit undefined behavior. A CI job running `make test-sanitize` (or the CMake `CARMEN_SANITIZE` equivalent) is required alongside the plain test job, not a substitute for it.
+
+## Version & SONAME parity
+
+The top-level `VERSION` file is the single source of truth (see `doc/versioning.md`). Both build systems must read it and derive their shared-library versioning from it:
+
+- The recorded SONAME/`install_name` must be the `.$(SOMAJOR)` form, identical across Make (`SHARED_FLAGS`) and CMake (`VERSION`/`SOVERSION` set on target `carmen`): `libcarmen.so.$(SOMAJOR)` and `@rpath/libcarmen.$(SOMAJOR).dylib`.
+- Both build systems must lay out the same three artifacts — the versioned real file (`libcarmen.X.Y.Z.so` / `libcarmen.X.Y.Z.dylib`), the soname symlink, and the dev symlink — in `dist/` and in the installation prefix.
+- `carmen_version.h` is generated (never committed) from `VERSION` by `tools/gen_version.sh`; a change to versioning in one build system requires the matching change in the other.
+
+Guard it in CI: `make version-check` (runs inside `make test`) and CTest `version_check` flag any disagreement between `VERSION`, the generated header, and the resolved version; `make verify-soname` (otool/readelf) enforces the recorded-name parity on both Linux and macOS.

@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 3.14)
+
+# The top-level VERSION file is the single source of truth for the version
+# (see doc/versioning.md). Make and CMake both read it, and both regenerate
+# the public carmen_version.h header from it via tools/gen_version.sh.
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" _carmen_version_file LIMIT_COUNT 1)
+string(STRIP "${_carmen_version_file}" CARMEN_VERSION)
+if(NOT CARMEN_VERSION MATCHES "^[0-9]+\.[0-9]+\.[0-9]+$")
+    message(FATAL_ERROR
+        "VERSION file must contain a single MAJOR.MINOR.PATCH line; got '${CARMEN_VERSION}'")
+endif()
+
 project(carmen
-    VERSION     0.8.1
+    VERSION     ${CARMEN_VERSION}
     LANGUAGES   C
     DESCRIPTION "C library for building Carmen Sandiego-style world exploration games"
 )
@@ -60,6 +71,23 @@ endif()
 set(CARMEN_PRESET        ${CMAKE_CURRENT_SOURCE_DIR}/presets/islamic.jsonc)
 set(CARMEN_GEN_DIR       ${CMAKE_CURRENT_BINARY_DIR}/generated)
 set(CARMEN_GEN_WORLD_SRC ${CARMEN_GEN_DIR}/world_islamic_generated.c)
+set(CARMEN_GEN_VERSION_H ${CARMEN_GEN_DIR}/carmen_version.h)
+
+# Generated public header: carmen_version.h is derived from the VERSION file by
+# tools/gen_version.sh and never committed (see doc/versioning.md). It is added
+# as the first BUILD_INTERFACE include dir so carmen.h's quoted #include
+# resolves to it (the source-tree header was removed).
+add_custom_command(
+    OUTPUT  ${CARMEN_GEN_VERSION_H}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CARMEN_GEN_DIR}
+    COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/tools/gen_version.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/VERSION ${CARMEN_GEN_VERSION_H}
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION
+            ${CMAKE_CURRENT_SOURCE_DIR}/tools/gen_version.sh
+    COMMENT "Generating carmen_version.h from VERSION"
+    VERBATIM
+)
+add_custom_target(carmen_version_header DEPENDS ${CARMEN_GEN_VERSION_H})
 
 if(CMAKE_CROSSCOMPILING)
     include(ExternalProject)
@@ -181,7 +209,6 @@ endif()
 set(CARMEN_PUBLIC_HEADERS
     include/carmen/carmen.h
     include/carmen/carmen_export.h
-    include/carmen/carmen_version.h
     include/carmen/utf8.h
     include/carmen/clue.h
     include/carmen/site.h
@@ -203,8 +230,11 @@ set(CARMEN_PUBLIC_HEADERS
 add_library(carmen ${CARMEN_SOURCES})
 add_library(carmen::carmen ALIAS carmen)
 
+add_dependencies(carmen carmen_version_header)
+
 target_include_directories(carmen
     PUBLIC
+        $<BUILD_INTERFACE:${CARMEN_GEN_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     PRIVATE
@@ -455,6 +485,15 @@ if(CARMEN_BUILD_TESTS)
     carmen_add_test(test_world_islamic     test/test_world_islamic.c)
     carmen_add_test(test_i18n              test/test_i18n.c)
 
+    # Drift guard: fail if the VERSION file, the generated carmen_version.h,
+    # and CMake's own PROJECT_VERSION disagree (see doc/versioning.md).
+    add_test(NAME version_check
+        COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/tools/check_version.sh
+                ${CMAKE_CURRENT_SOURCE_DIR}/VERSION
+                ${CARMEN_GEN_VERSION_H}
+                ${PROJECT_VERSION}
+    )
+
     # The generator must reject invalid presets at build time.  These cases
     # only apply when gen_world is an ordinary (native) target.
     if(NOT CMAKE_CROSSCOMPILING)
@@ -481,6 +520,12 @@ install(TARGETS carmen
     LIBRARY         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME         DESTINATION ${CMAKE_INSTALL_BINDIR}
     PUBLIC_HEADER   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/carmen
+)
+
+# carmen_version.h is generated, so it is installed separately from the
+# PUBLIC_HEADER set above (which only lists committed headers).
+install(FILES "${CARMEN_GEN_VERSION_H}"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/carmen
 )
 
 # CMake package config so find_package(carmen) works

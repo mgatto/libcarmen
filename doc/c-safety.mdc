@@ -1,0 +1,54 @@
+---
+description: Undefined-behavior avoidance, bounds-checking, and sanitizer expectations for C implementation files
+globs: src/**/*.c,include/**/*.h
+alwaysApply: false
+---
+
+# C Safety Rules
+
+`-std=c17 -Wall -Wextra -pedantic` (see `AGENTS.md`) catches style and type mistakes, not undefined behavior (UB). UB is the actual risk in a hand-written-buffers, no-malloc C codebase like this one.
+
+## No UB, ever
+
+Signed integer overflow, out-of-bounds pointer arithmetic, reading uninitialized memory, and strict-aliasing violations are all UB even when the binary "seems to work." Reason about these explicitly; don't rely on warnings to catch them.
+
+## Bounds-check every fixed-capacity write at the write site
+
+Don't just validate once at the top of a function -- check immediately before each write into a `CARMEN_MAX_*`-sized array, matching `carmen_city_add_site` in `src/city.c`.
+
+```c
+// BAD: capacity check is separated from the write it guards
+if (city->site_count >= CARMEN_MAX_SITES) return -1;
+/* ...other logic... */
+city->sites[city->site_count++] = site;
+
+// GOOD: check immediately guards the write
+if (city->site_count >= CARMEN_MAX_SITES) return -1;
+city->sites[city->site_count++] = site;
+```
+
+## String copies: never `strcpy`/`sprintf`/`strcat`
+
+Use `snprintf` (or `strncpy` + explicit NUL) and check for truncation. This applies even in a "no dynamic allocation" codebase -- fixed buffers are exactly where silent truncation/overflow bugs hide.
+
+```c
+// BAD
+sprintf(buf, "%s/%s", dir, name);
+
+// GOOD
+if (snprintf(buf, sizeof(buf), "%s/%s", dir, name) >= (int)sizeof(buf)) {
+    return -1; /* truncated: treat as an error, don't silently proceed */
+}
+```
+
+## `const` by default
+
+Parameters and locals that aren't mutated must be `const`, including pointer targets (`const CarmenCity *`, not `CarmenCity *`).
+
+## Assertions are for internal bugs, not caller input
+
+`assert()` is fine for invariants that should be impossible if the library itself is correct (e.g. an internal slot index out of range). Bad *caller* input must still fail gracefully via guard clauses -- never `assert()`/`abort()` on it (see `AGENTS.md`'s error-handling section).
+
+## Sanitize before calling it done
+
+New or changed logic under `src/` must pass `make test-sanitize` (ASan + UBSan) clean, not just `make test`. A change that's "green" under `make test` but new under ASan/UBSan is not finished.

@@ -26,6 +26,9 @@ CMakeUserPresets.json
 *.gch
 *.pch
 
+# Generated version header (see VERSION; never committed)
+include/carmen/carmen_version.h
+
 # Editor / IDE
 .vscode/
 .idea/
