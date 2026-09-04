@@ -18,13 +18,15 @@ static int trail_length_for(CarmenDifficulty d)
 
 /*
  * Correct positive clues per non-hideout stop, derived from difficulty.
- * The remaining active sites carry herrings/negatives: EASY 3/0/0,
- * MEDIUM 2/1/0, HARD 1/1/1 (with 3 active sites).
+ * The remaining active sites carry herrings/negatives: EASY 2/1/0,
+ * MEDIUM 2/1/0, HARD 1/1/1 (with 3 active sites). EASY keeps a herring
+ * slot (rather than 3/0/0) so every non-hideout stop has a replaceable
+ * site that an identity clue can occupy without displacing a positive.
  */
 static int positive_clues_for(CarmenDifficulty d)
 {
     switch (d) {
-        case CARMEN_DIFFICULTY_EASY:   return 3;
+        case CARMEN_DIFFICULTY_EASY:   return 2;
         case CARMEN_DIFFICULTY_MEDIUM: return 2;
         case CARMEN_DIFFICULTY_HARD:   return 1;
     }
@@ -157,6 +159,61 @@ static void negative_clue(CarmenClue *out)
 }
 
 /*
+ * Build an identity (suspect-description) clue. text is one of the villain's
+ * id-clue i18n keys; there is no location target. Investigating a site
+ * carrying this clue yields evidence toward the arrest warrant.
+ */
+static void identity_clue(CarmenClue *out, const char *id_clue_key)
+{
+    memset(out, 0, sizeof(*out));
+    carmen_utf8_copy(out->text, CARMEN_MAX_CLUE_LEN, id_clue_key);
+    out->type = CARMEN_CLUE_IDENTITY;
+}
+
+/*
+ * Overlay CARMEN_IDENTITY_CLUES identity clues onto the trail: pick that many
+ * distinct trail stops that have at least one replaceable (herring/negative)
+ * site, and in each overwrite one random replaceable site with an identity
+ * clue drawn from a random subset of the villain's id-clue set. Correct
+ * positive clues are never touched, so navigability is preserved. Records the
+ * number actually placed in c->identity_clue_count.
+ *
+ * repl[i][*] lists the replaceable site slots for stop i; repl_n[i] their
+ * count.
+ */
+static void place_identity_clues(CarmenCase *c,
+                                 int repl[][CARMEN_TRAIL_SITES],
+                                 const int *repl_n)
+{
+    c->identity_clue_count = 0;
+    if (!c->villain) return;
+
+    /* Trail stops that can host an identity clue. */
+    int hostable[CARMEN_MAX_TRAIL], nh = 0;
+    for (int i = 0; i < c->trail_len; i++)
+        if (repl_n[i] > 0)
+            hostable[nh++] = i;
+    shuffle(hostable, nh);
+
+    /* Random subset of the villain's id clues, one per placement. */
+    int keys[FITNA_MAX_ID_CLUES];
+    for (int k = 0; k < FITNA_MAX_ID_CLUES; k++) keys[k] = k;
+    shuffle(keys, FITNA_MAX_ID_CLUES);
+
+    int want = CARMEN_IDENTITY_CLUES;
+    if (want > nh) want = nh;
+    if (want > FITNA_MAX_ID_CLUES) want = FITNA_MAX_ID_CLUES;
+
+    for (int p = 0; p < want; p++) {
+        int stop = hostable[p];
+        int slot = repl[stop][carmen_random() % repl_n[stop]];
+        identity_clue(&c->stops[stop].sites[slot].clue,
+                      c->villain->id_clues[keys[p]]);
+        c->identity_clue_count++;
+    }
+}
+
+/*
  * For each trail stop, select up to active_sites sites and assign one
  * clue per site from the current city's outgoing edges:
  *   - positive_clues sites get a positive clue pointing to the next trail
@@ -164,14 +221,22 @@ static void negative_clue(CarmenClue *out)
  *   - herring sites get a positive-looking clue pointing to a distinct
  *     wrong-but-connected neighbor (red herring).
  *   - remaining sites get a generic negative ("never saw anyone").
- * Counts are difficulty-driven (EASY 3/0/0, MEDIUM 2/1/0, HARD 1/1/1)
- * with positive_clues honoring the settings override. The hideout stop
- * stores site indices only (evidence, not clues).
+ * Counts are difficulty-driven (EASY 2/1/0, MEDIUM 2/1/0, HARD 1/1/1)
+ * with positive_clues honoring the settings override. The hideout stop has
+ * no next city, so all its sites are negatives.
+ *
+ * Every non-positive site (herring/negative, and every hideout site) is
+ * "replaceable": afterwards place_identity_clues() overwrites a few of them
+ * with suspect-identity clues.
  */
 static void assign_trail_clues(CarmenCase *c, CarmenWorld *w,
                                int active_sites, int positive_clues)
 {
     const int negative_want = negative_clues_for(c->difficulty);
+
+    /* Per-stop list of replaceable site slots (indices into stop->sites[]). */
+    int repl[CARMEN_MAX_TRAIL][CARMEN_TRAIL_SITES];
+    int repl_n[CARMEN_MAX_TRAIL] = {0};
 
     for (int i = 0; i < c->trail_len; i++) {
         CarmenCity *city = carmen_world_find(w, c->trail[i]);
@@ -187,11 +252,13 @@ static void assign_trail_clues(CarmenCase *c, CarmenWorld *w,
         int ns = available < active_sites ? available : active_sites;
 
         if (i == c->trail_len - 1) {
-            /* Hideout: site indices only; evidence is gathered in-session. */
+            /* Hideout: no next city, so every site is a negative dead end
+               (all replaceable by an identity clue). */
             stop->site_count = ns;
             for (int j = 0; j < ns; j++) {
                 stop->sites[j].site_idx = sites[j];
-                memset(&stop->sites[j].clue, 0, sizeof(CarmenClue));
+                negative_clue(&stop->sites[j].clue);
+                repl[i][repl_n[i]++] = j;
             }
             continue;
         }
@@ -238,11 +305,15 @@ static void assign_trail_clues(CarmenCase *c, CarmenWorld *w,
                 CarmenCity *wc = carmen_world_find(w, wrong_id);
                 positive_clue_from(&stop->sites[j].clue, wc, wrong_id,
                                    carmen_random());
+                repl[i][repl_n[i]++] = j;
             } else {
                 negative_clue(&stop->sites[j].clue);
+                repl[i][repl_n[i]++] = j;
             }
         }
     }
+
+    place_identity_clues(c, repl, repl_n);
 }
 
 static int direct_leg_hrs(const CarmenCity *from, const char *to_id)

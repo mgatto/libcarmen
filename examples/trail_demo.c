@@ -73,7 +73,9 @@ static void print_notebook(const CarmenI18n *i18n, const CarmenSession *s, char 
         const char       *raw  = carmen_i18n_get(i18n, clue->text);
         char              expanded[EXPAND_BUF];
         carmen_villain_expand_clue(raw, villain_gender, expanded, sizeof expanded);
-        const char *tag = clue->type == CARMEN_CLUE_POSITIVE ? "+" : "-";
+        const char *tag = clue->type == CARMEN_CLUE_POSITIVE ? "+"
+                        : clue->type == CARMEN_CLUE_IDENTITY ? "*"
+                                                             : "-";
         printf("    [%s] \"%s\"\n", tag, expanded);
     }
 }
@@ -342,7 +344,9 @@ int main(int argc, char *argv[])
                     const char *raw = carmen_i18n_get(i18n, clue->text);
                     char        expanded[EXPAND_BUF];
                     carmen_villain_expand_clue(raw, villain->gender, expanded, sizeof expanded);
-                    const char *tag = clue->type == CARMEN_CLUE_POSITIVE ? "+" : "-";
+                    const char *tag = clue->type == CARMEN_CLUE_POSITIVE ? "+"
+                                    : clue->type == CARMEN_CLUE_IDENTITY ? "*"
+                                                                         : "-";
                     printf("\n    [%s] \"%s\"\n", tag, expanded);
                     if (!could_warrant && carmen_session_can_issue_warrant(&session))
                         printf("\n  %s\n", carmen_i18n_get(i18n, "ui.warrant_ready"));

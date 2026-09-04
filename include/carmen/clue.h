@@ -13,10 +13,14 @@
 
 /* ABI note: CarmenClueType enum values fit in int32 and bindings may read
    a CarmenClueType struct field as a 32-bit signed integer.  The enumerators
-   are guaranteed to remain CARMEN_CLUE_POSITIVE=0, CARMEN_CLUE_NEGATIVE=1. */
+   are guaranteed to remain CARMEN_CLUE_POSITIVE=0, CARMEN_CLUE_NEGATIVE=1,
+   CARMEN_CLUE_IDENTITY=2. */
 typedef enum {
     CARMEN_CLUE_POSITIVE,   /* 0 -- points toward the correct next city */
-    CARMEN_CLUE_NEGATIVE    /* 1 -- dead end, no one saw the suspect */
+    CARMEN_CLUE_NEGATIVE,   /* 1 -- dead end, no one saw the suspect */
+    CARMEN_CLUE_IDENTITY    /* 2 -- describes the suspect; not a location
+                                    pointer. text is a villain id-clue key;
+                                    target_city_id is empty. */
 } CarmenClueType;
 
 typedef struct {

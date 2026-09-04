@@ -198,81 +198,88 @@ static void test_trail_stops_have_sites(void)
         TEST_ASSERT_GREATER_THAN(0, c.stops[i].site_count);
 }
 
+/*
+ * Tally a stop's clue types. Identity clues (seeded post-assignment) are
+ * counted separately; a site is only ever one of positive/herring/negative/
+ * identity. Correct positives point to next_id; a non-matching positive is a
+ * herring and must target a real neighbor.
+ */
 static void count_stop_clues(const CarmenTrailStop *stop,
                              const char *next_id,
                              const CarmenCity *city,
-                             int *pos, int *herr, int *neg)
+                             int *pos, int *herr, int *neg, int *ident)
 {
-    *pos = *herr = *neg = 0;
+    *pos = *herr = *neg = *ident = 0;
     for (int j = 0; j < stop->site_count; j++) {
         const CarmenClue *cl = &stop->sites[j].clue;
         if (cl->type == CARMEN_CLUE_NEGATIVE) {
             (*neg)++;
-            continue;
-        }
-        TEST_ASSERT_EQUAL_INT(CARMEN_CLUE_POSITIVE, cl->type);
-        if (strcmp(cl->target_city_id, next_id) == 0) {
-            (*pos)++;
+        } else if (cl->type == CARMEN_CLUE_IDENTITY) {
+            (*ident)++;
         } else {
-            TEST_ASSERT_EQUAL_INT(1, carmen_city_has_connection_to(
-                                         city, cl->target_city_id));
-            (*herr)++;
+            TEST_ASSERT_EQUAL_INT(CARMEN_CLUE_POSITIVE, cl->type);
+            if (strcmp(cl->target_city_id, next_id) == 0) {
+                (*pos)++;
+            } else {
+                TEST_ASSERT_EQUAL_INT(1, carmen_city_has_connection_to(
+                                             city, cl->target_city_id));
+                (*herr)++;
+            }
         }
     }
 }
 
-static void test_easy_clue_split_is_three_positives(void)
+/*
+ * Correct positive clues per non-hideout stop are exact per difficulty and
+ * never displaced by identity clues; the total identity clues placed across
+ * the trail equals identity_clue_count == CARMEN_IDENTITY_CLUES, spread over
+ * distinct cities.
+ */
+static void assert_clue_split(unsigned seed, CarmenDifficulty diff,
+                              int expect_pos)
 {
-    srand(42);
-    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_EASY);
+    srand(seed);
+    CarmenCaseSettings s = mk(diff);
     CarmenCase c;
     TEST_ASSERT_EQUAL_INT(1, carmen_case_generate(&c, world, &s));
-    for (int i = 0; i < c.trail_len - 1; i++) {
+
+    TEST_ASSERT_EQUAL_INT(CARMEN_IDENTITY_CLUES, c.identity_clue_count);
+
+    int total_ident = 0, stops_with_ident = 0;
+    for (int i = 0; i < c.trail_len; i++) {
         CarmenCity *city = carmen_world_find(world, c.trail[i]);
         TEST_ASSERT_NOT_NULL(city);
-        int pos, herr, neg;
-        count_stop_clues(&c.stops[i], c.trail[i + 1], city, &pos, &herr, &neg);
-        TEST_ASSERT_EQUAL_INT(3, pos);
-        TEST_ASSERT_EQUAL_INT(0, herr);
-        TEST_ASSERT_EQUAL_INT(0, neg);
+        const char *next = i < c.trail_len - 1 ? c.trail[i + 1] : "";
+        int pos, herr, neg, ident;
+        count_stop_clues(&c.stops[i], next, city, &pos, &herr, &neg, &ident);
+
+        /* Navigation positives are preserved on every non-hideout stop. */
+        if (i < c.trail_len - 1)
+            TEST_ASSERT_EQUAL_INT(expect_pos, pos);
+        else
+            TEST_ASSERT_EQUAL_INT(0, pos); /* hideout has no next city */
+
+        TEST_ASSERT_TRUE(ident <= 1); /* at most one identity clue per city */
+        total_ident += ident;
+        stops_with_ident += (ident > 0);
     }
+    TEST_ASSERT_EQUAL_INT(CARMEN_IDENTITY_CLUES, total_ident);
+    TEST_ASSERT_EQUAL_INT(CARMEN_IDENTITY_CLUES, stops_with_ident);
 }
 
-static void test_medium_clue_split_is_two_pos_one_herring(void)
+static void test_easy_clue_split(void)
 {
-    srand(99);
-    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_MEDIUM);
-    CarmenCase c;
-    TEST_ASSERT_EQUAL_INT(1, carmen_case_generate(&c, world, &s));
-    for (int i = 0; i < c.trail_len - 1; i++) {
-        CarmenCity *city = carmen_world_find(world, c.trail[i]);
-        TEST_ASSERT_NOT_NULL(city);
-        int pos, herr, neg;
-        count_stop_clues(&c.stops[i], c.trail[i + 1], city, &pos, &herr, &neg);
-        TEST_ASSERT_EQUAL_INT(2, pos);
-        TEST_ASSERT_EQUAL_INT(1, herr);
-        TEST_ASSERT_EQUAL_INT(0, neg);
-    }
+    assert_clue_split(42, CARMEN_DIFFICULTY_EASY, 2);
 }
 
-static void test_hard_clue_split_is_one_each(void)
+static void test_medium_clue_split(void)
 {
-    srand(17);
-    CarmenCaseSettings s = mk(CARMEN_DIFFICULTY_HARD);
-    CarmenCase c;
-    TEST_ASSERT_EQUAL_INT(1, carmen_case_generate(&c, world, &s));
-    int saw_negative = 0;
-    for (int i = 0; i < c.trail_len - 1; i++) {
-        CarmenCity *city = carmen_world_find(world, c.trail[i]);
-        TEST_ASSERT_NOT_NULL(city);
-        int pos, herr, neg;
-        count_stop_clues(&c.stops[i], c.trail[i + 1], city, &pos, &herr, &neg);
-        TEST_ASSERT_EQUAL_INT(1, pos);
-        TEST_ASSERT_EQUAL_INT(1, herr);
-        TEST_ASSERT_EQUAL_INT(1, neg);
-        saw_negative += neg;
-    }
-    TEST_ASSERT_GREATER_THAN(0, saw_negative);
+    assert_clue_split(99, CARMEN_DIFFICULTY_MEDIUM, 2);
+}
+
+static void test_hard_clue_split(void)
+{
+    assert_clue_split(17, CARMEN_DIFFICULTY_HARD, 1);
 }
 
 /* -------------------------------------------------- briefing text */
@@ -395,9 +402,9 @@ int main(void)
     RUN_TEST(test_artifact_origin_matches_trail_origin);
     RUN_TEST(test_time_budget_is_positive);
     RUN_TEST(test_trail_stops_have_sites);
-    RUN_TEST(test_easy_clue_split_is_three_positives);
-    RUN_TEST(test_medium_clue_split_is_two_pos_one_herring);
-    RUN_TEST(test_hard_clue_split_is_one_each);
+    RUN_TEST(test_easy_clue_split);
+    RUN_TEST(test_medium_clue_split);
+    RUN_TEST(test_hard_clue_split);
     RUN_TEST(test_briefing_default_template_no_i18n);
     RUN_TEST(test_briefing_length_query);
     RUN_TEST(test_briefing_truncates_and_nul_terminates);

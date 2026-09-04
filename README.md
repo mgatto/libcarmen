@@ -19,7 +19,7 @@ Ruby and Python wrappers (and other language bindings and front-ends) are intend
 
 The built-in world covers 22 important Muslim cities globally, aiming for a tasteful balance of the historical and the modern — from classical centers of learning and trade to present-day capitals and cultural hubs. They span the breadth of the Islamicate world: Istanbul (Süleymaniye Mosque, Topkapı Palace), Fez (Al-Qarawiyyin, the ancient medina), Samarkand (the Registan, Bibi-Khanum Mosque), Zanzibar (Stone Town, Hamamni Persian Baths), Lahore (Badshahi Mosque, Lahore Fort), Kuala Lumpur (Petronas Towers), and sixteen others — each with up to four investigable sites across types: market, mosque, museum, landmark, and park. The selection is a starting point, not a canon; the preset system ([`presets/islamic.jsonc`](presets/islamic.jsonc)) is designed for adding worlds rooted in other cultural geographies.
 
-The criminal organization behind each case is **FITNA** — a roster of 16 thieves defined in [`include/carmen/villain.h`](include/carmen/villain.h) with names drawn from Arabic, Persian, and Urdu traditions: Qamar Samarkandi ("The Moon"), Layla Lapis ("Midnight Blue"), Tariq al-Tariq ("The Morning Star"), Soraya Samum ("The Sandstorm"), Rumi the Riddle ("The Poet"), and eleven others. Each villain carries four identity clues the player collects at the hideout in order to issue a warrant.
+The criminal organization behind each case is **FITNA** — a roster of 16 thieves defined in [`include/carmen/villain.h`](include/carmen/villain.h) with names drawn from Arabic, Persian, and Urdu traditions: Qamar Samarkandi ("The Moon"), Layla Lapis ("Midnight Blue"), Tariq al-Tariq ("The Morning Star"), Soraya Samum ("The Sandstorm"), Rumi the Riddle ("The Poet"), and eleven others. Each villain carries four identity clues; three of them are seeded as suspect-description clues across the cities on the villain's trail, and the player collects them by investigating sites in order to issue a warrant.
 
 Connections are not authored in the preset. `carmen_world_generate_connections()` builds a connected 3-regular flight graph (33 undirected edges, every city degree 3) at case generation; every edge is mode `"flight"` with haversine kilometres. Save files persist that graph as an `"edges"` array (schema version 2) and rewrite the world's connections on load.
 
@@ -46,7 +46,7 @@ Case               -- one generated scenario, built from the world + settings
 Session            -- live play state over a Case
   current city, visited history, time/moves remaining
   notebook[]       -- clues gathered by investigating sites
-  evidence[]       -- villain identity clues collected at the hideout
+  evidence[]       -- villain identity clues collected from trail cities
   warrant          -- issued villain index (gates a valid arrest)
   status           -- PLAYING / WON / LOST_* outcome
 ```

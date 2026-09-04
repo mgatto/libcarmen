@@ -231,7 +231,7 @@ static void test_clue_ratio_scales_with_difficulty(void)
     CarmenDifficulty diffs[] = {
         CARMEN_DIFFICULTY_EASY, CARMEN_DIFFICULTY_MEDIUM, CARMEN_DIFFICULTY_HARD
     };
-    int expected[] = {3, 2, 1};
+    int expected[] = {2, 2, 1};
     unsigned seeds[] = {42, 99, 17};
 
     for (int d = 0; d < 3; d++) {
@@ -275,6 +275,35 @@ static void test_move_limit_triggers_loss(void)
                           carmen_session_status(&sess));
 }
 
+/*
+ * Degenerate override: with 1 active site whose single clue is a positive,
+ * non-hideout stops have no replaceable slot, so only the hideout can host an
+ * identity clue. identity_clue_count must reflect what was actually placed
+ * (fewer than CARMEN_IDENTITY_CLUES), and the case stays winnable -- the
+ * warrant requirement matches the reduced count.
+ */
+static void test_identity_count_capped_by_available_slots(void)
+{
+    srand(42);
+    CarmenCaseSettings s = carmen_case_settings_default();
+    s.difficulty = CARMEN_DIFFICULTY_MEDIUM;
+    s.active_sites_per_city = 1;
+    s.positive_clues_per_stop = 1;
+
+    CarmenCase c;
+    TEST_ASSERT_EQUAL_INT(1, carmen_case_generate(&c, world, &s));
+
+    /* Only the hideout (its lone site a negative) can host an identity clue. */
+    TEST_ASSERT_EQUAL_INT(1, c.identity_clue_count);
+
+    int total_ident = 0;
+    for (int i = 0; i < c.trail_len; i++)
+        for (int j = 0; j < c.stops[i].site_count; j++)
+            if (c.stops[i].sites[j].clue.type == CARMEN_CLUE_IDENTITY)
+                total_ident++;
+    TEST_ASSERT_EQUAL_INT(1, total_ident);
+}
+
 static void test_no_move_limit_allows_travel(void)
 {
     srand(42);
@@ -313,6 +342,7 @@ int main(void)
     RUN_TEST(test_time_budget_override);
     RUN_TEST(test_active_sites_and_positive_clues_override);
     RUN_TEST(test_clue_ratio_scales_with_difficulty);
+    RUN_TEST(test_identity_count_capped_by_available_slots);
     RUN_TEST(test_move_limit_triggers_loss);
     RUN_TEST(test_no_move_limit_allows_travel);
     return UNITY_END();

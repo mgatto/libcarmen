@@ -6,10 +6,12 @@
 #include "session.h"
 
 /* Save schema version emitted by carmen_session_save(). carmen_session_load()
-   accepts this exact version and rejects anything else with -3. Version 2
-   persists the per-case generated connection graph as an "edges" array;
-   v1 saves (static seed routes) are rejected. */
-#define CARMEN_SAVE_SCHEMA_VERSION 2
+   accepts this exact version and rejects anything else with -3. Version 3
+   drops the obsolete "hideout_investigated_sites" field (identity evidence is
+   now seeded across the trail as CARMEN_CLUE_IDENTITY clues) and persists the
+   per-case generated connection graph as an "edges" array; v1/v2 saves are
+   rejected. */
+#define CARMEN_SAVE_SCHEMA_VERSION 3
 
 /* Upper bound on a save file carmen_session_load_file() will read, as a guard
    against pathological inputs. Comfortably larger than any real session, whose

@@ -55,8 +55,6 @@ typedef struct {
   char    evidence[FITNA_MAX_ID_CLUES][CARMEN_MAX_CLUE_LEN];
   int32_t evidence_count;        /* fixed-width for cross-platform ABI */
   int32_t warrant_villain_idx;   /* -1 = no warrant issued; fixed-width for ABI */
-  uint32_t hideout_investigated_sites; /* bitmask: bit N = site N already
-                                          gave evidence; fixed-width for ABI */
 } CarmenSession;
 
 /* Lifecycle */
@@ -147,22 +145,21 @@ CARMEN_API const CarmenClue *carmen_session_notebook_at(
                                  const CarmenSession *s, int index);
 
 /*
- * Villain identity evidence collected at the hideout.  Each entry is an
- * i18n key for one id clue.  carmen_session_evidence_at returns NULL for
- * an out-of-range index or NULL s.  The returned pointer is borrowed: it
- * points into s->evidence[] and remains valid for the lifetime of the
- * session.  Callers must not free the pointer.
+ * Villain identity evidence collected by investigating identity-clue sites
+ * along the suspect's trail.  Each entry is an i18n key for one id clue.
+ * carmen_session_evidence_at returns NULL for an out-of-range index or NULL
+ * s.  The returned pointer is borrowed: it points into s->evidence[] and
+ * remains valid for the lifetime of the session.  Callers must not free the
+ * pointer.
  */
 CARMEN_API int         carmen_session_evidence_count(const CarmenSession *s);
 CARMEN_API const char *carmen_session_evidence_at(const CarmenSession *s,
                                                   int index);
 
 /*
- * How many identity clues a warrant requires for the active case. This is
- * the goal the player is collecting evidence toward: ideally the full
- * villain id-clue set (FITNA_MAX_ID_CLUES), but capped at what the hideout
- * can actually surface (one clue per active site there, itself capped at
- * CARMEN_TRAIL_SITES). Front-ends can render progress as
+ * How many identity clues a warrant requires for the active case: the number
+ * of identity clues seeded into the trail (CarmenCase.identity_clue_count,
+ * normally CARMEN_IDENTITY_CLUES). Front-ends can render progress as
  * carmen_session_evidence_count() / carmen_session_evidence_required().
  * Returns 0 if s is NULL.
  */
@@ -173,8 +170,8 @@ CARMEN_API int carmen_session_evidence_required(const CarmenSession *s);
  * session is still PLAYING -- i.e. carmen_session_issue_warrant() would no
  * longer be refused with -2 for lack of evidence. Front-ends can watch this
  * flip false->true (evidence is only ever gained via
- * carmen_session_investigate at the hideout) to notify the player they can
- * now make an ID. Returns false if s is NULL.
+ * carmen_session_investigate on identity-clue sites) to notify the player
+ * they can now make an ID. Returns false if s is NULL.
  */
 CARMEN_API bool carmen_session_can_issue_warrant(const CarmenSession *s);
 
@@ -212,10 +209,11 @@ CARMEN_API int carmen_session_travel(CarmenSession *s, const char *dest_id);
  * Investigate a site in the current city.
  *
  * On-trail cities return a deterministic clue assigned at case-
- * generation time (2 of 3 active sites give a positive clue pointing
- * to the next trail city, 1 gives a herring or negative).
+ * generation time: a positive clue pointing to the next trail city, a
+ * herring, a negative, or a suspect-identity clue. Investigating an
+ * identity-clue site also records that clue into the session's evidence
+ * (deduplicated, so revisiting the same site does not double-count).
  * Off-trail cities always return a negative clue.
- * At the villain's hideout, also collects villain identity evidence.
  *
  * site_idx must be one of the active site indices returned by
  * carmen_session_active_sites, or a valid site index if off-trail.
@@ -235,10 +233,10 @@ CARMEN_API const CarmenClue *carmen_session_investigate(CarmenSession *s,
  *
  * A warrant always requires a full set of villain identity clues to have
  * been collected first, matching the classic collect-clues-then-warrant
- * flow. Evidence is gathered only by investigating sites at the villain's
- * hideout, so "full set" means every clue the hideout can surface: the
- * lesser of FITNA_MAX_ID_CLUES and the number of active sites at the
- * hideout (capped at CARMEN_TRAIL_SITES).
+ * flow. Evidence is gathered by investigating the identity-clue sites
+ * seeded across the trail cities, so "full set" means every identity clue
+ * the case placed (CarmenCase.identity_clue_count, normally
+ * CARMEN_IDENTITY_CLUES; see carmen_session_evidence_required()).
  *
  * Returns 0 on success, -1 on invalid index or not PLAYING, -2 if
  * insufficient evidence has been collected.

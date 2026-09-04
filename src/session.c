@@ -22,22 +22,28 @@ static int trail_index_of(const CarmenCase *c, const char *city_id)
 }
 
 /*
- * How many identity clues a warrant requires. Ideally the full villain
- * id-clue set (FITNA_MAX_ID_CLUES), but the hideout can only surface one
- * clue per active site there, and the active-site count is capped at
- * CARMEN_TRAIL_SITES -- which is smaller than FITNA_MAX_ID_CLUES. Requiring
- * the fixed maximum would make every case unwinnable, so cap the
- * requirement at what the hideout can actually yield.
+ * How many identity clues a warrant requires: exactly the number the case
+ * seeded into the trail (normally CARMEN_IDENTITY_CLUES). Each is found by
+ * investigating one identity-clue site, so this is always collectable.
  */
 static int warrant_evidence_target(const CarmenCase *c)
 {
-    int target = FITNA_MAX_ID_CLUES;
-    if (c->trail_len > 0) {
-        int hideout_sites = c->stops[c->trail_len - 1].site_count;
-        if (hideout_sites < target)
-            target = hideout_sites;
-    }
-    return target;
+    return c->identity_clue_count;
+}
+
+/*
+ * Record a villain id-clue key into the evidence set, deduplicated by key so
+ * re-investigating the same identity site does not count twice. No-op once the
+ * evidence array is full.
+ */
+static void collect_evidence(CarmenSession *s, const char *id_clue_key)
+{
+    for (int i = 0; i < s->evidence_count; i++)
+        if (strcmp(s->evidence[i], id_clue_key) == 0)
+            return;
+    if (s->evidence_count >= FITNA_MAX_ID_CLUES) return;
+    carmen_utf8_copy(s->evidence[s->evidence_count++], CARMEN_MAX_CLUE_LEN,
+                     id_clue_key);
 }
 
 static void record_visit(CarmenSession *s, const char *city_id)
@@ -293,30 +299,14 @@ const CarmenClue *carmen_session_investigate(CarmenSession *s, int site_idx)
     }
     if (active_idx < 0) return NULL;
 
-    /* Hideout: collect evidence, return negative */
-    if (tidx == cas->trail_len - 1) {
-        unsigned int bit = 1u << active_idx;
-        if (cas->villain && s->evidence_count < FITNA_MAX_ID_CLUES &&
-            !(s->hideout_investigated_sites & bit)) {
-            s->hideout_investigated_sites |= bit;
-            carmen_utf8_copy(
-                s->evidence[s->evidence_count], CARMEN_MAX_CLUE_LEN,
-                cas->villain->id_clues[s->evidence_count]);
-            s->evidence_count++;
-        }
-        if (s->notebook_count >= CARMEN_MAX_NOTEBOOK) return NULL;
-        CarmenClue neg;
-        memset(&neg, 0, sizeof(neg));
-        carmen_utf8_copy(neg.text, CARMEN_MAX_CLUE_LEN,
-                         "clue.generic.negative");
-        neg.type = CARMEN_CLUE_NEGATIVE;
-        s->notebook[s->notebook_count] = neg;
-        return &s->notebook[s->notebook_count++];
-    }
-
-    /* Normal trail stop: return the deterministic pre-assigned clue */
+    /* On-trail stop (hideout included): return the deterministic pre-assigned
+       clue. An identity clue also records suspect evidence, deduplicated so
+       revisiting the same site never double-counts. */
     if (s->notebook_count >= CARMEN_MAX_NOTEBOOK) return NULL;
-    s->notebook[s->notebook_count] = stop->sites[active_idx].clue;
+    const CarmenClue *clue = &stop->sites[active_idx].clue;
+    if (clue->type == CARMEN_CLUE_IDENTITY)
+        collect_evidence(s, clue->text);
+    s->notebook[s->notebook_count] = *clue;
     return &s->notebook[s->notebook_count++];
 }
 

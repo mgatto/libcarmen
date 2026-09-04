@@ -28,14 +28,6 @@ static int read_int(const cJSON *obj, const char *key, int *out)
     return 1;
 }
 
-static int read_uint(const cJSON *obj, const char *key, unsigned int *out)
-{
-    const cJSON *it = cJSON_GetObjectItemCaseSensitive(obj, key);
-    if (!cJSON_IsNumber(it) || it->valuedouble < 0) return 0;
-    *out = (unsigned int)it->valuedouble;
-    return 1;
-}
-
 /* --------------------------------------------------------------------------
  * Catalog lookups: villain and artifact are stored by id and re-resolved from
  * the built-in catalogs on load, since a CarmenCase holds a pointer into
@@ -188,8 +180,6 @@ static cJSON *session_to_json(const CarmenSession *s)
     cJSON_AddNumberToObject(root, "time_remaining_hrs", s->time_remaining_hrs);
     cJSON_AddNumberToObject(root, "moves", s->moves);
     cJSON_AddNumberToObject(root, "warrant_villain_idx", s->warrant_villain_idx);
-    cJSON_AddNumberToObject(root, "hideout_investigated_sites",
-                            (double)s->hideout_investigated_sites);
 
     cJSON *visited = cJSON_AddArrayToObject(root, "visited");
     if (!visited) {
@@ -303,7 +293,9 @@ static int clue_from_json(const cJSON *o, CarmenClue *c)
     if (!read_str(o, "target_city_id", c->target_city_id, sizeof(c->target_city_id))) return 0;
     int t;
     if (!read_int(o, "type", &t)) return 0;
-    if (t != CARMEN_CLUE_POSITIVE && t != CARMEN_CLUE_NEGATIVE) return 0;
+    if (t != CARMEN_CLUE_POSITIVE && t != CARMEN_CLUE_NEGATIVE &&
+        t != CARMEN_CLUE_IDENTITY)
+        return 0;
     c->type = (CarmenClueType)t;
     return 1;
 }
@@ -386,6 +378,14 @@ static int case_from_json(const cJSON *o, CarmenCase *c)
         }
     }
 
+    /* Derive identity_clue_count from the authoritative serialized clues so it
+       can never disagree with them (and needn't be persisted separately). */
+    c->identity_clue_count = 0;
+    for (int i = 0; i < trail_len; i++)
+        for (int j = 0; j < c->stops[i].site_count; j++)
+            if (c->stops[i].sites[j].clue.type == CARMEN_CLUE_IDENTITY)
+                c->identity_clue_count++;
+
     return 1;
 }
 
@@ -407,7 +407,6 @@ static int session_from_json(const cJSON *root, CarmenSession *t, CarmenWorld *w
     if (!read_int(root, "moves", &t->moves)) return -4;
     if (!read_int(root, "warrant_villain_idx", &t->warrant_villain_idx)) return -4;
     if (t->warrant_villain_idx < -1 || t->warrant_villain_idx >= FITNA_VILLAIN_COUNT) return -4;
-    if (!read_uint(root, "hideout_investigated_sites", &t->hideout_investigated_sites)) return -4;
 
     const cJSON *visited = cJSON_GetObjectItemCaseSensitive(root, "visited");
     if (!cJSON_IsArray(visited)) return -4;

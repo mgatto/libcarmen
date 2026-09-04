@@ -11,10 +11,12 @@
  *   A --flight 400km--> B --train 200km--> C
  *   A <--flight 400km-- B <--boat 600km--- C
  *
- * Each city has 3 sites with clues:
- *   A sites: positive→B on each, plus negatives/herrings
- *   B sites: positive→C on each, plus negatives/herrings
- *   C sites: negatives only (hideout)
+ * Each city has 3 sites. Clues are difficulty-derived: A and B carry
+ * positives toward the next city plus a herring/negative, and C (the
+ * hideout) carries negatives. On top of that, three suspect-identity
+ * clues are seeded across the trail -- one per distinct trail city --
+ * replacing a herring/negative site, so investigating those yields
+ * evidence toward the arrest warrant.
  *
  * A deterministic RNG ensures the case generator always builds the
  * trail A -> B -> C and assigns clues predictably.
@@ -137,6 +139,28 @@ static int start_easy(CarmenSession *s)
 static void give_full_evidence(CarmenSession *s)
 {
     s->evidence_count = FITNA_MAX_ID_CLUES;
+}
+
+/*
+ * Walk the whole trail from the current city, investigating every active site
+ * at each stop, so all seeded identity clues are collected as evidence. Leaves
+ * the session at the hideout.
+ */
+static void walk_trail_collecting_evidence(CarmenSession *s)
+{
+    int trail_len = s->active_case.trail_len;
+    char trail[CARMEN_MAX_TRAIL][CARMEN_MAX_NAME_LEN];
+    for (int i = 0; i < trail_len; i++)
+        carmen_utf8_copy(trail[i], CARMEN_MAX_NAME_LEN, s->active_case.trail[i]);
+
+    for (int i = 0; i < trail_len; i++) {
+        if (i > 0)
+            carmen_session_travel(s, trail[i]);
+        int idx[CARMEN_TRAIL_SITES];
+        int n = carmen_session_active_sites(s, idx, CARMEN_TRAIL_SITES);
+        for (int j = 0; j < n; j++)
+            carmen_session_investigate(s, idx[j]);
+    }
 }
 
 /* =================================================== lifecycle tests */
@@ -523,46 +547,104 @@ static void test_investigate_off_trail_returns_negative(void)
     TEST_ASSERT_EQUAL_INT(CARMEN_CLUE_NEGATIVE, clue->type);
 }
 
-static void test_investigate_at_hideout_collects_evidence(void)
+/* Find the active site whose assigned clue is the identity clue at the given
+   trail stop, or -1 if that stop has none. */
+static int identity_site_at_stop(const CarmenCase *cas, int stop)
 {
-    CarmenSession s;
-    start_easy(&s);
-
-    carmen_utf8_copy(s.current_city_id, CARMEN_MAX_NAME_LEN,
-                     s.active_case.hideout_id);
-
-    int indices[CARMEN_TRAIL_SITES];
-    int n = carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
-    if (n == 0) {
-        TEST_IGNORE_MESSAGE("hideout has no active sites");
-        return;
-    }
-
-    int before = s.evidence_count;
-    carmen_session_investigate(&s, indices[0]);
-    TEST_ASSERT_GREATER_OR_EQUAL(before, s.evidence_count);
+    for (int j = 0; j < cas->stops[stop].site_count; j++)
+        if (cas->stops[stop].sites[j].clue.type == CARMEN_CLUE_IDENTITY)
+            return cas->stops[stop].sites[j].site_idx;
+    return -1;
 }
 
-static void test_investigate_hideout_evidence_once_per_site(void)
+static void test_investigate_identity_site_collects_evidence(void)
 {
     CarmenSession s;
     start_easy(&s);
 
-    carmen_utf8_copy(s.current_city_id, CARMEN_MAX_NAME_LEN,
-                     s.active_case.hideout_id);
+    /* The origin (trail[0]) carries an identity clue in this deterministic
+       world; investigating it records suspect evidence. */
+    int site = identity_site_at_stop(&s.active_case, 0);
+    TEST_ASSERT_NOT_EQUAL_MESSAGE(-1, site, "origin should host an identity clue");
 
+    TEST_ASSERT_EQUAL_INT(0, s.evidence_count);
+    const CarmenClue *clue = carmen_session_investigate(&s, site);
+    TEST_ASSERT_NOT_NULL(clue);
+    TEST_ASSERT_EQUAL_INT(CARMEN_CLUE_IDENTITY, clue->type);
+    TEST_ASSERT_EQUAL_INT(1, s.evidence_count);
+}
+
+static void test_investigate_identity_evidence_once_per_site(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    int site = identity_site_at_stop(&s.active_case, 0);
+    TEST_ASSERT_NOT_EQUAL(-1, site);
+
+    carmen_session_investigate(&s, site);
+    int after_first = s.evidence_count;
+    TEST_ASSERT_EQUAL_INT(1, after_first);
+
+    /* Re-investigating the same identity site must not double-count. */
+    carmen_session_investigate(&s, site);
+    TEST_ASSERT_EQUAL_INT(after_first, s.evidence_count);
+}
+
+static void test_investigate_non_identity_site_yields_no_evidence(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+
+    int id_site = identity_site_at_stop(&s.active_case, 0);
+
+    /* A positive/herring/negative site never adds evidence. */
     int indices[CARMEN_TRAIL_SITES];
     int n = carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
-    if (n == 0) {
-        TEST_IGNORE_MESSAGE("hideout has no active sites");
-        return;
+    for (int i = 0; i < n; i++) {
+        if (indices[i] == id_site) continue;
+        int before = s.evidence_count;
+        carmen_session_investigate(&s, indices[i]);
+        TEST_ASSERT_EQUAL_INT(before, s.evidence_count);
     }
+}
 
-    carmen_session_investigate(&s, indices[0]);
-    int after_first = s.evidence_count;
+/* Identity clues are seeded in exactly identity_clue_count distinct trail
+   cities, and never displace a correct positive. */
+static void test_identity_clues_in_distinct_trail_cities(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    const CarmenCase *cas = &s.active_case;
 
-    carmen_session_investigate(&s, indices[0]);
-    TEST_ASSERT_EQUAL_INT(after_first, s.evidence_count);
+    TEST_ASSERT_EQUAL_INT(CARMEN_IDENTITY_CLUES, cas->identity_clue_count);
+
+    int stops_with_identity = 0;
+    for (int i = 0; i < cas->trail_len; i++) {
+        int count = 0;
+        for (int j = 0; j < cas->stops[i].site_count; j++) {
+            const CarmenClue *cl = &cas->stops[i].sites[j].clue;
+            if (cl->type == CARMEN_CLUE_IDENTITY)
+                count++;
+            /* An identity clue must never replace a correct positive. */
+            if (cl->type == CARMEN_CLUE_POSITIVE && i < cas->trail_len - 1)
+                TEST_ASSERT_EQUAL_STRING(cas->trail[i + 1], cl->target_city_id);
+        }
+        TEST_ASSERT_TRUE_MESSAGE(count <= 1,
+            "at most one identity clue per city");
+        stops_with_identity += (count > 0);
+    }
+    TEST_ASSERT_EQUAL_INT(CARMEN_IDENTITY_CLUES, stops_with_identity);
+}
+
+static void test_evidence_required_matches_identity_count(void)
+{
+    CarmenSession s;
+    start_easy(&s);
+    TEST_ASSERT_EQUAL_INT(s.active_case.identity_clue_count,
+                          carmen_session_evidence_required(&s));
+    TEST_ASSERT_EQUAL_INT(CARMEN_IDENTITY_CLUES,
+                          carmen_session_evidence_required(&s));
 }
 
 static void test_investigate_full_notebook_returns_null(void)
@@ -712,34 +794,22 @@ static void test_actions_after_game_over_return_errors(void)
 }
 
 /*
- * Full playthrough with no cheating: follow the generated trail to the
- * hideout, collect evidence purely by investigating hideout sites, then
- * issue a warrant and arrest. This guards against the case being
- * unwinnable when FITNA_MAX_ID_CLUES exceeds the hideout's active-site
- * count (see warrant_evidence_target in session.c).
+ * Full playthrough with no cheating: follow the generated trail, collecting
+ * identity evidence by investigating sites at each stop, then issue a warrant
+ * and arrest. This guards against the case being unwinnable -- every seeded
+ * identity clue must be collectable by ordinary play.
  */
 static void test_full_playthrough_reaches_won(void)
 {
     CarmenSession s;
     start_easy(&s);
 
-    /* Copy the trail up front: travelling mutates current_city_id. */
-    int trail_len = s.active_case.trail_len;
-    char trail[CARMEN_MAX_TRAIL][CARMEN_MAX_NAME_LEN];
-    for (int i = 0; i < trail_len; i++)
-        carmen_utf8_copy(trail[i], CARMEN_MAX_NAME_LEN, s.active_case.trail[i]);
-
-    /* Walk the trail from origin (trail[0], already current) to hideout. */
-    for (int i = 1; i < trail_len; i++)
-        TEST_ASSERT_EQUAL_INT(0, carmen_session_travel(&s, trail[i]));
+    walk_trail_collecting_evidence(&s);
     TEST_ASSERT_EQUAL_STRING(s.active_case.hideout_id, s.current_city_id);
 
-    /* Collect evidence only by investigating hideout sites. */
-    int indices[CARMEN_TRAIL_SITES];
-    int n = carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
-    TEST_ASSERT_GREATER_THAN(0, n);
-    for (int i = 0; i < n; i++)
-        carmen_session_investigate(&s, indices[i]);
+    /* All seeded identity clues must have been collected along the way. */
+    TEST_ASSERT_EQUAL_INT(s.active_case.identity_clue_count,
+                          carmen_session_evidence_count(&s));
 
     /* A warrant must be grantable from the evidence actually collectable. */
     int vidx = -1;
@@ -859,18 +929,7 @@ static void test_score_positive_after_real_win(void)
     CarmenSession s;
     start_easy(&s);
 
-    int trail_len = s.active_case.trail_len;
-    char trail[CARMEN_MAX_TRAIL][CARMEN_MAX_NAME_LEN];
-    for (int i = 0; i < trail_len; i++)
-        carmen_utf8_copy(trail[i], CARMEN_MAX_NAME_LEN, s.active_case.trail[i]);
-
-    for (int i = 1; i < trail_len; i++)
-        TEST_ASSERT_EQUAL_INT(0, carmen_session_travel(&s, trail[i]));
-
-    int indices[CARMEN_TRAIL_SITES];
-    int n = carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
-    for (int i = 0; i < n; i++)
-        carmen_session_investigate(&s, indices[i]);
+    walk_trail_collecting_evidence(&s);
 
     int vidx = -1;
     for (int i = 0; i < FITNA_VILLAIN_COUNT; i++)
@@ -977,23 +1036,16 @@ static void test_notebook_at_out_of_range_returns_null(void)
 
 /* ================================================= evidence getters */
 
-static void test_evidence_count_and_at_at_hideout(void)
+static void test_evidence_count_and_at_after_identity(void)
 {
     CarmenSession s;
     start_easy(&s);
 
-    carmen_utf8_copy(s.current_city_id, CARMEN_MAX_NAME_LEN,
-                     s.active_case.hideout_id);
-
-    int indices[CARMEN_TRAIL_SITES];
-    int n = carmen_session_active_sites(&s, indices, CARMEN_TRAIL_SITES);
-    if (n == 0) {
-        TEST_IGNORE_MESSAGE("hideout has no active sites");
-        return;
-    }
+    int site = identity_site_at_stop(&s.active_case, 0);
+    TEST_ASSERT_NOT_EQUAL(-1, site);
 
     TEST_ASSERT_EQUAL_INT(0, carmen_session_evidence_count(&s));
-    carmen_session_investigate(&s, indices[0]);
+    carmen_session_investigate(&s, site);
     TEST_ASSERT_EQUAL_INT(1, carmen_session_evidence_count(&s));
 
     const char *ev = carmen_session_evidence_at(&s, 0);
@@ -1146,8 +1198,11 @@ int main(void)
     RUN_TEST(test_investigate_same_site_twice_returns_same_clue);
     RUN_TEST(test_investigate_two_positive_one_other);
     RUN_TEST(test_investigate_off_trail_returns_negative);
-    RUN_TEST(test_investigate_at_hideout_collects_evidence);
-    RUN_TEST(test_investigate_hideout_evidence_once_per_site);
+    RUN_TEST(test_investigate_identity_site_collects_evidence);
+    RUN_TEST(test_investigate_identity_evidence_once_per_site);
+    RUN_TEST(test_investigate_non_identity_site_yields_no_evidence);
+    RUN_TEST(test_identity_clues_in_distinct_trail_cities);
+    RUN_TEST(test_evidence_required_matches_identity_count);
     RUN_TEST(test_investigate_full_notebook_returns_null);
 
     /* Warrant */
@@ -1184,7 +1239,7 @@ int main(void)
     /* Notebook / evidence / connections getters */
     RUN_TEST(test_notebook_count_and_at_match_investigations);
     RUN_TEST(test_notebook_at_out_of_range_returns_null);
-    RUN_TEST(test_evidence_count_and_at_at_hideout);
+    RUN_TEST(test_evidence_count_and_at_after_identity);
     RUN_TEST(test_connections_returns_current_city_edges);
     RUN_TEST(test_islamic_on_trail_stop_has_three_connections);
 

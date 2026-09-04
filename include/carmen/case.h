@@ -21,6 +21,11 @@ typedef enum {
 #define CARMEN_TRAIL_SITES 3
 #define CARMEN_MAX_VISITED 24
 
+/* Number of villain identity clues seeded into the trail (each in a distinct
+   trail city, replacing a herring/negative site). This is the evidence total
+   a warrant requires; see CarmenCase.identity_clue_count. */
+#define CARMEN_IDENTITY_CLUES 3
+
 /*
  * The single knob for customizing game rules. Populate via
  * carmen_case_settings_default() and, optionally, carmen_case_settings_load().
@@ -61,6 +66,11 @@ typedef struct {
     int32_t time_budget_hrs;  /* fixed-width for ABI */
     CarmenDifficulty    difficulty;
     CarmenTrailStop     stops[CARMEN_MAX_TRAIL];
+    /* How many identity clues were actually seeded into the trail. Normally
+       CARMEN_IDENTITY_CLUES (3); can be fewer only under degenerate custom
+       settings that leave too few replaceable sites. Equals the evidence a
+       warrant requires. Fixed-width for ABI. */
+    int32_t identity_clue_count;
 } CarmenCase;
 
 /*
@@ -73,9 +83,16 @@ typedef struct {
  * (EASY=3, MEDIUM=5, HARD=7), picks a random villain, regenerates a
  * 3-regular flight graph over the world, assigns deterministic clues to
  * 3 sites per trail stop where the number of correct positive clues is
- * derived from difficulty (EASY=3/0/0, MEDIUM=2/1/0, HARD=1/1/1
- * positive/herring/negative; the rest are herrings/negatives), and sets
- * a time budget based on difficulty and total trail travel time.
+ * derived from difficulty (EASY=2/1/0, MEDIUM=2/1/0, HARD=1/1/1
+ * positive/herring/negative; the rest are herrings/negatives, and the
+ * hideout stop's sites are negatives), and sets a time budget based on
+ * difficulty and total trail travel time.
+ *
+ * It then seeds CARMEN_IDENTITY_CLUES (3) villain identity clues into the
+ * trail, each in a distinct random trail city (the hideout included),
+ * overwriting a herring or negative site there (never a correct positive).
+ * Investigating such a site yields suspect-description evidence. The number
+ * actually placed is stored in identity_clue_count.
  *
  * In worlds that contain none of the artifact origin cities, generation
  * falls back to a random start city and a random artifact (narrative may
