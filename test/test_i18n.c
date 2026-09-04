@@ -10,7 +10,11 @@ void tearDown(void) {}
 /* Temp file used by the carmen_i18n_load tests. */
 static const char *I18N_TMP = "carmen_i18n_test.tmp.json";
 
-/* Write len bytes of data to I18N_TMP, failing the test on I/O error. */
+/**
+ * Writes the specified bytes to the temporary test file.
+ * @param data Data to write.
+ * @param len Number of bytes to write.
+ */
 static void write_tmp(const void *data, size_t len)
 {
     FILE *f = fopen(I18N_TMP, "wb");
@@ -97,11 +101,17 @@ static void test_load_reads_from_file(void)
     remove(I18N_TMP);
 }
 
+/**
+ * Verifies that loading translations with a null path returns NULL.
+ */
 static void test_load_null_path_returns_null(void)
 {
     TEST_ASSERT_NULL(carmen_i18n_load(NULL));
 }
 
+/**
+ * Verifies that loading a nonexistent file returns NULL.
+ */
 static void test_load_missing_file_returns_null(void)
 {
     /* Guarantee the file does not exist. */
@@ -148,6 +158,9 @@ static void test_load_at_cap_succeeds(void)
     remove(I18N_TMP);
 }
 
+/**
+ * Verifies that loading an empty file returns NULL.
+ */
 static void test_load_empty_file_returns_null(void)
 {
     /* len <= 0 branch: fseek/ftell gives 0 bytes, must return NULL. */
