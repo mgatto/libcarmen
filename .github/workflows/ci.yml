@@ -19,6 +19,11 @@ jobs:
       - name: Build and test (Make)
         run: make test
 
+      - name: Verify Make shared-library SONAME/install_name
+        run: |
+          make lib
+          make verify-soname
+
       - name: Configure, build, and test (CMake)
         run: |
           cmake -S . -B build-cmake -DCMAKE_BUILD_TYPE=Debug

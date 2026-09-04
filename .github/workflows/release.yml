@@ -18,10 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Zip name uses PROJECT_VERSION from CMakeLists.txt; the Release is
-      # named from the git tag. Fail early if they disagree (tag vX.Y.Z
-      # must match project(carmen VERSION X.Y.Z)).
-      - name: Check tag matches CMake PROJECT_VERSION
+      # Artifact names use the VERSION file (the single source of truth).
+      # The Release is named from the git tag. Fail early if they disagree
+      # (tag vX.Y.Z must match the VERSION file's X.Y.Z).
+      - name: Check tag matches VERSION file
         shell: pwsh
         run: |
           $tag = $env:GITHUB_REF_NAME
@@ -29,13 +29,12 @@ jobs:
             throw "Tag '$tag' is not vX.Y.Z or vX.Y.Z-<prerelease>"
           }
           $fromTag = $Matches[1]
-          $cmake = Get-Content -Raw CMakeLists.txt
-          if ($cmake -notmatch 'project\(\s*carmen[\s\S]*?VERSION\s+(\d+\.\d+\.\d+)') {
-            throw "Could not read project VERSION from CMakeLists.txt"
+          $fromVersion = (Get-Content -Raw VERSION).Trim()
+          if ($fromVersion -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Could not read MAJOR.MINOR.PATCH from VERSION file: '$fromVersion'"
           }
-          $fromCMake = $Matches[1]
-          if ($fromTag -ne $fromCMake) {
-            throw "Tag $tag does not match CMake project VERSION $fromCMake -- tag v$fromCMake or v$fromCMake-<prerelease>"
+          if ($fromTag -ne $fromVersion) {
+            throw "Tag $tag does not match VERSION file $fromVersion -- tag v$fromVersion or v$fromVersion-<prerelease>"
           }
 
       # Same FriBidi path as ci.yml: vcpkg, not the vendored Autotools tree.
