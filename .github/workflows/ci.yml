@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build and test (Make)
         run: make test
@@ -36,7 +36,7 @@ jobs:
     env:
       VCPKG_DEFAULT_TRIPLET: x64-windows
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # No `make` job here: the Makefile assumes a GCC/Clang-style toolchain
       # (cc, ar, -fvisibility=hidden) that isn't present on a native Windows
@@ -64,7 +64,7 @@ jobs:
           cmake --build build-cmake-package --config Release --target demo_package -j
 
       - name: Upload Windows demo zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: libcarmen-demo-windows
           path: build-cmake-package/libcarmen-demo-*-windows-*.zip
@@ -74,7 +74,7 @@ jobs:
     name: Sanitizers (ASan + UBSan)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build and test with sanitizers (Make)
         run: make test-sanitize
@@ -89,10 +89,10 @@ jobs:
     name: WebAssembly (emscripten)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up emsdk
-        uses: mymindstorm/setup-emsdk@v14
+        uses: emscripten-core/setup-emsdk@v15
 
       # The world generator (tools/gen_world) must run on the build host, so
       # CMakeLists.txt builds it via ExternalProject with the host toolchain

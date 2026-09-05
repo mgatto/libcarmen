@@ -16,7 +16,7 @@ jobs:
     env:
       VCPKG_DEFAULT_TRIPLET: x64-windows
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Artifact names use the VERSION file (the single source of truth).
       # The Release is named from the git tag. Fail early if they disagree
@@ -44,7 +44,7 @@ jobs:
           Write-Host $line
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             build-cmake-package/libcarmen-demo-*-windows-*.zip
@@ -65,7 +65,7 @@ jobs:
         os: [macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Artifact names use the VERSION file (the single source of truth).
       # The Release is named from the git tag. Fail early if they disagree
@@ -94,7 +94,7 @@ jobs:
           cat "build-cmake-package/$name.sha256"
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             build-cmake-package/libcarmen-demo-*.tar.gz
