@@ -37,7 +37,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 #  -Wall -Wextra -pedantic catch style/type mistakes, not undefined behavior.
 #  Configure with -DCARMEN_SANITIZE=address,undefined to build the library,
 #  Unity, and every test binary with sanitizer instrumentation -- see
-#  .cursor/rules/c-safety.mdc. Applied globally via add_compile_options
+#  doc/c-safety.md. Applied globally via add_compile_options
 #  rather than per-target so it doesn't need to be threaded through every
 #  add_library/add_executable call individually.
 # --------------------------------------------------------------------------- #

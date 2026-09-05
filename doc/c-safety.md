@@ -1,9 +1,3 @@
----
-description: Undefined-behavior avoidance, bounds-checking, and sanitizer expectations for C implementation files
-globs: src/**/*.c,include/**/*.h
-alwaysApply: false
----
-
 # C Safety Rules
 
 `-std=c17 -Wall -Wextra -pedantic` (see `AGENTS.md`) catches style and type mistakes, not undefined behavior (UB). UB is the actual risk in a hand-written-buffers, no-malloc C codebase like this one.

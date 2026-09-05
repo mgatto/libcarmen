@@ -59,4 +59,4 @@ Check the `TEST_BINS` variable in the Makefile for the exact paths.
 
 ## Versioning
 
-The top-level `VERSION` file is the single source of truth for the version; `carmen_version.h` is generated from it (see `doc/versioning.md`). Never hand-edit the version in `Makefile`/`CMakeLists.txt`/`carmen_version.h` -- bump `VERSION` only, and re-run `make`/`cmake --build` to regenerate. Follow `doc/versioning.md` for what a bump means (major = ABI break), and run `make verify-soname` plus `make version-check` when changing versioning so Make and CMake stay in lockstep (`.cursor/rules/build-parity.mdc`).
+The top-level `VERSION` file is the single source of truth for the version; `carmen_version.h` is generated from it (see `doc/versioning.md`). Never hand-edit the version in `Makefile`/`CMakeLists.txt`/`carmen_version.h` -- bump `VERSION` only, and re-run `make`/`cmake --build` to regenerate. Follow `doc/versioning.md` for what a bump means (major = ABI break), and run `make verify-soname` plus `make version-check` when changing versioning so Make and CMake stay in lockstep (`doc/build-parity.md`).

@@ -20,7 +20,7 @@ Because the make and CMake builds both key `SOVERSION`/`SOMAJOR` off the major c
 
 ## What counts as the ABI (and why it matters)
 
-Cross-language bindings (Ruby/Python/Rust/Node/WASM) read the library from the header and load the shared library at runtime. `include/carmen/` is an ABI contract, not just an API: the exact `offsetof` of every field a caller introspects, the `sizeof` of every public struct, the values of every `CARMEN_*` constant and enum, and the set of exported `CARMEN_API` symbols. These rules mirror `.cursor/rules/cross-platform-abi.mdc`; when a change is additive under that rule it is minor, and when it is not it is major.
+Cross-language bindings (Ruby/Python/Rust/Node/WASM) read the library from the header and load the shared library at runtime. `include/carmen/` is an ABI contract, not just an API: the exact `offsetof` of every field a caller introspects, the `sizeof` of every public struct, the values of every `CARMEN_*` constant and enum, and the set of exported `CARMEN_API` symbols. These rules mirror `doc/cross-platform-abi.md`; when a change is additive under that rule it is minor, and when it is not it is major.
 
 ## Guards against drift
 
@@ -28,7 +28,7 @@ Two checks fail the build/suite if the version renderings disagree (stale genera
 
 - `make version-check` — runs as part of `make test`; compares `VERSION`, the generated header, and the Makefile's resolved `$(VERSION)`.
 - CTest `version_check` — compares `VERSION`, the generated header, and CMake's `PROJECT_VERSION`.
-- `make verify-soname` — asserts the shared library's recorded SONAME/`install_name` is the version-derived `.$(SOMAJOR)` form, so Make output is byte-for-byte the same recorded name CMake emits (run in CI for both Linux and macOS; see `.cursor/rules/build-parity.mdc`).
+- `make verify-soname` — asserts the shared library's recorded SONAME/`install_name` is the version-derived `.$(SOMAJOR)` form, so Make output is byte-for-byte the same recorded name CMake emits (run in CI for both Linux and macOS; see `doc/build-parity.md`).
 
 ## Release notes
 

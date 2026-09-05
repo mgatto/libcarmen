@@ -3,7 +3,9 @@
     "instructions": [
         "AGENTS.md",
         "doc/clean-api-checklist.md",
-        ".cursor/rules/*.md"
+        "doc/cross-platform-abi.md",
+        "doc/c-safety.md",
+        "doc/build-parity.md"
     ],
     "lsp": {
         "clangd": {

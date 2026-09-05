@@ -1,9 +1,3 @@
----
-description: Keep Makefile, CMakeLists.txt, and CI in sync; supported platforms must actually be CI-tested
-globs: Makefile,CMakeLists.txt,.github/workflows/*.yml
-alwaysApply: false
----
-
 # Build & CI Parity Rules
 
 This project ships two build systems (`Makefile` and `CMakeLists.txt`) and claims multiple platform/toolchain targets. Drift between them is the biggest real risk to "cross-platform" claims actually being true.

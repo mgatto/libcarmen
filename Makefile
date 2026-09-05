@@ -391,7 +391,7 @@ $(TEST_DIR)/test_i18n: test/test_i18n.c $(LIB_SRCS_ALL) $(UNITY_SRC) $(GEN_VERSI
 #  -Wall -Wextra -pedantic catch style/type mistakes, not undefined behavior.
 #  test-sanitize rebuilds every test binary with ASan+UBSan instrumentation
 #  and is required clean (in addition to plain `test`) before a change to
-#  src/ is considered done -- see .cursor/rules/c-safety.mdc.
+#  src/ is considered done -- see doc/c-safety.md.
 # --------------------------------------------------------------------------- #
 
 SANITIZE_FLAGS = -std=c17 -Wall -Wextra -pedantic -O0 -g -DUNITY_INCLUDE_DOUBLE \
