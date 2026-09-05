@@ -33,3 +33,5 @@ Two checks fail the build/suite if the version renderings disagree (stale genera
 ## Release notes
 
 Tags `vX.Y.Z` must match the `VERSION` file (`release.yml` fails the workflow otherwise), and the changelog's "Breaking changes" section must be non-empty exactly when the major component changed.
+
+The mechanical steps are scripted in `scripts/release.sh`: it validates a strict `MAJOR.MINOR.PATCH` bump (greater than the current `VERSION`, working tree clean, tag unused), rewrites `VERSION`, rebuilds and runs the full test suite through both Make and CMake (so `version-check`, `verify-soname`, and the CTest `version_check` prove the new version propagates), then commits `VERSION` and creates the annotated `v<version>` tag. It pushes only with `--push`, leaving the package build/publish to `release.yml` on the tag push.

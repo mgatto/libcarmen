@@ -99,6 +99,16 @@ make package       # self-contained macOS demo tarball (libcarmen-demo-<version>
 
 The version lives in the top-level `VERSION` file alone (`carmen_version.h` is generated from it); `make test` runs a `version-check` that fails if anything drifts. See `doc/versioning.md` for the semver + ABI policy.
 
+Cutting a release is scripted:
+
+```sh
+scripts/release.sh 0.10.0          # validate, bump VERSION, build + test via make/cmake, commit, tag v0.10.0
+scripts/release.sh 0.10.0 --push   # ...and push the branch + tag (triggers .github/workflows/release.yml)
+scripts/release.sh 0.10.0 --dry-run # print every step without changing anything
+```
+
+The script only produces the version bump, commit, and tag; GitHub Actions builds and publishes the demo archives for the pushed tag.
+
 Demo archives (`demo_package`; produced in CI and on version tags):
 
 - **Windows zip** (`libcarmen-demo-<version>-windows-x64.zip`). MSVC; FriBidi comes from vcpkg (`x64-windows` is a dynamic triplet, so the zip includes `fribidi*.dll` next to `carmen.dll`):
