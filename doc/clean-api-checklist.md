@@ -2,7 +2,7 @@
 
 "Clean API" isn't a formally standardized term, but for `libcarmen` it means: a public interface with a minimal, consistently-named surface of plain-data types and pure/side-effecting functions that are clearly distinguished, fully documented for ownership/lifetime/error semantics, and free of leaked implementation, platform, or dependency details -- such that a caller (especially one in another language, per the [Project Goal](../README.md#project-goal)) can use it correctly from the header alone, and it never crashes on bad input.
 
-This doc is a concrete checklist for auditing any header under `include/carmen/` -- when adding a new module or reviewing a change to an existing one, walk through each item below. It complements, rather than replaces, `AGENTS.md` and `.cursor/rules/c-safety.mdc` / `.cursor/rules/cross-platform-abi.mdc`, which state most of these rules normatively; this doc explains the intent and points at the codebase's own examples.
+This doc is a concrete checklist for auditing any header under `include/carmen/` -- when adding a new module or reviewing a change to an existing one, walk through each item below. It complements, rather than replaces, `AGENTS.md` and `doc/c-safety.md` / `doc/cross-platform-abi.md`, which state most of these rules normatively; this doc explains the intent and points at the codebase's own examples.
 
 ## 1. Minimal, well-defined surface area
 
@@ -56,7 +56,7 @@ Compiler/platform quirks are funneled through one seam, never scattered `#ifdef`
 
 ## 8. ABI stability for cross-language use
 
-Struct fields a binding might read by offset use fixed-width types (`int32_t`, not bare `int`), since width isn't guaranteed across platforms/compilers -- see `.cursor/rules/cross-platform-abi.mdc`.
+Struct fields a binding might read by offset use fixed-width types (`int32_t`, not bare `int`), since width isn't guaranteed across platforms/compilers -- see `doc/cross-platform-abi.md`.
 
 - [ ] New struct fields intended for field-by-field introspection from a binding use `<stdint.h>` fixed-width types.
 - [ ] No inline compiler-specific attribute or pragma is added to a domain header (`city.h`, `session.h`, ...) -- only to `carmen_export.h`.
