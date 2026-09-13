@@ -290,6 +290,13 @@ if(CARMEN_BUILD_EXAMPLES)
     add_executable(trail_demo examples/trail_demo.c)
     target_link_libraries(trail_demo PRIVATE carmen)
 
+    # Minimal API examples (each a self-contained main() linked against the
+    # library); these also feed the Doxygen reference via @example.
+    foreach(_example hello_world travel_investigate save_load i18n)
+        add_executable(${_example} examples/${_example}.c)
+        target_link_libraries(${_example} PRIVATE carmen)
+    endforeach()
+
     # Make the demo look for the shared lib next to itself at runtime, so the
     # dist bundle is relocatable. Meaningless on Windows (DLLs resolve from the
     # executable's directory) and for static builds, but harmless there.

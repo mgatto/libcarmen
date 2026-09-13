@@ -9,10 +9,16 @@ PROJECT_NAME           = libcarmen
 PROJECT_BRIEF          = "Portable C17 core engine for Carmen Sandiego-style world exploration games"
 
 OUTPUT_DIRECTORY       = build/doxygen
-INPUT                  = include/carmen
+INPUT                  = include/carmen doc/api/getting-started.md
 FILE_PATTERNS          = *.h
 RECURSIVE              = NO
 EXCLUDE                = include/carmen/carmen_export.h
+
+# API examples referenced from headers via @example; the getting-started page
+# becomes the published landing page.
+EXAMPLE_PATH           = examples
+EXAMPLE_PATTERNS       = *.c
+USE_MDFILE_AS_MAINPAGE = doc/api/getting-started.md
 
 # carmen.h includes the generated carmen_version.h, which lives in build/generated.
 INCLUDE_PATH           = build/generated

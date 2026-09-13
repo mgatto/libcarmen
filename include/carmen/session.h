@@ -221,6 +221,8 @@ CARMEN_API int carmen_session_active_sites(const CarmenSession *s,
  * Returns 0 on success, -1 if no connection, -2 if out of time,
  * -3 if the session is not in PLAYING state, -4 if the move limit was
  * reached (settings.move_limit > 0 and moves exhausted).
+ *
+ * @example travel_investigate.c
  */
 CARMEN_API int carmen_session_travel(CarmenSession *s, const char *dest_id);
 

@@ -10,6 +10,8 @@
  * (validated then emitted as C); editing the preset regenerates it, and any
  * schema/capacity/reference error fails the build.  Does nothing if w is
  * NULL; otherwise re-initialises w before populating it.
+ *
+ * @example hello_world.c
  */
 CARMEN_API void carmen_world_build_islamic(CarmenWorld *w);
 

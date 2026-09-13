@@ -44,6 +44,8 @@
  * portable across processes as long as it is loaded against a world
  * containing the same city ids and the same built-in villain/artifact
  * catalogs.
+ *
+ * @example save_load.c
  */
 CARMEN_API int carmen_session_save(const CarmenSession *s, char *buf, int buf_size);
 

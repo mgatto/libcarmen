@@ -105,11 +105,16 @@ SHARED_LIB = $(BUILD_DIR)/$(SHARED_REAL)
 TRAIL_DEMO     = $(BUILD_DIR)/trail_demo
 TRAIL_DEMO_OBJ = $(BUILD_DIR)/trail_demo.o
 
+# Minimal API examples (each a self-contained main(), linked against the static
+# lib). They also feed the Doxygen reference via @example; see doc/api/.
+EXAMPLES        = $(BUILD_DIR)/hello_world $(BUILD_DIR)/travel_investigate \
+                  $(BUILD_DIR)/save_load $(BUILD_DIR)/i18n
+
 # --------------------------------------------------------------------------- #
 #  Default: build the static library and the demo binary
 # --------------------------------------------------------------------------- #
 
-all: $(STATIC_LIB) $(TRAIL_DEMO) version-check verify-soname
+all: $(STATIC_LIB) $(TRAIL_DEMO) $(EXAMPLES) version-check verify-soname
 
 # --------------------------------------------------------------------------- #
 #  Library targets
@@ -135,6 +140,23 @@ $(TRAIL_DEMO): $(TRAIL_DEMO_OBJ) $(STATIC_LIB)
 
 $(TRAIL_DEMO_OBJ): examples/trail_demo.c $(GEN_VERSION_H) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
+
+# The API examples are tiny single-translation-unit programs; build each
+# directly against the static lib. `examples` is also invoked in ci.yml so the
+# Make build compiles them alongside the CMake CARMEN_BUILD_EXAMPLES matrix.
+examples: $(EXAMPLES)
+
+$(BUILD_DIR)/hello_world: examples/hello_world.c $(STATIC_LIB) $(GEN_VERSION_H) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(STATIC_LIB) $(LDLIBS)
+
+$(BUILD_DIR)/travel_investigate: examples/travel_investigate.c $(STATIC_LIB) $(GEN_VERSION_H) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(STATIC_LIB) $(LDLIBS)
+
+$(BUILD_DIR)/save_load: examples/save_load.c $(STATIC_LIB) $(GEN_VERSION_H) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(STATIC_LIB) $(LDLIBS)
+
+$(BUILD_DIR)/i18n: examples/i18n.c $(STATIC_LIB) $(GEN_VERSION_H) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(STATIC_LIB) $(LDLIBS)
 
 $(BUILD_DIR)/%.o: src/%.c $(GEN_VERSION_H) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(DEPFLAGS) $(INCLUDES) -c -o $@ $<
@@ -655,4 +677,4 @@ else
 endif
 
 .PHONY: all lib dist package clean distclean test test-sanitize coverage analyze \
-        docs install uninstall version-check verify-soname
+        docs examples install uninstall version-check verify-soname

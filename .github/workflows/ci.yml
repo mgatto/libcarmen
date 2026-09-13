@@ -19,6 +19,9 @@ jobs:
       - name: Build and test (Make)
         run: make test
 
+      - name: Build API examples (Make)
+        run: make examples
+
       - name: Verify Make shared-library SONAME/install_name
         run: |
           make lib

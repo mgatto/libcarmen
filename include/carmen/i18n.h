@@ -16,6 +16,8 @@ typedef struct CarmenI18n CarmenI18n;
  * Load locale strings from a JSON file at json_path.  Returns a context to
  * pass to carmen_i18n_get(), or NULL on open/read/parse failure or if
  * json_path is NULL.  Caller frees with carmen_i18n_free().
+ *
+ * @example i18n.c
  */
 CARMEN_API CarmenI18n *carmen_i18n_load(const char *json_path);
 
