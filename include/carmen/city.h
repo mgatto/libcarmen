@@ -89,9 +89,5 @@ CARMEN_API int  carmen_city_to_string(const CarmenCity *c,
 /** Write "<City:id Name, Country (Continent) sites=N connections=N>" into buf. */
 CARMEN_API int  carmen_city_detail_to_string(const CarmenCity *c,
                                              char *buf, int buf_size);
-/** Debug helper: print the city to stdout. */
-CARMEN_API void carmen_city_print(const CarmenCity *c);
-/** Debug helper: print the city's details to stdout. */
-CARMEN_API void carmen_city_print_detail(const CarmenCity *c);
 
 #endif

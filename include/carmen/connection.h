@@ -30,9 +30,6 @@ CARMEN_API void carmen_connection_init(CarmenConnection *c,
 CARMEN_API int  carmen_connection_to_string(const CarmenConnection *c,
                                             char *buf, int buf_size);
 
-/** Debug helper: print the connection to stdout. */
-CARMEN_API void carmen_connection_print(const CarmenConnection *c);
-
 /**
  * Nominal speed in km/h for a transport mode string.
  * "flight" = 800, "train" = 200, "boat" = 60, unknown = 800.

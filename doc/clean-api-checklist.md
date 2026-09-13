@@ -63,7 +63,7 @@ Struct fields a binding might read by offset use fixed-width types (`int32_t`, n
 
 ## 9. No embedded UI or I/O
 
-The core exposes mechanism, not policy: no `printf`-driven prompts, terminal control, or other UI/I/O baked into library logic (aside from the explicitly-named `_print` debug helpers, e.g. `carmen_city_print` in [`include/carmen/city.h`](../include/carmen/city.h)). Rendering and input belong to a front-end like `examples/trail_demo.c`.
+The core exposes mechanism, not policy: no `printf`-driven prompts, terminal control, or other UI/I/O baked into library logic (aside from the explicitly-named `_print` debug helpers, e.g. `carmen_city_print` in [`include/carmen/debug.h`](../include/carmen/debug.h)). Rendering and input belong to a front-end like `examples/trail_demo.c`. The `_print` helpers are deliberately kept out of the `carmen.h` umbrella so release consumers get a print-free API unless they opt in by including `debug.h`.
 
 - [ ] New library logic doesn't call `printf`/`scanf`/terminal control functions except in a function whose name makes clear it's a debug/demo print helper.
 - [ ] A front-end feature request is satisfied by adding a query/action to the core API, not by reaching around it.

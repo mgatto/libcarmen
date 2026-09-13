@@ -215,6 +215,7 @@ set(CARMEN_PUBLIC_HEADERS
     include/carmen/connection.h
     include/carmen/city.h
     include/carmen/game_world.h
+    include/carmen/debug.h
     include/carmen/world_islamic.h
     include/carmen/villain.h
     include/carmen/artifact.h

@@ -154,7 +154,5 @@ CARMEN_API int   carmen_world_continent_count(const CarmenWorld *w);
  */
 CARMEN_API int  carmen_world_continents_to_string(const CarmenWorld *w,
                                                    char *buf, int buf_size);
-/** Debug helper: print the world's continent list to stdout. */
-CARMEN_API void carmen_world_print_continents(const CarmenWorld *w);
 
 #endif

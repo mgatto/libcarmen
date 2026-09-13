@@ -26,7 +26,4 @@ CARMEN_API void              carmen_site_init(CarmenSite *s, const char *id,
 CARMEN_API int  carmen_site_to_string(const CarmenSite *s,
                                       char *buf, int buf_size);
 
-/** Debug helper: print the site to stdout. */
-CARMEN_API void carmen_site_print(const CarmenSite *s);
-
 #endif

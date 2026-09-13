@@ -94,6 +94,7 @@ All third-party code is vendored under `vendor/` on Unix, macOS, and WebAssembly
 ```sh
 make               # static library + demo binary (build/trail_demo)
 make lib           # static + shared library
+make debug         # -O0 -g build of lib + demo + examples in build/debug/ (for valgrind/gdb)
 make test          # run all unit tests
 make test-sanitize # run all unit tests under ASan + UBSan (GCC/Clang only)
 make coverage      # test coverage report (requires lcov)
@@ -103,6 +104,15 @@ make analyze 2> doc/analyzer_log.txt  # same, capturing diagnostics (gcc emits t
 make verify-soname # assert the shared lib's SONAME/install_name matches CMake's
 make package       # self-contained macOS demo tarball (libcarmen-demo-<version>-macos-<arch>.tar.gz)
 ```
+
+For a debuggable library (`make debug`, or CMake `-DCMAKE_BUILD_TYPE=Debug`) you can run the demo under a tool like valgrind:
+
+```sh
+make debug
+valgrind --leak-check=full ./build/debug/trail_demo en settings.toml
+```
+
+The `_print` debug helpers (`carmen_city_print`, `carmen_site_print`, `carmen_connection_print`, `carmen_city_print_detail`, `carmen_world_print_continents`) are not part of the `carmen.h` umbrella API; include `<carmen/debug.h>` explicitly to use them. They are always compiled and exported regardless of build type.
 
 The version lives in the top-level `VERSION` file alone (`carmen_version.h` is generated from it); `make test` runs a `version-check` that fails if anything drifts. See `doc/versioning.md` for the semver + ABI policy.
 

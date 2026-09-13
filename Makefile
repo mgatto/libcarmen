@@ -132,6 +132,21 @@ $(SHARED_LIB): $(LIB_SRCS_ALL) $(GEN_VERSION_H) | $(BUILD_DIR)
 lib: $(STATIC_LIB) $(SHARED_LIB) version-check verify-soname
 
 # --------------------------------------------------------------------------- #
+#  Debug build
+#
+#  Rebuild the library, demo, and examples at -O0 -g in a separate tree so a
+#  caller can run them under valgrind/gdb without clobbering the -O2 objects.
+#  Only src/ gets debug info; vendor objects (cJSON, fribidi) keep their own
+#  -O2 rules per the "vendor is exempt" convention.
+# --------------------------------------------------------------------------- #
+
+DBG_BUILD_DIR = build/debug
+DBG_CFLAGS    = -std=c17 -Wall -Wextra -pedantic -O0 -g
+
+debug:
+	$(MAKE) BUILD_DIR=$(DBG_BUILD_DIR) CFLAGS="$(DBG_CFLAGS)" all
+
+# --------------------------------------------------------------------------- #
 #  Demo binary
 # --------------------------------------------------------------------------- #
 
@@ -281,6 +296,7 @@ PUBLIC_HEADERS = include/carmen/carmen.h include/carmen/carmen_export.h \
                  include/carmen/clue.h include/carmen/site.h \
                  include/carmen/connection.h include/carmen/city.h \
                  include/carmen/game_world.h \
+                 include/carmen/debug.h \
                  include/carmen/world_islamic.h \
                  include/carmen/villain.h include/carmen/artifact.h \
                  include/carmen/case.h include/carmen/session.h \
@@ -676,5 +692,5 @@ else
 	    || { echo "FAIL: soname != $(SHARED_SONAME)"; exit 1; }
 endif
 
-.PHONY: all lib dist package clean distclean test test-sanitize coverage analyze \
+.PHONY: all lib debug dist package clean distclean test test-sanitize coverage analyze \
         docs examples install uninstall version-check verify-soname
