@@ -44,16 +44,29 @@ jobs:
             $lines += "$hash  $($_.Name)"
           }
           if ($lines.Count -eq 0) { throw "no archives found" }
-          $lines | Set-Content -Path build-cmake-package/SHA256SUMS
+          $lines | Set-Content -Path "build-cmake-package/sha256sums-${{ runner.os }}.txt"
           Write-Host ($lines -join "`n")
 
-      - name: Publish GitHub Release
+      # Partial checksum, combined with the Unix legs' into one sha256sums.txt
+      # by the `publish` job after every leg has uploaded.
+      - name: Upload checksum partial
+        uses: actions/upload-artifact@v7
+        with:
+          name: checksums-${{ runner.os }}
+          path: build-cmake-package/sha256sums-${{ runner.os }}.txt
+          if-no-files-found: error
+
+      # Upload to a draft release. GitHub locks assets after publication, so a
+      # later job (or the Unix matrix leg) cannot add/overwrite assets on an
+      # already-published release; keeping it a draft until every job has
+      # uploaded is what the trailing `publish` job unpublishes at the end.
+      - name: Upload to draft GitHub Release
         uses: softprops/action-gh-release@v3
         with:
+          draft: true
           files: |
             build-cmake-package/libcarmen-demo-*-windows-*.zip
             build-cmake-package/libcarmen-sdk-*-windows-*-shared.zip
-            build-cmake-package/SHA256SUMS
           fail_on_unmatched_files: true
           generate_release_notes: true
 
@@ -95,7 +108,7 @@ jobs:
 
       - name: SHA256 checksum
         run: |
-          : > build-cmake-package/sha256sums.txt
+          : > "build-cmake-package/sha256sums-${{ runner.os }}.txt"
           for archive in \
               build-cmake-package/libcarmen-demo-*.tar.gz \
               build-cmake-package/libcarmen-sdk-*-shared.tar.gz \
@@ -103,17 +116,62 @@ jobs:
             [ -f "$archive" ] || { echo "archive not found: $archive"; exit 1; }
             printf '%s  %s\n' \
               "$(shasum -a 256 "$archive" | cut -d' ' -f1)" "$(basename "$archive")" \
-              >> build-cmake-package/sha256sums.txt
+              >> "build-cmake-package/sha256sums-${{ runner.os }}.txt"
           done
-          cat build-cmake-package/sha256sums.txt
+          cat "build-cmake-package/sha256sums-${{ runner.os }}.txt"
 
-      - name: Publish GitHub Release
+      # Partial checksum, combined with the other legs' into one sha256sums.txt
+      # by the `publish` job after every leg has uploaded.
+      - name: Upload checksum partial
+        uses: actions/upload-artifact@v7
+        with:
+          name: checksums-${{ runner.os }}
+          path: build-cmake-package/sha256sums-${{ runner.os }}.txt
+          if-no-files-found: error
+
+      # Upload to the same draft release (see the Windows job's comment).
+      - name: Upload to draft GitHub Release
         uses: softprops/action-gh-release@v3
         with:
+          draft: true
           files: |
             build-cmake-package/libcarmen-demo-*.tar.gz
             build-cmake-package/libcarmen-sdk-*-shared.tar.gz
             build-cmake-sdk-static/libcarmen-sdk-*-static.tar.gz
-            build-cmake-package/sha256sums.txt
           fail_on_unmatched_files: true
           generate_release_notes: true
+
+  # Publish only after every build job has finished uploading, so the release
+  # stays a draft (mutable) until all assets are in place. Publishing is the
+  # point of no return: GitHub marks a published release immutable, so no
+  # asset can be added, overwritten, or deleted afterwards. This job also
+  # assembles the per-leg checksum partials into a single sha256sums.txt
+  # covering every archive, then uploads it before publishing.
+  publish:
+    name: Assemble checksums and publish
+    runs-on: ubuntu-latest
+    needs: [windows-demo-sdk, unix-demo-sdk]
+    steps:
+      - name: Download checksum partials
+        uses: actions/download-artifact@v7
+        with:
+          pattern: checksums-*
+          merge-multiple: true
+          path: checksums
+
+      - name: Assemble sha256sums.txt
+        run: |
+          cat checksums/sha256sums-*.txt | sort -k2 > sha256sums.txt
+          cat sha256sums.txt
+
+      - name: Upload unified sha256sums.txt
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: true
+          files: sha256sums.txt
+          fail_on_unmatched_files: true
+
+      - name: Publish draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "${{ github.ref_name }}" --draft=false
