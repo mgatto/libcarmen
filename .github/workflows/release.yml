@@ -171,7 +171,10 @@ jobs:
           files: sha256sums.txt
           fail_on_unmatched_files: true
 
+      # This job never checks out the repository, so `gh` has no .git/ to infer
+      # the repo from. Point it at the repo explicitly via GH_REPO.
       - name: Publish draft release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: gh release edit "${{ github.ref_name }}" --draft=false
