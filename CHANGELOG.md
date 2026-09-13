@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.2](https://github.com/mgatto/libcarmen/compare/v1.0.1...v1.0.2) (2026-09-13)
+
+### Bug Fixes
+
+* don’t —follow-tags since we broke 1.0.0’s tag ([dff6541](https://github.com/mgatto/libcarmen/commit/dff6541919b3cef65dd6a8a36da41aa9b9ad904c))
+* release pulishing ([8e227fd](https://github.com/mgatto/libcarmen/commit/8e227fd3f22ea6d9a7bdaa78ef4bf6d3eb9e7fef))
 ## [1.0.1](https://github.com/mgatto/libcarmen/compare/v1.0.0...v1.0.1) (2026-09-13)
 
 ### Bug Fixes
