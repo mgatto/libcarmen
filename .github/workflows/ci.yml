@@ -127,6 +127,8 @@ jobs:
           rm -rf build-sdk/_sdk_smoke && mkdir -p build-sdk/_sdk_smoke
           unzip -q "$zip" -d build-sdk/_sdk_smoke
           sdkroot=$(find build-sdk/_sdk_smoke -maxdepth 1 -mindepth 1 -type d -print -quit)
+          [ -n "$sdkroot" ] || { echo "SDK root not found in zip"; exit 1; }
+          sdkroot=$(cygpath -m "$(pwd)/$sdkroot")
           cmake -S cmake/smoke -B build-sdk/_sdk_smoke/build -DCMAKE_PREFIX_PATH="$sdkroot"
           cmake --build build-sdk/_sdk_smoke/build --config Release
 
