@@ -4,6 +4,12 @@
 
 Portable C17 core engine for Carmen Sandiego-style world exploration games, starting with an [Islamicate world](#built-in-world) and extensible to other cultural realms — zero external deps, clean C ABI, FFI- and WebAssembly-ready.
 
+## Documentation
+
+The full public API reference — generated with Doxygen from the `/** ... */` comments in [`include/carmen/`](include/carmen/) — is published at <https://mgatto.github.io/libcarmen/> and regenerated from `main` by [`.github/workflows/docs.yml`](.github/workflows/docs.yml). Generate it locally with `make docs` (requires `doxygen`), then open `build/doxygen/html/index.html`.
+
+Want to contribute? See [`CONTRIBUTING.md`](CONTRIBUTING.md) for a map of the conventions, which live in [`AGENTS.md`](AGENTS.md) and [`doc/`](doc/).
+
 ## Project Goal
 
 `libcarmen` is a **hobby project**: a small, portable, dependency-light **core engine** designed to be cleanly wrapped by other languages and frameworks. The C17 core owns all game logic and state; front-ends and language bindings simply drive it through a stable, UI-agnostic API.
@@ -91,6 +97,7 @@ make lib           # static + shared library
 make test          # run all unit tests
 make test-sanitize # run all unit tests under ASan + UBSan (GCC/Clang only)
 make coverage      # test coverage report (requires lcov)
+make docs          # Doxygen API reference -> build/doxygen/html (requires doxygen)
 make analyze       # SEI CERT / CWE static analysis via gcc-16 -fanalyzer (requires Homebrew gcc-16)
 make analyze 2> doc/analyzer_log.txt  # same, capturing diagnostics (gcc emits them on stderr)
 make verify-soname # assert the shared lib's SONAME/install_name matches CMake's

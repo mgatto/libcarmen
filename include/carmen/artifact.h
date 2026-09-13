@@ -5,6 +5,9 @@
 
 #define CARMEN_ARTIFACT_COUNT 21
 
+/**
+ * A stolen artifact from the built-in CARMEN_ARTIFACTS[] catalog.
+ */
 typedef struct {
     const char *id;
     const char *name;            /* i18n key */
@@ -14,7 +17,7 @@ typedef struct {
 
 CARMEN_API extern const CarmenArtifact CARMEN_ARTIFACTS[CARMEN_ARTIFACT_COUNT];
 
-/*
+/**
  * Read-only accessors for the artifact catalog, so clients (UI, bindings)
  * can list artifacts without reaching into the CARMEN_ARTIFACTS[] global.
  * carmen_artifact_at returns a borrowed pointer into the static

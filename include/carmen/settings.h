@@ -4,14 +4,14 @@
 #include "carmen_export.h"
 #include "case.h"
 
-/*
+/**
  * Return a fully-populated, valid CarmenCaseSettings with sensible
  * defaults (medium difficulty, derived trail/time, derived active sites
  * and positive-clue ratio from difficulty, unlimited moves).
  */
 CARMEN_API CarmenCaseSettings carmen_case_settings_default(void);
 
-/*
+/**
  * Load settings from a human-editable TOML file.
  *
  * *out is first filled with carmen_case_settings_default(), then any

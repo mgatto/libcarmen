@@ -8,7 +8,7 @@
 
 #define CARMEN_MAX_NOTEBOOK 64
 
-/*
+/**
  * Scoring constants for carmen_session_score() (additive model).
  *
  * base(difficulty) is the per-difficulty floor a win is always worth;
@@ -22,11 +22,13 @@
 #define CARMEN_SCORE_TIME_WEIGHT    10
 #define CARMEN_SCORE_MOVE_PENALTY   50
 
-/* ABI note: CarmenSessionStatus enum values fit in int32 and bindings may
-   read a CarmenSessionStatus struct field as a 32-bit signed integer.  The
-   enumerators are guaranteed to remain: PLAYING=0, WON=1, LOST_TIME=2,
-   LOST_MOVES=3, LOST_WRONG_ARREST=4, LOST_NO_WARRANT=5,
-   NOT_AT_HIDEOUT=6. */
+/**
+ * ABI note: CarmenSessionStatus enum values fit in int32 and bindings may
+ * read a CarmenSessionStatus struct field as a 32-bit signed integer.  The
+ * enumerators are guaranteed to remain: PLAYING=0, WON=1, LOST_TIME=2,
+ * LOST_MOVES=3, LOST_WRONG_ARREST=4, LOST_NO_WARRANT=5,
+ * NOT_AT_HIDEOUT=6.
+ */
 typedef enum {
   CARMEN_STATUS_PLAYING,
   CARMEN_STATUS_WON,
@@ -37,6 +39,10 @@ typedef enum {
   CARMEN_STATUS_NOT_AT_HIDEOUT
 } CarmenSessionStatus;
 
+/**
+ * Live play state over a generated CarmenCase.  All fixed-width fields are
+ * ABI-stable for cross-language bindings.
+ */
 typedef struct {
   /* Caller-supplied pointer; borrowed, not owned by the session.  Bindings
      should not read this field by offset (pointer width is platform-dependent);
@@ -58,10 +64,15 @@ typedef struct {
 } CarmenSession;
 
 /* Lifecycle */
+/**
+ * Start a session: attach world w and regenerate a fresh case from settings.
+ * Returns 1 on success, or 0 if s, w or settings is NULL, no world/settings
+ * were supplied, or case generation fails (the session is left non-playable).
+ */
 CARMEN_API int carmen_session_start(CarmenSession *s, CarmenWorld *w,
                                     const CarmenCaseSettings *settings);
 
-/*
+/**
  * Reset the session and regenerate a fresh case in place, reusing the world
  * and settings the session was last started with. Equivalent to calling
  * carmen_session_start() again with the same world/settings: it clears all
@@ -76,23 +87,30 @@ CARMEN_API int carmen_session_start(CarmenSession *s, CarmenWorld *w,
 CARMEN_API int carmen_session_reset(CarmenSession *s);
 
 /* Queries (read-only, for UI) */
+/** Return the session's current CarmenSessionStatus (CARMEN_STATUS_LOST_TIME for a NULL s). */
 CARMEN_API CarmenSessionStatus carmen_session_status(const CarmenSession *s);
 
-/* Returns the current city, borrowed from the session's world.  The pointer
-   is valid for the lifetime of the world; it does not change ownership when
-   the player travels.  Returns NULL if s is NULL or the world is unset. */
+/**
+ * Returns the current city, borrowed from the session's world.  The pointer
+ * is valid for the lifetime of the world; it does not change ownership when
+ * the player travels.  Returns NULL if s is NULL or the world is unset.
+ */
 CARMEN_API const CarmenCity *
 carmen_session_current_city(const CarmenSession *s);
 
-/* Returns the active case embedded in the session.  The pointer is borrowed:
-   it points into s and remains valid for the lifetime of the session.
-   Returns NULL if s is NULL. */
+/**
+ * Returns the active case embedded in the session.  The pointer is borrowed:
+ * it points into s and remains valid for the lifetime of the session.
+ * Returns NULL if s is NULL.
+ */
 CARMEN_API const CarmenCase *carmen_session_case(const CarmenSession *s);
 
+/** Return the hours remaining in the session (0 if s is NULL). */
 CARMEN_API int carmen_session_time_remaining(const CarmenSession *s);
+/** Return the number of moves made so far (0 if s is NULL). */
 CARMEN_API int carmen_session_moves(const CarmenSession *s);
 
-/*
+/**
  * Final score for a won session (a simple additive model). Returns 0 for
  * any non-WON status (including a NULL session), so a front-end can call
  * it unconditionally and only surface a score once
@@ -113,7 +131,7 @@ CARMEN_API int carmen_session_moves(const CarmenSession *s);
  */
 CARMEN_API int carmen_session_score(const CarmenSession *s);
 
-/*
+/**
  * The villain behind the active case.  Returns a borrowed pointer into the
  * static FITNA_VILLAINS[] catalog; valid for the program lifetime and never
  * needs to be freed.  Returns NULL if s is NULL.  Convenience wrapper so
@@ -121,42 +139,43 @@ CARMEN_API int carmen_session_score(const CarmenSession *s);
  */
 CARMEN_API const FitnaVillain *carmen_session_villain(const CarmenSession *s);
 
-/*
+/**
  * Cities-visited history (chronological, includes the origin and any
  * revisits). Capped at the session's visited_history_size setting.
- * carmen_session_visited_at returns NULL for an out-of-range index or NULL s.
- * The returned pointer is borrowed: it points into s->visited[] and remains
- * valid for the lifetime of the session.  Callers must not free the pointer.
+ * The returned pointer from carmen_session_visited_at is borrowed: it points
+ * into s->visited[] and remains valid for the lifetime of the session.
+ * Callers must not free the pointer.
  */
 CARMEN_API int         carmen_session_visited_count(const CarmenSession *s);
+/** Return the index-th visited city id (borrowed C string), or NULL for an out-of-range index or NULL s. */
 CARMEN_API const char *carmen_session_visited_at(const CarmenSession *s,
                                                  int index);
 
-/*
+/**
  * Clue notebook (clues dispensed by carmen_session_investigate, oldest
- * first).  carmen_session_notebook_at returns NULL for an out-of-range
- * index or NULL s.  The returned pointer is borrowed: it points into
- * s->notebook[] and remains valid for the lifetime of the session.
- * Callers must not free the pointer.
+ * first).  The returned pointer from carmen_session_notebook_at is borrowed:
+ * it points into s->notebook[] and remains valid for the lifetime of the
+ * session.  Callers must not free the pointer.
  */
 CARMEN_API int               carmen_session_notebook_count(
                                  const CarmenSession *s);
+/** Return the index-th notebook clue (borrowed pointer), or NULL for an out-of-range index or NULL s. */
 CARMEN_API const CarmenClue *carmen_session_notebook_at(
                                  const CarmenSession *s, int index);
 
-/*
+/**
  * Villain identity evidence collected by investigating identity-clue sites
  * along the suspect's trail.  Each entry is an i18n key for one id clue.
- * carmen_session_evidence_at returns NULL for an out-of-range index or NULL
- * s.  The returned pointer is borrowed: it points into s->evidence[] and
- * remains valid for the lifetime of the session.  Callers must not free the
- * pointer.
+ * The returned pointer from carmen_session_evidence_at is borrowed: it points
+ * into s->evidence[] and remains valid for the lifetime of the session.
+ * Callers must not free the pointer.
  */
 CARMEN_API int         carmen_session_evidence_count(const CarmenSession *s);
+/** Return the index-th evidence id-clue key (borrowed C string), or NULL for an out-of-range index or NULL s. */
 CARMEN_API const char *carmen_session_evidence_at(const CarmenSession *s,
                                                   int index);
 
-/*
+/**
  * How many identity clues a warrant requires for the active case: the number
  * of identity clues seeded into the trail (CarmenCase.identity_clue_count,
  * normally CARMEN_IDENTITY_CLUES). Front-ends can render progress as
@@ -165,7 +184,7 @@ CARMEN_API const char *carmen_session_evidence_at(const CarmenSession *s,
  */
 CARMEN_API int carmen_session_evidence_required(const CarmenSession *s);
 
-/*
+/**
  * True once enough evidence has been collected to issue a warrant and the
  * session is still PLAYING -- i.e. carmen_session_issue_warrant() would no
  * longer be refused with -2 for lack of evidence. Front-ends can watch this
@@ -175,7 +194,7 @@ CARMEN_API int carmen_session_evidence_required(const CarmenSession *s);
  */
 CARMEN_API bool carmen_session_can_issue_warrant(const CarmenSession *s);
 
-/*
+/**
  * Connections leaving the current city. Writes up to max_out connection
  * pointers into out and returns the count (0 if there is no current
  * city). The pointers reference the world's city data and remain valid
@@ -185,7 +204,7 @@ CARMEN_API int carmen_session_connections(const CarmenSession *s,
                                           const CarmenConnection **out,
                                           int max_out);
 
-/*
+/**
  * Return the active site indices for the current city.
  *
  * On-trail cities have up to CARMEN_TRAIL_SITES (3) active sites chosen
@@ -195,7 +214,7 @@ CARMEN_API int carmen_session_connections(const CarmenSession *s,
 CARMEN_API int carmen_session_active_sites(const CarmenSession *s,
                                            int *out_indices, int max_out);
 
-/*
+/**
  * Travel to a connected city.
  *
  * Deducts time based on the connection's transport mode and distance.
@@ -205,7 +224,7 @@ CARMEN_API int carmen_session_active_sites(const CarmenSession *s,
  */
 CARMEN_API int carmen_session_travel(CarmenSession *s, const char *dest_id);
 
-/*
+/**
  * Investigate a site in the current city.
  *
  * On-trail cities return a deterministic clue assigned at case-
@@ -232,7 +251,7 @@ CARMEN_API int carmen_session_travel(CarmenSession *s, const char *dest_id);
 CARMEN_API const CarmenClue *carmen_session_investigate(CarmenSession *s,
                                                         int site_idx);
 
-/*
+/**
  * Advance the session clock by an arbitrary number of hours, independent of
  * travel or investigation. Intended for front-end-driven time costs the core
  * doesn't model itself (e.g. a client deducting sleep time at "bedtime").
@@ -247,7 +266,7 @@ CARMEN_API const CarmenClue *carmen_session_investigate(CarmenSession *s,
  */
 CARMEN_API int carmen_session_advance_time(CarmenSession *s, int hours);
 
-/*
+/**
  * Issue (or change) an arrest warrant for a villain.
  * villain_idx is the index into FITNA_VILLAINS[].
  *
@@ -263,7 +282,7 @@ CARMEN_API int carmen_session_advance_time(CarmenSession *s, int hours);
  */
 CARMEN_API int carmen_session_issue_warrant(CarmenSession *s, int villain_idx);
 
-/*
+/**
  * Attempt to arrest the villain at the current city.
  *
  * Succeeds only if the player is at the hideout city with a warrant

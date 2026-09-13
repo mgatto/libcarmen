@@ -7,6 +7,10 @@
 #define FITNA_MAX_ID_CLUES   4
 #define FITNA_VILLAIN_COUNT 16
 
+/**
+ * A villain from the built-in FITNA_VILLAINS[] catalog: id, name, alias,
+ * gender ('M' or 'F'), and up to FITNA_MAX_ID_CLUES identity-clue i18n keys.
+ */
 typedef struct {
     const char *id;
     const char *name;
@@ -16,9 +20,10 @@ typedef struct {
     const char *id_clues[FITNA_MAX_ID_CLUES];
 } FitnaVillain;
 
+/** The built-in villain catalog. Access via carmen_villain_count() / carmen_villain_at(). */
 CARMEN_API extern const FitnaVillain FITNA_VILLAINS[FITNA_VILLAIN_COUNT];
 
-/*
+/**
  * Read-only accessors for the villain catalog, so clients (UI, bindings)
  * can list villains without reaching into the FITNA_VILLAINS[] global.
  * carmen_villain_at returns a borrowed pointer into the static
@@ -28,7 +33,7 @@ CARMEN_API extern const FitnaVillain FITNA_VILLAINS[FITNA_VILLAIN_COUNT];
 CARMEN_API int                 carmen_villain_count(void);
 CARMEN_API const FitnaVillain *carmen_villain_at(int index);
 
-/*
+/**
  * Expand pronoun template tokens in a clue string.
  *
  * Tokens: {They}/{they}, {Their}/{their}, {them},

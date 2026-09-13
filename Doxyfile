@@ -1,0 +1,37 @@
+# Doxygen configuration for the libcarmen public API reference.
+#
+# See `.github/workflows/docs.yml` and the `make docs` target. PROJECT_NUMBER
+# is intentionally absent here: it is appended from the top-level VERSION file
+# at generation time so the rendered version can never drift from the single
+# source of truth (see doc/versioning.md).
+
+PROJECT_NAME           = libcarmen
+PROJECT_BRIEF          = "Portable C17 core engine for Carmen Sandiego-style world exploration games"
+
+OUTPUT_DIRECTORY       = build/doxygen
+INPUT                  = include/carmen
+FILE_PATTERNS          = *.h
+RECURSIVE              = NO
+EXCLUDE                = include/carmen/carmen_export.h
+
+# carmen.h includes the generated carmen_version.h, which lives in build/generated.
+INCLUDE_PATH           = build/generated
+
+STRIP_FROM_PATH        = include/carmen
+FULL_PATH_NAMES        = NO
+
+EXTRACT_ALL            = YES
+EXTRACT_STATIC         = NO
+HIDE_UNDOC_MEMBERS     = NO
+
+JAVADOC_AUTOBRIEF      = YES
+OPTIMIZE_OUTPUT_FOR_C  = YES
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_TREEVIEW      = YES
+GENERATE_LATEX         = NO
+HAVE_DOT               = NO
+
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO

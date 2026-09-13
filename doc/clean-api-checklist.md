@@ -70,7 +70,7 @@ The core exposes mechanism, not policy: no `printf`-driven prompts, terminal con
 
 ## 10. Documented at the point of use
 
-Every public function has a short `/* ... */` doc comment above its declaration describing behavior, ownership of any returned pointer, and the meaning of any non-obvious return value -- so the header alone is sufficient documentation without reading the implementation. Nearly every declaration in [`include/carmen/session.h`](../include/carmen/session.h) follows this pattern; use it as the reference example when documenting a new function.
+Every public function has a short `/** ... */` Doxygen doc comment above its declaration describing behavior, ownership of any returned pointer, and the meaning of any non-obvious return value -- so the header alone is sufficient documentation without reading the implementation. The `/** ... */` form (not plain `/* ... */`) is what Doxygen picks up for the published API reference (`make docs` / `.github/workflows/docs.yml`). Nearly every declaration in [`include/carmen/session.h`](../include/carmen/session.h) follows this pattern; use it as the reference example when documenting a new function.
 
 - [ ] Every new/changed public function has a doc comment covering behavior, pointer ownership (if applicable), and return-value meaning.
 - [ ] The umbrella header [`include/carmen/carmen.h`](../include/carmen/carmen.h) and both `Makefile` (`PUBLIC_HEADERS`, `LIB_SRCS`) and `CMakeLists.txt` are updated when a new module's header is added.

@@ -5,20 +5,24 @@
 #include "carmen_export.h"
 #include "session.h"
 
-/* Save schema version emitted by carmen_session_save(). carmen_session_load()
-   accepts this exact version and rejects anything else with -3. Version 3
-   drops the obsolete "hideout_investigated_sites" field (identity evidence is
-   now seeded across the trail as CARMEN_CLUE_IDENTITY clues) and persists the
-   per-case generated connection graph as an "edges" array; v1/v2 saves are
-   rejected. */
+/**
+ * Save schema version emitted by carmen_session_save(). carmen_session_load()
+ * accepts this exact version and rejects anything else with -3. Version 3
+ * drops the obsolete "hideout_investigated_sites" field (identity evidence is
+ * now seeded across the trail as CARMEN_CLUE_IDENTITY clues) and persists the
+ * per-case generated connection graph as an "edges" array; v1/v2 saves are
+ * rejected.
+ */
 #define CARMEN_SAVE_SCHEMA_VERSION 3
 
-/* Upper bound on a save file carmen_session_load_file() will read, as a guard
-   against pathological inputs. Comfortably larger than any real session, whose
-   serialization is a few KB. */
+/**
+ * Upper bound on a save file carmen_session_load_file() will read, as a guard
+ * against pathological inputs. Comfortably larger than any real session, whose
+ * serialization is a few KB.
+ */
 #define CARMEN_SAVE_MAX_FILE_SIZE (1024 * 1024)
 
-/*
+/**
  * Serialize a session to a JSON string (schema CARMEN_SAVE_SCHEMA_VERSION).
  *
  * Follows the snprintf / carmen_*_to_string convention: writes at most
@@ -43,7 +47,7 @@
  */
 CARMEN_API int carmen_session_save(const CarmenSession *s, char *buf, int buf_size);
 
-/*
+/**
  * Serialize a session and write it to path (see carmen_session_save for the
  * format). Overwrites any existing file.
  *
@@ -55,7 +59,7 @@ CARMEN_API int carmen_session_save(const CarmenSession *s, char *buf, int buf_si
  */
 CARMEN_API int carmen_session_save_file(const CarmenSession *s, const char *path);
 
-/*
+/**
  * Load a session from a JSON buffer produced by carmen_session_save().
  *
  * On success *s is fully overwritten with the restored session and its world
@@ -78,7 +82,7 @@ CARMEN_API int carmen_session_save_file(const CarmenSession *s, const char *path
  */
 CARMEN_API int carmen_session_load(CarmenSession *s, CarmenWorld *w, const char *json, size_t len);
 
-/*
+/**
  * Load a session from a file written by carmen_session_save_file().
  *
  * Behaves like carmen_session_load() (same success semantics and the same

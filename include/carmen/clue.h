@@ -6,15 +6,19 @@
 #define CARMEN_MAX_NAME_LEN 48
 #define CARMEN_MAX_CLUE_LEN 48
 
-/* Per-city pool of "inbound" descriptor clues -- targetless strings that
-   describe (point to) the city.  At case generation the engine draws from
-   the next trail city's pool and assigns target_city_id at runtime. */
+/**
+ * Per-city pool of "inbound" descriptor clues -- targetless strings that
+ * describe (point to) the city.  At case generation the engine draws from
+ * the next trail city's pool and assigns target_city_id at runtime.
+ */
 #define CARMEN_MAX_INBOUND_CLUES 6
 
-/* ABI note: CarmenClueType enum values fit in int32 and bindings may read
-   a CarmenClueType struct field as a 32-bit signed integer.  The enumerators
-   are guaranteed to remain CARMEN_CLUE_POSITIVE=0, CARMEN_CLUE_NEGATIVE=1,
-   CARMEN_CLUE_IDENTITY=2. */
+/**
+ * ABI note: CarmenClueType enum values fit in int32 and bindings may read
+ * a CarmenClueType struct field as a 32-bit signed integer.  The enumerators
+ * are guaranteed to remain CARMEN_CLUE_POSITIVE=0, CARMEN_CLUE_NEGATIVE=1,
+ * CARMEN_CLUE_IDENTITY=2.
+ */
 typedef enum {
     CARMEN_CLUE_POSITIVE,   /* 0 -- points toward the correct next city */
     CARMEN_CLUE_NEGATIVE,   /* 1 -- dead end, no one saw the suspect */
@@ -23,16 +27,33 @@ typedef enum {
                                     target_city_id is empty. */
 } CarmenClueType;
 
+/**
+ * A single clue dispensed to the player.  text is an i18n key (or a raw
+ * descriptor string); target_city_id names the destination when the clue is
+ * directional; type selects the clue's meaning.
+ */
 typedef struct {
     char          text[CARMEN_MAX_CLUE_LEN];
     char          target_city_id[CARMEN_MAX_NAME_LEN];
     CarmenClueType type;
 } CarmenClue;
 
-/* Pluggable random number generator.  The callback must return a
-   non-negative int.  Pass NULL to restore the default (stdlib rand). */
+/**
+ * Pluggable random number generator.  The callback must return a
+ * non-negative int.  Pass NULL to restore the default (stdlib rand).
+ */
 typedef int (*carmen_rand_fn)(void *ctx);
+
+/**
+ * Install a pluggable random-number generator. fn receives ctx and returns a
+ * non-negative int; pass fn=NULL to restore the default (stdlib rand()).
+ */
 CARMEN_API void carmen_set_rand(carmen_rand_fn fn, void *ctx);
+
+/**
+ * Return a non-negative random integer from the installed generator, or from
+ * stdlib rand() when none has been installed.
+ */
 CARMEN_API int  carmen_random(void);
 
 #endif

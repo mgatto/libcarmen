@@ -613,6 +613,24 @@ analyze: $(GEN_VERSION_H)
 	exit $$fail
 
 # --------------------------------------------------------------------------- #
+#  API reference (Doxygen)
+#
+#  Requires doxygen:  brew install doxygen  (macOS) or
+#  `sudo apt-get install doxygen` (Linux/CI). Generates carmen_version.h,
+#  injects PROJECT_NUMBER from the VERSION file (single source of truth), and
+#  runs doxygen into build/doxygen/html. Make-only, like `coverage`/`analyze`;
+#  the continuous build is .github/workflows/docs.yml.
+# --------------------------------------------------------------------------- #
+
+DOXYGEN ?= doxygen
+
+docs: $(GEN_VERSION_H) Doxyfile
+	@{ cat Doxyfile; printf 'PROJECT_NUMBER = "%s"\n' "$(VERSION)"; } > $(BUILD_DIR)/Doxyfile.gen
+	$(DOXYGEN) $(BUILD_DIR)/Doxyfile.gen
+	@echo ""
+	@echo "API reference: build/doxygen/html/index.html"
+
+# --------------------------------------------------------------------------- #
 #  Version & SONAME parity guards
 #
 #  version-check flags any drift between the VERSION file, the generated
@@ -637,4 +655,4 @@ else
 endif
 
 .PHONY: all lib dist package clean distclean test test-sanitize coverage analyze \
-        install uninstall version-check verify-soname
+        docs install uninstall version-check verify-soname

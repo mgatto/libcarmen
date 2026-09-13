@@ -8,9 +8,11 @@
 #include "game_world.h"
 #include "i18n.h"
 
-/* ABI note: CarmenDifficulty enum values fit in int32 and bindings may read
-   a CarmenDifficulty struct field as a 32-bit signed integer.  The enumerators
-   are guaranteed to remain EASY=0, MEDIUM=1, HARD=2. */
+/**
+ * ABI note: CarmenDifficulty enum values fit in int32 and bindings may read
+ * a CarmenDifficulty struct field as a 32-bit signed integer.  The enumerators
+ * are guaranteed to remain EASY=0, MEDIUM=1, HARD=2.
+ */
 typedef enum {
     CARMEN_DIFFICULTY_EASY,
     CARMEN_DIFFICULTY_MEDIUM,
@@ -21,12 +23,14 @@ typedef enum {
 #define CARMEN_TRAIL_SITES 3
 #define CARMEN_MAX_VISITED 24
 
-/* Number of villain identity clues seeded into the trail (each in a distinct
-   trail city, replacing a herring/negative site). This is the evidence total
-   a warrant requires; see CarmenCase.identity_clue_count. */
+/**
+ * Number of villain identity clues seeded into the trail (each in a distinct
+ * trail city, replacing a herring/negative site). This is the evidence total
+ * a warrant requires; see CarmenCase.identity_clue_count.
+ */
 #define CARMEN_IDENTITY_CLUES 3
 
-/*
+/**
  * The single knob for customizing game rules. Populate via
  * carmen_case_settings_default() and, optionally, carmen_case_settings_load().
  *
@@ -44,16 +48,22 @@ typedef struct {
     int32_t investigation_hrs;       /* hours deducted per site investigation; 0 = free; negatives reset to default at load; fixed-width for ABI */
 } CarmenCaseSettings;
 
+/** A trail stop's site: the index into the city's sites[] and the single clue assigned to it. */
 typedef struct {
     int32_t    site_idx;   /* index into city->sites[]; fixed-width for ABI */
     CarmenClue clue;       /* the single assigned clue */
 } CarmenTrailSite;
 
+/** One trail city's active sites (up to CARMEN_TRAIL_SITES). */
 typedef struct {
     CarmenTrailSite sites[CARMEN_TRAIL_SITES];
     int32_t         site_count; /* actual count (<= CARMEN_TRAIL_SITES); fixed-width for ABI */
 } CarmenTrailStop;
 
+/**
+ * A generated scenario: the villain, the stolen artifact, the ordered trail
+ * of city ids, and the per-stop sites with their assigned clues.
+ */
 typedef struct {
     /* Borrowed pointer into the static FITNA_VILLAINS[] catalog; valid for
        the program lifetime.  Bindings should use carmen_case_villain() rather
@@ -74,7 +84,7 @@ typedef struct {
     int32_t identity_clue_count;
 } CarmenCase;
 
-/*
+/**
  * Generate a new case scenario.
  *
  * Picks a random stolen artifact and seeds the trail at that artifact's
@@ -104,7 +114,7 @@ typedef struct {
 CARMEN_API int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
                                     const CarmenCaseSettings *settings);
 
-/*
+/**
  * The villain behind this case.  Returns a borrowed pointer into the static
  * FITNA_VILLAINS[] catalog; valid for the program lifetime and never needs to
  * be freed.  Returns NULL if c is NULL.  Prefer this accessor over reading
@@ -112,7 +122,7 @@ CARMEN_API int carmen_case_generate(CarmenCase *c, CarmenWorld *w,
  */
 CARMEN_API const FitnaVillain *carmen_case_villain(const CarmenCase *c);
 
-/*
+/**
  * The artifact stolen in this case.  Returns a borrowed pointer into
  * c->artifact (embedded in the case struct itself); valid for the lifetime of
  * the CarmenCase.  Returns NULL if c is NULL.  Prefer this accessor over
@@ -120,7 +130,7 @@ CARMEN_API const FitnaVillain *carmen_case_villain(const CarmenCase *c);
  */
 CARMEN_API const CarmenArtifact *carmen_case_artifact(const CarmenCase *c);
 
-/*
+/**
  * Compose a human-readable, localized case briefing such as
  * "Someone stole the Astrolabe of Isfahan from Isfahan." into buf, so
  * clients (UI, bindings, the demo) don't each reinvent the sentence.
