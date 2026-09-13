@@ -39,8 +39,8 @@ Release mechanics are delegated to [`commit-and-tag-version`](https://github.com
 1. reads the current version from `VERSION` (its single source of truth, via the `plain-text` `packageFiles`/`bumpFiles` updater);
 2. derives the next semver bump from the conventional commits since the last tag and writes it back to `VERSION`;
 3. regenerates `CHANGELOG.md` (commit/compare/issue links point at the GitHub repo via the `*UrlFormat` settings, so no `package.json` is required);
-4. runs `make test && make verify-soname` as the `precommit` lifecycle hook, so the new version is proven to propagate before anything is committed;
-5. commits and creates the annotated `v<version>` tag.
+4. runs `make test && make verify-soname` as the `precommit` lifecycle hook (stdout redirected to stderr), so the new version is proven to propagate before anything is committed and the hook's stdout is not captured as a custom commit message;
+5. commits with the `releaseCommitMessageFormat` message (default `Release of version <version>`) and creates the annotated `v<version>` tag.
 
 Nothing is pushed; pushing the tag triggers `release.yml` to build and publish the demo packages. Useful flags: `--dry-run` (preview), `--release-as minor` (force a bump type), `--first-release` (tag without bumping), `--prerelease <name>`.
 

@@ -21,7 +21,8 @@
   "commitUrlFormat": "https://github.com/mgatto/libcarmen/commit/{{hash}}",
   "compareUrlFormat": "https://github.com/mgatto/libcarmen/compare/{{previousTag}}...{{currentTag}}",
   "issueUrlFormat": "https://github.com/mgatto/libcarmen/issues/{{id}}",
+  "releaseCommitMessageFormat": "Release of version {{currentTag}}",
   "scripts": {
-    "precommit": "make test && make verify-soname"
+    "precommit": "make test 1>&2 && make verify-soname 1>&2"
   }
 }
