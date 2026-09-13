@@ -125,7 +125,7 @@ jobs:
           zip=$(find build-sdk -maxdepth 1 -name 'libcarmen-sdk-*-shared.zip' -print -quit)
           [ -n "$zip" ] || { echo "SDK zip not found"; exit 1; }
           rm -rf build-sdk/_sdk_smoke && mkdir -p build-sdk/_sdk_smoke
-          tar -xf "$zip" -C build-sdk/_sdk_smoke
+          unzip -q "$zip" -d build-sdk/_sdk_smoke
           sdkroot=$(find build-sdk/_sdk_smoke -maxdepth 1 -mindepth 1 -type d -print -quit)
           cmake -S cmake/smoke -B build-sdk/_sdk_smoke/build -DCMAKE_PREFIX_PATH="$sdkroot"
           cmake --build build-sdk/_sdk_smoke/build --config Release
