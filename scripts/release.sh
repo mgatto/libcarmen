@@ -17,7 +17,10 @@
 #   scripts/release.sh --release-as minor   force a minor bump (pre-1.0 default treats feat as patch)
 #
 # Nothing is pushed: Building/publishing the release packages is left to
-# .github/workflows/release.yml, which the tag push triggers. Push with:
+# .github/workflows/release.yml, which the tag push triggers. Push the new tag
+# by name (and HEAD) -- never `git push --tags` or `--follow-tags`, which would
+# also push any locally rewritten older tag and trip a protected/immutable
+# remote tag:
 #
 #   git push origin HEAD
 #   git push origin v<version>
