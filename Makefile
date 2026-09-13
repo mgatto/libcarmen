@@ -271,12 +271,73 @@ package:
 	@echo ""
 	@echo "Package ready: $(PKG_TARBALL)"
 
+# --------------------------------------------------------------------------- #
+#  macOS SDK tarballs
+#
+#  The developer counterpart to `make package`: stage the link-time surface
+#  (public headers, carmen.pc, the static OR shared library) and archive it.
+#  Two separate tarballs are produced -- one per library flavor -- because a
+#  single archive with both would force consumers to distinguish the two
+#  libcarmen.* files themselves. The shipped carmen.pc is relocatable
+#  (prefix=${pcfiledir}/../..), so pkg-config works no matter where the archive
+#  is unpacked; the installed /usr/local carmen.pc is left untouched. The
+#  CMake find_package config is generated only by the CMake build, so it is
+#  shipped in the CMake-built SDK (cmake --build --target sdk_package), not
+#  here -- mirroring the demo `make package` vs `demo_package` split.
+# --------------------------------------------------------------------------- #
+
+SDK_NAME          = libcarmen-sdk-$(VERSION)-macos-$(ARCH)
+SDK_STATIC_TGZ     = $(SDK_NAME)-static.tar.gz
+SDK_SHARED_TGZ     = $(SDK_NAME)-shared.tar.gz
+SDK_STATIC_DIR     = $(BUILD_DIR)/$(SDK_NAME)-static
+SDK_SHARED_DIR     = $(BUILD_DIR)/$(SDK_NAME)-shared
+
+$(BUILD_DIR)/carmen.sdk.pc: carmen.pc.sdk.in VERSION | $(BUILD_DIR)
+	sed 's|@VERSION@|$(VERSION)|g' $< > $@
+
+$(BUILD_DIR)/sdk-README-static.txt: packaging/SDK-README.txt.in VERSION | $(BUILD_DIR)
+	sed -e 's|@SDK_VERSION@|$(VERSION)|g' -e 's|@SDK_OS@|macos|g' \
+	    -e 's|@SDK_ARCH@|$(ARCH)|g' -e 's|@SDK_FLAVOR@|static|g' $< > $@
+
+$(BUILD_DIR)/sdk-README-shared.txt: packaging/SDK-README.txt.in VERSION | $(BUILD_DIR)
+	sed -e 's|@SDK_VERSION@|$(VERSION)|g' -e 's|@SDK_OS@|macos|g' \
+	    -e 's|@SDK_ARCH@|$(ARCH)|g' -e 's|@SDK_FLAVOR@|shared|g' $< > $@
+
+sdk: $(STATIC_LIB) $(SHARED_LIB) $(GEN_VERSION_H) $(BUILD_DIR)/carmen.sdk.pc \
+     $(BUILD_DIR)/sdk-README-static.txt $(BUILD_DIR)/sdk-README-shared.txt \
+     version-check verify-soname
+	rm -rf $(SDK_STATIC_DIR) $(SDK_SHARED_DIR)
+	mkdir -p $(SDK_STATIC_DIR)/include/carmen $(SDK_STATIC_DIR)/lib/pkgconfig
+	mkdir -p $(SDK_SHARED_DIR)/include/carmen $(SDK_SHARED_DIR)/lib/pkgconfig
+	cp -R $(PUBLIC_HEADERS) $(SDK_STATIC_DIR)/include/carmen/
+	cp -R $(PUBLIC_HEADERS) $(SDK_SHARED_DIR)/include/carmen/
+	cp -f $(GEN_VERSION_H) $(SDK_STATIC_DIR)/include/carmen/carmen_version.h
+	cp -f $(GEN_VERSION_H) $(SDK_SHARED_DIR)/include/carmen/carmen_version.h
+	cp -f $(STATIC_LIB) $(SDK_STATIC_DIR)/lib/
+	cp -f $(BUILD_DIR)/carmen.sdk.pc $(SDK_STATIC_DIR)/lib/pkgconfig/carmen.pc
+	cp -f LICENSE $(SDK_STATIC_DIR)/
+	cp -f vendor/fribidi/COPYING $(SDK_STATIC_DIR)/COPYING.fribidi
+	cp -f $(BUILD_DIR)/sdk-README-static.txt $(SDK_STATIC_DIR)/README.txt
+	cp -f $(SHARED_LIB) $(SDK_SHARED_DIR)/lib/$(SHARED_REAL)
+	ln -sf $(SHARED_REAL) $(SDK_SHARED_DIR)/lib/$(SHARED_SONAME)
+	ln -sf $(SHARED_REAL) $(SDK_SHARED_DIR)/lib/$(SHARED_LINKNAME)
+	cp -f $(BUILD_DIR)/carmen.sdk.pc $(SDK_SHARED_DIR)/lib/pkgconfig/carmen.pc
+	cp -f LICENSE $(SDK_SHARED_DIR)/
+	cp -f vendor/fribidi/COPYING $(SDK_SHARED_DIR)/COPYING.fribidi
+	cp -f $(BUILD_DIR)/sdk-README-shared.txt $(SDK_SHARED_DIR)/README.txt
+	rm -f $(SDK_STATIC_TGZ) $(SDK_SHARED_TGZ)
+	tar -czf $(SDK_STATIC_TGZ) -C $(BUILD_DIR) $(SDK_NAME)-static
+	tar -czf $(SDK_SHARED_TGZ) -C $(BUILD_DIR) $(SDK_NAME)-shared
+	@echo ""
+	@echo "SDK ready: $(SDK_STATIC_TGZ)"
+	@echo "           $(SDK_SHARED_TGZ)"
+
 clean:
 	rm -rf $(BUILD_DIR)
 
 distclean: clean
 	rm -rf $(DIST_DIR)
-	rm -f $(PKG_TARBALL)
+	rm -f $(PKG_TARBALL) $(SDK_STATIC_TGZ) $(SDK_SHARED_TGZ)
 
 # --------------------------------------------------------------------------- #
 #  pkg-config
@@ -692,5 +753,5 @@ else
 	    || { echo "FAIL: soname != $(SHARED_SONAME)"; exit 1; }
 endif
 
-.PHONY: all lib debug dist package clean distclean test test-sanitize coverage analyze \
-        docs examples install uninstall version-check verify-soname
+.PHONY: all lib debug dist package sdk clean distclean test test-sanitize coverage \
+        analyze docs examples install uninstall version-check verify-soname

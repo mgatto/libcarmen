@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 
 # The top-level VERSION file is the single source of truth for the version
 # (see doc/versioning.md). Make and CMake both read it, and both regenerate
@@ -284,6 +284,51 @@ else()
 endif()
 
 # --------------------------------------------------------------------------- #
+#  Distribution tags (OS / arch / flavor)
+#
+#  Shared by demo_package and sdk_package so archive names stay consistent
+#  across both. Resolved once here rather than duplicated per target.
+# --------------------------------------------------------------------------- #
+
+if(WIN32)
+    set(CARMEN_DIST_OS windows)
+    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
+    if(_carmen_proc MATCHES "^(amd64|x86_64|x64)$")
+        set(CARMEN_DIST_ARCH x64)
+    elseif(_carmen_proc MATCHES "^(arm64|aarch64)$")
+        set(CARMEN_DIST_ARCH arm64)
+    else()
+        set(CARMEN_DIST_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+    endif()
+elseif(APPLE)
+    set(CARMEN_DIST_OS macos)
+    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
+    if(_carmen_proc MATCHES "^(amd64|x86_64)$")
+        set(CARMEN_DIST_ARCH x86_64)
+    elseif(_carmen_proc MATCHES "^(arm64|aarch64)$")
+        set(CARMEN_DIST_ARCH arm64)
+    else()
+        set(CARMEN_DIST_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+    endif()
+else()
+    set(CARMEN_DIST_OS linux)
+    string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
+    if(_carmen_proc MATCHES "^(amd64|x86_64)$")
+        set(CARMEN_DIST_ARCH x86_64)
+    elseif(_carmen_proc MATCHES "^(arm64|aarch64)$")
+        set(CARMEN_DIST_ARCH aarch64)
+    else()
+        set(CARMEN_DIST_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+    endif()
+endif()
+
+if(BUILD_SHARED_LIBS)
+    set(CARMEN_SDK_FLAVOR shared)
+else()
+    set(CARMEN_SDK_FLAVOR static)
+endif()
+
+# --------------------------------------------------------------------------- #
 #  Example binary
 # --------------------------------------------------------------------------- #
 
@@ -380,40 +425,11 @@ if(CARMEN_BUILD_EXAMPLES)
     #  with cmake -E tar (no extra tooling).
     # ----------------------------------------------------------------------- #
 
-    if(WIN32)
-        set(CARMEN_DEMO_OS windows)
-        string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
-        if(_carmen_proc MATCHES "^(amd64|x86_64|x64)$")
-            set(CARMEN_DEMO_ARCH x64)
-        elseif(_carmen_proc MATCHES "^(arm64|aarch64)$")
-            set(CARMEN_DEMO_ARCH arm64)
-        else()
-            set(CARMEN_DEMO_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
-        endif()
-    elseif(APPLE)
-        set(CARMEN_DEMO_OS macos)
-        string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
-        if(_carmen_proc MATCHES "^(amd64|x86_64)$")
-            set(CARMEN_DEMO_ARCH x86_64)
-        elseif(_carmen_proc MATCHES "^(arm64|aarch64)$")
-            set(CARMEN_DEMO_ARCH arm64)
-        else()
-            set(CARMEN_DEMO_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
-        endif()
-    else()
-        set(CARMEN_DEMO_OS linux)
-        string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" _carmen_proc)
-        if(_carmen_proc MATCHES "^(amd64|x86_64)$")
-            set(CARMEN_DEMO_ARCH x86_64)
-        elseif(_carmen_proc MATCHES "^(arm64|aarch64)$")
-            set(CARMEN_DEMO_ARCH aarch64)
-        else()
-            set(CARMEN_DEMO_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
-        endif()
-    endif()
+    # OS/arch tags (CARMEN_DIST_OS / CARMEN_DIST_ARCH) are resolved once above,
+    # and shared by demo_package and sdk_package.
 
     set(CARMEN_DEMO_PKG_NAME
-        "libcarmen-demo-${PROJECT_VERSION}-${CARMEN_DEMO_OS}-${CARMEN_DEMO_ARCH}")
+        "libcarmen-demo-${PROJECT_VERSION}-${CARMEN_DIST_OS}-${CARMEN_DIST_ARCH}")
     set(CARMEN_DEMO_PKG_DIR
         "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}")
     if(WIN32)
@@ -432,7 +448,7 @@ if(CARMEN_BUILD_EXAMPLES)
     set(CARMEN_DEMO_README "${CMAKE_BINARY_DIR}/demo_README.txt")
     if(WIN32)
         file(WRITE "${CARMEN_DEMO_README}"
-"libcarmen demo (${PROJECT_VERSION}, windows ${CARMEN_DEMO_ARCH})
+"libcarmen demo (${PROJECT_VERSION}, windows ${CARMEN_DIST_ARCH})
 
 Run from inside this folder:
   trail_demo.exe en settings.toml
@@ -445,7 +461,7 @@ the Microsoft Visual C++ Redistributable for 64-bit Windows.
 ")
     else()
         file(WRITE "${CARMEN_DEMO_README}"
-"libcarmen demo (${PROJECT_VERSION}, ${CARMEN_DEMO_OS} ${CARMEN_DEMO_ARCH})
+"libcarmen demo (${PROJECT_VERSION}, ${CARMEN_DIST_OS} ${CARMEN_DIST_ARCH})
 
 Run from inside this folder:
   ./trail_demo en settings.toml
@@ -514,7 +530,7 @@ locales/<locale>.json relative to the current directory).
         ${_demo_pkg_commands}
         DEPENDS dist trail_demo carmen
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        COMMENT "Packaging ${CARMEN_DEMO_OS} demo archive ${CARMEN_DEMO_PKG_NAME}"
+        COMMENT "Packaging ${CARMEN_DIST_OS} demo archive ${CARMEN_DEMO_PKG_NAME}"
         VERBATIM
     )
 endif()
@@ -631,4 +647,96 @@ configure_file(carmen.pc.in "${CMAKE_CURRENT_BINARY_DIR}/carmen.pc" @ONLY)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/carmen.pc"
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+)
+
+# --------------------------------------------------------------------------- #
+#  SDK release package (sdk_package)
+#
+#  The developer counterpart to demo_package: install the link-time surface
+#  (public headers, the carmen library, pkg-config file, and CMake package
+#  config) into a staging prefix using the exact install() rules above, then
+#  overwrite the pkg-config file with a relocatable one (prefix=${pcfiledir},
+#  so consumers can unpack the archive anywhere), add LICENSE / COPYING.fribidi
+#  / README.txt, and archive it. One flavor per configure: BUILD_SHARED_LIBS
+#  selects -static vs -shared, so a downstream build never has to distinguish
+#  two libcarmen.* files in the same folder. Build it with:
+#      cmake --build <build-dir> --target sdk_package
+#  and run it natively in CI/release (the `make sdk` counterpart is per-arch,
+#  macOS-only). The find_package(carmen) config is emitted by the install
+#  step, so the CMake-built archive is the one that supports find_package.
+# --------------------------------------------------------------------------- #
+
+set(CARMEN_SDK_PKG_NAME
+    "libcarmen-sdk-${PROJECT_VERSION}-${CARMEN_DIST_OS}-${CARMEN_DIST_ARCH}-${CARMEN_SDK_FLAVOR}")
+set(CARMEN_SDK_STAGE   "${CMAKE_BINARY_DIR}/_sdk_stage")
+set(CARMEN_SDK_PKG_DIR "${CMAKE_BINARY_DIR}/${CARMEN_SDK_PKG_NAME}")
+if(WIN32)
+    set(CARMEN_SDK_ARCHIVE "${CMAKE_BINARY_DIR}/${CARMEN_SDK_PKG_NAME}.zip")
+else()
+    set(CARMEN_SDK_ARCHIVE "${CMAKE_BINARY_DIR}/${CARMEN_SDK_PKG_NAME}.tar.gz")
+endif()
+
+# Relocatable pkg-config file so `pkg-config` resolves the include/lib dirs
+# relative to wherever the SDK is unpacked (the installed carmen.pc keeps its
+# absolute prefix).
+configure_file(carmen.pc.sdk.in "${CMAKE_CURRENT_BINARY_DIR}/carmen.sdk.pc" @ONLY)
+
+# SDK README, rendered once per configure for the active flavor.
+set(SDK_VERSION "${PROJECT_VERSION}")
+set(SDK_OS      "${CARMEN_DIST_OS}")
+set(SDK_ARCH    "${CARMEN_DIST_ARCH}")
+set(SDK_FLAVOR  "${CARMEN_SDK_FLAVOR}")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/packaging/SDK-README.txt.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/sdk_README.txt" @ONLY)
+
+set(_sdk_pkg_commands
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CARMEN_SDK_STAGE}"
+    COMMAND ${CMAKE_COMMAND} --install "${CMAKE_BINARY_DIR}"
+            --config $<CONFIG> --prefix "${CARMEN_SDK_STAGE}"
+    COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_BINARY_DIR}/carmen.sdk.pc"
+            "${CARMEN_SDK_STAGE}/${CMAKE_INSTALL_LIBDIR}/pkgconfig/carmen.pc"
+    COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_SOURCE_DIR}/LICENSE" "${CARMEN_SDK_STAGE}/"
+    COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_SOURCE_DIR}/vendor/fribidi/COPYING"
+            "${CARMEN_SDK_STAGE}/COPYING.fribidi"
+    COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_BINARY_DIR}/sdk_README.txt"
+            "${CARMEN_SDK_STAGE}/README.txt"
+)
+# Shared Windows SDKs must carry carmen's runtime dependency next to the DLL.
+if(CARMEN_FRIBIDI_DLL)
+    list(APPEND _sdk_pkg_commands
+        COMMAND ${CMAKE_COMMAND} -E copy
+                "${CARMEN_FRIBIDI_DLL}"
+                "${CARMEN_SDK_STAGE}/${CMAKE_INSTALL_BINDIR}/"
+    )
+endif()
+list(APPEND _sdk_pkg_commands
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CARMEN_SDK_PKG_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CARMEN_SDK_STAGE}" "${CARMEN_SDK_PKG_DIR}"
+)
+if(WIN32)
+    list(APPEND _sdk_pkg_commands
+        COMMAND ${CMAKE_COMMAND} -E tar cf "${CARMEN_SDK_ARCHIVE}"
+                --format=zip -- "${CARMEN_SDK_PKG_NAME}"
+    )
+else()
+    list(APPEND _sdk_pkg_commands
+        COMMAND ${CMAKE_COMMAND} -E tar czf "${CARMEN_SDK_ARCHIVE}"
+                -- "${CARMEN_SDK_PKG_NAME}"
+    )
+endif()
+list(APPEND _sdk_pkg_commands
+    COMMAND ${CMAKE_COMMAND} -E echo "SDK ready: ${CARMEN_SDK_ARCHIVE}"
+)
+
+add_custom_target(sdk_package
+    ${_sdk_pkg_commands}
+    DEPENDS carmen carmen_version_header
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Packaging ${CARMEN_DIST_OS} ${CARMEN_SDK_FLAVOR} SDK archive ${CARMEN_SDK_PKG_NAME}"
+    VERBATIM
 )

@@ -10,8 +10,8 @@ permissions:
   contents: write
 
 jobs:
-  windows-demo:
-    name: Windows demo zip
+  windows-demo-sdk:
+    name: Windows demo zip + SDK zip
     runs-on: windows-latest
     env:
       VCPKG_DEFAULT_TRIPLET: x64-windows
@@ -31,34 +31,39 @@ jobs:
       - name: Configure and package (Release shared)
         run: |
           cmake -S . -B build-cmake-package -A x64 -DBUILD_SHARED_LIBS=ON -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
-          cmake --build build-cmake-package --config Release --target demo_package -j
+          cmake --build build-cmake-package --config Release --target demo_package sdk_package -j
 
       - name: SHA256 checksum
         shell: pwsh
         run: |
-          $zip = Get-Item build-cmake-package/libcarmen-demo-*-windows-*.zip
-          if (-not $zip) { throw "demo zip not found" }
-          $hash = (Get-FileHash -Algorithm SHA256 $zip.FullName).Hash.ToLower()
-          $line = "$hash  $($zip.Name)"
-          Set-Content -Path build-cmake-package/SHA256SUMS -Value $line -NoNewline:$false
-          Write-Host $line
+          $lines = @()
+          Get-ChildItem `
+            build-cmake-package/libcarmen-demo-*-windows-*.zip, `
+            build-cmake-package/libcarmen-sdk-*-windows-*-shared.zip | ForEach-Object {
+            $hash = (Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower()
+            $lines += "$hash  $($_.Name)"
+          }
+          if ($lines.Count -eq 0) { throw "no archives found" }
+          $lines | Set-Content -Path build-cmake-package/SHA256SUMS
+          Write-Host ($lines -join "`n")
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           files: |
             build-cmake-package/libcarmen-demo-*-windows-*.zip
+            build-cmake-package/libcarmen-sdk-*-windows-*-shared.zip
             build-cmake-package/SHA256SUMS
           fail_on_unmatched_files: true
           generate_release_notes: true
 
-  # macOS and Linux demo tarballs. Built natively on each runner (no
-  # cross-compilation): the demo links the shared lib via rpath, so the
-  # archive ships it (and its soname symlink on Unix) next to trail_demo.
-  # `make package` is the local macOS equivalent; these matrices are what
-  # feed the tagged GitHub Release.
-  unix-demo:
-    name: ${{ matrix.os }} demo tarball
+  # macOS and Linux demo tarballs plus both flavored SDK tarballs. Built
+  # natively on each runner (no cross-compilation): the demo links the shared
+  # lib via rpath, so the archive ships it (and its soname symlink on Unix)
+  # next to trail_demo. `make package` / `make sdk` are the local macOS
+  # equivalents; these matrices are what feed the tagged GitHub Release.
+  unix-demo-sdk:
+    name: ${{ matrix.os }} demo + SDK tarballs
     strategy:
       fail-fast: false
       matrix:
@@ -74,30 +79,41 @@ jobs:
         uses: ./.github/actions/check-version
 
       # Release shared build so the tarball ships carmen's shared library (and
-      # its soname symlink) next to trail_demo. FriBidi is compiled from the
-      # vendored tree on Unix, so there is no vcpkg step here.
+      # its soname symlink) next to trail_demo, and the shared SDK tarball is
+      # produced by the same build. FriBidi is compiled from the vendored tree
+      # on Unix, so there is no vcpkg step here.
       - name: Configure and package (Release shared)
         run: |
           cmake -S . -B build-cmake-package -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
-          cmake --build build-cmake-package --target demo_package -j
+          cmake --build build-cmake-package --target demo_package sdk_package -j
+
+      # The static SDK tarball comes from its own static Release build.
+      - name: Build static SDK
+        run: |
+          cmake -S . -B build-cmake-sdk-static -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+          cmake --build build-cmake-sdk-static --target sdk_package -j
 
       - name: SHA256 checksum
         run: |
-          archive=$(ls build-cmake-package/libcarmen-demo-*.tar.gz)
-          if [ -z "$archive" ]; then
-            echo "demo tarball not found"
-            exit 1
-          fi
-          name=$(basename "$archive")
-          printf '%s  %s\n' "$(shasum -a 256 "$archive" | cut -d' ' -f1)" "$name" \
-            > "build-cmake-package/$name.sha256"
-          cat "build-cmake-package/$name.sha256"
+          : > build-cmake-package/sha256sums.txt
+          for archive in \
+              build-cmake-package/libcarmen-demo-*.tar.gz \
+              build-cmake-package/libcarmen-sdk-*-shared.tar.gz \
+              build-cmake-sdk-static/libcarmen-sdk-*-static.tar.gz; do
+            [ -f "$archive" ] || { echo "archive not found: $archive"; exit 1; }
+            printf '%s  %s\n' \
+              "$(shasum -a 256 "$archive" | cut -d' ' -f1)" "$(basename "$archive")" \
+              >> build-cmake-package/sha256sums.txt
+          done
+          cat build-cmake-package/sha256sums.txt
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           files: |
             build-cmake-package/libcarmen-demo-*.tar.gz
-            build-cmake-package/*.sha256
+            build-cmake-package/libcarmen-sdk-*-shared.tar.gz
+            build-cmake-sdk-static/libcarmen-sdk-*-static.tar.gz
+            build-cmake-package/sha256sums.txt
           fail_on_unmatched_files: true
           generate_release_notes: true

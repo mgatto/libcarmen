@@ -1,0 +1,46 @@
+libcarmen SDK (@SDK_VERSION@, @SDK_OS@ @SDK_ARCH@, @SDK_FLAVOR@)
+
+A relocatable developer SDK for linking your own C, FFI, or WebAssembly
+program against libcarmen. Unpack this folder anywhere; no install prefix
+is baked into the paths below (pkg-config and CMake resolve them relative
+to this location).
+
+Layout:
+
+  include/carmen/       public headers (#include <carmen/carmen.h>)
+  lib/                  the libcarmen library (see flavor below)
+  lib/pkgconfig/        carmen.pc (relocatable pkg-config file)
+  lib/cmake/carmen/     CMake package config for find_package(carmen)
+                        (shipped in the CMake-built SDK archive)
+
+Consume it one of these three ways (use <prefix> = this folder):
+
+1. Raw compiler flags -- static:
+
+      cc my_game.c -I<prefix>/include -L<prefix>/lib -lcarmen -lm -o my_game
+
+   libcarmen uses the C math library; when linking the static archive you
+   must pass -lm explicitly (the shared library already records it).
+
+2. pkg-config:
+
+      PKG_CONFIG_PATH=<prefix>/lib/pkgconfig cc my_game.c \
+          $(pkg-config --cflags --libs carmen) -o my_game
+
+   For the static archive pass --static so pkg-config also emits -lm:
+
+      pkg-config --static --cflags --libs carmen
+
+3. CMake find_package (CMake-built SDK only):
+
+      find_package(carmen REQUIRED)
+      add_executable(my_game my_game.c)
+      target_link_libraries(my_game PRIVATE carmen::carmen)
+
+   Point CMake at this SDK with -DCMAKE_PREFIX_PATH=<prefix>.
+
+If you use the shared library, keep libcarmen.<*>.{dylib,so} on the
+runtime library search path; this SDK ships the soname and dev symlinks
+next to the real file so both compile-time and run-time names resolve.
+
+License: MIT (LICENSE). Vendored GNU FriBidi is LGPL-2.1+ (COPYING.fribidi).

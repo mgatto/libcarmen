@@ -103,6 +103,7 @@ make analyze       # SEI CERT / CWE static analysis via gcc-16 -fanalyzer (requi
 make analyze 2> doc/analyzer_log.txt  # same, capturing diagnostics (gcc emits them on stderr)
 make verify-soname # assert the shared lib's SONAME/install_name matches CMake's
 make package       # self-contained macOS demo tarball (libcarmen-demo-<version>-macos-<arch>.tar.gz)
+make sdk           # relocatable macOS SDK tarballs (libcarmen-sdk-<version>-macos-<arch>-{static,shared}.tar.gz)
 ```
 
 For a debuggable library (`make debug`, or CMake `-DCMAKE_BUILD_TYPE=Debug`) you can run the demo under a tool like valgrind:
@@ -145,6 +146,21 @@ cmake --build build --config Release --target demo_package
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 cmake --build build --target demo_package
 # -> build/libcarmen-demo-<version>-<os>-<arch>.tar.gz
+```
+
+SDK archives (`sdk_package`; the developer counterpart of the demo archives, produced in CI and on version tags). Each archive is a relocatable link-time SDK — public headers, the library, a relocatable `carmen.pc` (`prefix=${pcfiledir}`, so `pkg-config` works from wherever it is unpacked), `LICENSE` / `COPYING.fribidi`, a README, and (in the CMake-built archives) the `find_package(carmen)` config under `lib/cmake/carmen`:
+
+- **Static SDK** (`libcarmen-sdk-<version>-<os>-<arch>-static.{tar.gz,zip}`) ships `libcarmen.a`. Link with `-lcarmen -lm`, `pkg-config --static --cflags --libs carmen`, or `find_package(carmen)`.
+- **Shared SDK** (`libcarmen-sdk-<version>-<os>-<arch>-shared.{tar.gz,zip}`) ships the `libcarmen` shared library (real file + soname + dev symlinks).
+
+The two flavors are produced by configuring with `-DBUILD_SHARED_LIBS=OFF` vs `ON`; each archive holds a single library so a consumer never has to tell two `libcarmen.*` files apart. On macOS, `make sdk` produces both per-arch tarballs in one step.
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+cmake --build build --target sdk_package      # -> build/libcarmen-sdk-<version>-<os>-<arch>-static.tar.gz
+
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
+cmake --build build --target sdk_package      # -> build/libcarmen-sdk-<version>-<os>-<arch>-shared.tar.gz
 ```
 
 Or with CMake (also how the WebAssembly and Windows/MSVC builds are configured -- see [Building](#building) below and `.github/workflows/ci.yml`):
@@ -230,6 +246,13 @@ Makefile                   Build rules (static/shared lib, tests, coverage, inst
 LICENSE                    MIT license
 VERSION                    Single source of truth for the version (see doc/versioning.md)
 carmen.pc.in               pkg-config template
+carmen.pc.sdk.in           Relocatable pkg-config template (sed/configure into the SDK archives)
+packaging/
+  SDK-README.txt.in        README template for the SDK archives (rendered by Make + CMake)
+cmake/
+  carmenConfig.cmake.in    find_package(carmen) config template
+  copy_if_absent.cmake     helper used by the dist target
+  smoke/                   find_package(carmen) consumer used by the SDK smoke test
 include/carmen/
   carmen.h                 Umbrella header (includes everything below)
   carmen_version.h         Version macros (generated from VERSION at build time, not committed)
@@ -270,6 +293,10 @@ tools/
   gen_version.sh           Generates carmen_version.h from VERSION (used by Make + CMake)
   check_version.sh         Fails if VERSION / generated header / resolved version disagree
   CMakeLists.txt           Standalone build for the host tool (used when cross-compiling)
+scripts/
+  release.sh               Thin wrapper around commit-and-tag-version (release bumps/tags)
+  vendor-fribidi.sh        Fetch/refresh the vendored FriBidi tree
+  smoke-sdk.sh             Extract a SDK archive and smoke-test each consume path
 examples/
   trail_demo.c             main() demo driver (interactive terminal game)
 locales/
