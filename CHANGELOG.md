@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.1](https://github.com/mgatto/libcarmen/compare/v1.0.0...v1.0.1) (2026-09-13)
+
+### Bug Fixes
+
+* auto-tagging a release uses simple commit message ([5dc61de](https://github.com/mgatto/libcarmen/commit/5dc61de7fec6b247df91ee8d20cae96d64d65628))
+* build failure for Windows by switching to unzip ([65b1c7b](https://github.com/mgatto/libcarmen/commit/65b1c7b927f3e54ac62c6b58a2f7ffbf00d9eed3))
+* docs runner triggered node v20 warning ([5095260](https://github.com/mgatto/libcarmen/commit/5095260b15d231943b0cb5ee7778aa350860f85f))
+* failed Windows and MacOS build runners ([9b04263](https://github.com/mgatto/libcarmen/commit/9b042634694b9f25a3c01c1de99ff8d7478868a4))
+* guards on automatic release tagging ([e5726b4](https://github.com/mgatto/libcarmen/commit/e5726b449c3390cae28167005f107b5797a12a5d))
+* windows find_package arg had a relative root ([4a9336e](https://github.com/mgatto/libcarmen/commit/4a9336ec5b1a2eeeca58a5320f3df66d59989933))
 ## [1.0.0](https://github.com/mgatto/libcarmen/compare/v0.9.0...v1.0.0) (2026-09-13)
 
 ### Features
