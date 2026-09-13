@@ -99,15 +99,17 @@ make package       # self-contained macOS demo tarball (libcarmen-demo-<version>
 
 The version lives in the top-level `VERSION` file alone (`carmen_version.h` is generated from it); `make test` runs a `version-check` that fails if anything drifts. See `doc/versioning.md` for the semver + ABI policy.
 
-Cutting a release is scripted:
+Cutting a release is automated with [`commit-and-tag-version`](https://github.com/absolute-version/commit-and-tag-version) (`scripts/release.sh` is a thin wrapper; see `.versionrc.json`). It reads the current version from `VERSION`, derives the semver bump from the conventional commits since the last tag, writes `VERSION` back, regenerates `CHANGELOG.md`, runs `make test && make verify-soname` before committing, then commits and tags `vX.Y.Z`:
 
 ```sh
-scripts/release.sh 0.10.0          # validate, bump VERSION, build + test via make/cmake, commit, tag v0.10.0
-scripts/release.sh 0.10.0 --push   # ...and push the branch + tag (triggers .github/workflows/release.yml)
-scripts/release.sh 0.10.0 --dry-run # print every step without changing anything
+scripts/release.sh --dry-run   # preview the bump + changelog
+scripts/release.sh             # bump VERSION, generate CHANGELOG.md, test, commit, tag vX.Y.Z
+scripts/release.sh --release-as minor   # force a minor bump while pre-1.0
+git push origin HEAD
+git push origin vX.Y.Z         # triggers .github/workflows/release.yml
 ```
 
-The script only produces the version bump, commit, and tag; GitHub Actions builds and publishes the demo archives for the pushed tag.
+The tool only produces the version bump, commit, and tag; GitHub Actions builds and publishes the demo archives for the pushed tag. `CHANGELOG.md` is generated and committed. See `doc/versioning.md` for the semver + ABI policy.
 
 Demo archives (`demo_package`; produced in CI and on version tags):
 
