@@ -42,6 +42,8 @@ Release mechanics are delegated to [`commit-and-tag-version`](https://github.com
 4. runs `make test && make verify-soname` as the `precommit` lifecycle hook (stdout redirected to stderr), so the new version is proven to propagate before anything is committed and the hook's stdout is not captured as a custom commit message;
 5. commits with the `releaseCommitMessageFormat` message (default `Release of version <version>`) and creates the annotated `v<version>` tag.
 
+`scripts/release.sh` also preflights two invariants before handing off to the tool, so a tag can never land on a detached/orphan commit or be diffed against a stale tag: (a) the current branch must be `main` (a tag points at a commit, so it is only "on main" if cut from a checked-out `main`), and (b) the latest tag reachable from HEAD (`git describe --tags --abbrev=0`) must already equal `v$(cat VERSION)`, i.e. the previously released version is actually reachable — otherwise the changelog's compare range would silently pick an older tag. Both guards apply to `--dry-run` too, so a misleading preview fails loudly instead of showing a wrong range.
+
 Nothing is pushed; pushing the tag triggers `release.yml` to build and publish the demo packages. Useful flags: `--dry-run` (preview), `--release-as minor` (force a bump type), `--first-release` (tag without bumping), `--prerelease <name>`.
 
 Below `1.0.0` the tool follows the conventional-commits pre-1.0 convention: `feat:` and `fix:` both bump **patch**, and only a breaking change (`!`/`BREAKING CHANGE`) bumps **minor**. This differs from the feat→minor mapping used past `1.0.0`; while pre-1.0, opt into a minor bump explicitly with `--release-as minor` when a feature merits it.

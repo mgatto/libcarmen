@@ -24,4 +24,27 @@
 
 set -eu
 
+# Guard the release so the new tag always lands on the tip of `main` and the
+# changelog is diffed against the correct previous tag. A tag is not "on a
+# branch" -- it points at a commit -- so the tag is only on main's history if
+# we cut it from a checked-out `main`. If an earlier release left the previous
+# tag on an orphan/reachable-from-nowhere commit (or never tagged it), the
+# describe probe below falls back to an older tag and commit-and-tag-version
+# silently generates the changelog against the wrong comparison; refuse loudly
+# instead of shipping a broken link/range.
+
+branch="$(git symbolic-ref --short -q HEAD 2>/dev/null || true)"
+if [ "$branch" != "main" ]; then
+    echo "release.sh: must be run from main (currently: ${branch:-a detached HEAD})" >&2
+    exit 1
+fi
+
+current_tag="v$(cat VERSION)"
+latest_tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+if [ -n "$latest_tag" ] && [ "$latest_tag" != "$current_tag" ]; then
+    echo "release.sh: VERSION ($current_tag) does not match the latest tag reachable from main ($latest_tag)" >&2
+    echo "release.sh: the changelog would be generated against the wrong tag; fix the tag before releasing" >&2
+    exit 1
+fi
+
 exec npx commit-and-tag-version "$@"
