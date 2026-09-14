@@ -2,7 +2,7 @@
 
 ![Project Hero Image](libcarmen.png)
 
-Portable C17 core engine for Carmen Sandiego-style world exploration games, starting with an [Islamicate world](#built-in-world) and extensible to other cultural realms — zero external deps, clean C ABI, FFI- and WebAssembly-ready.
+Portable C17 core engine for Carmen Sandiego-style world exploration games, starting with an [Islamicate world](#built-in-islamicate-world) and extensible to other cultural realms — zero external deps, clean C ABI, FFI- and WebAssembly-ready.
 
 ## Documentation
 
@@ -25,7 +25,17 @@ Ruby and Python wrappers (and other language bindings and front-ends) are intend
 
 ## Built-in Islamicate World
 
-The built-in world covers 22 important Muslim cities globally, aiming for a tasteful balance of the historical and the modern — from classical centers of learning and trade to present-day capitals and cultural hubs. They span the breadth of the Islamicate world: Istanbul (Süleymaniye Mosque, Topkapı Palace), Fez (Al-Qarawiyyin, the ancient medina), Samarkand (the Registan, Bibi-Khanum Mosque), Zanzibar (Stone Town, Hamamni Persian Baths), Lahore (Badshahi Mosque, Lahore Fort), Kuala Lumpur (Petronas Towers), and sixteen others — each with up to four investigable sites across types: market, mosque, museum, landmark, and park. The selection is a starting point, not a canon; the preset system ([`presets/islamic.jsonc`](presets/islamic.jsonc)) is designed for adding worlds rooted in other cultural geographies.
+The built-in world covers 22 important Muslim cities globally, aiming for a tasteful balance of the historical and the modern — from classical centers of learning and trade to present-day capitals and cultural hubs. They span the breadth of the Islamicate world: Istanbul (Süleymaniye Mosque, Topkapı Palace), Fez (Al-Qarawiyyin, the ancient medina), Samarkand (the Registan, Bibi-Khanum Mosque), Zanzibar (Stone Town, Hamamni Persian Baths), Lahore (Badshahi Mosque, Lahore Fort), Kuala Lumpur (Petronas Towers), and sixteen others — each with up to four investigable sites across types: market, mosque, museum, landmark, and park. The selection is a starting point, not a canon; the preset system ([`presets/islamic.jsonc`](presets/islamic.jsonc)) is designed for adding worlds rooted in other cultural geographies. The 22 cities are grouped into seven cultural sub-spheres:
+
+| Group | Cities |
+|-------|--------|
+| **A - Maghreb** | Casablanca, Fez, Tunis |
+| **B - Turkey/Balkans** | Istanbul, Konya, Sarajevo |
+| **C - Arab East (Mashreq + Gulf)** | Cairo, Damascus, Dubai, Muscat |
+| **D - Sub-Saharan Africa** | Dakar, Zanzibar, Kano |
+| **E - Iran/Central Asia** | Isfahan, Samarkand, Kabul |
+| **F - South Asia** | Lahore, Dhaka, Hyderabad |
+| **G - Southeast Asia** | Kuala Lumpur, Jakarta, Yogyakarta |
 
 The criminal organization behind each case is **FITNA** — a roster of 16 thieves defined in [`include/carmen/villain.h`](include/carmen/villain.h) with names drawn from Arabic, Persian, and Urdu traditions: Qamar Samarkandi ("The Moon"), Layla Lapis ("Midnight Blue"), Tariq al-Tariq ("The Morning Star"), Soraya Samum ("The Sandstorm"), Rumi the Riddle ("The Poet"), and eleven others. Each villain carries four identity clues; three of them are seeded as suspect-description clues across the cities on the villain's trail, and the player collects them by investigating sites in order to issue a warrant.
 
