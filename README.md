@@ -4,6 +4,18 @@
 
 Portable C17 core engine for Carmen Sandiego-style world exploration games, starting with an [Islamicate world](#built-in-islamicate-world) and extensible to other cultural realms — zero external deps, clean C ABI, FFI- and WebAssembly-ready.
 
+## Design Influence: The Game of Cops and Robbers on Graphs
+
+<a href="https://bookstore.ams.org/view?ProductCode=STML/61"><img src="media/ama-cops-robbers-graphics-cover.jpg" alt="Cover of The Game of Cops and Robbers on Graphs by Anthony Bonato and Richard J. Nowakowski (AMS, STML/61)" width="200" align="left" style="margin-right:1em;"></a>
+
+The core loop is a pursuit-evasion game on a graph, and the design is informed by *The Game of Cops and Robbers on Graphs* by Anthony Bonato and Richard J. Nowakowski (AMS Student Mathematical Library vol. 61). Several decisions come straight out of it:
+
+- **Cities are vertices, flights are edges.** `carmen_world_generate_connections()` ([`src/connection_gen.c`](src/connection_gen.c)) builds the world as a connected 3-regular graph (22 vertices, 33 edges) — a deliberate structural choice so the robber always has room to flee (degree 3) while the cop's search space stays bounded and tractable.
+- **An invisible robber.** The villain's exact position is never shown; the player reconstructs the robber's `trail[]` from identity clues gathered at stops — the book's "invisible robber / locating" variants (ch. 8) rather than the visible-robber game.
+- **Cop number ↦ difficulty.** Where the book asks how many cops `c(G)` guarantee capture, `CaseSettings` difficulty tunes the time budget, move limit, and clue availability — the same "how much search effort guarantees a win" knob.
+- **Capture time ↦ the clock.** The book's capture time (rounds to win) maps to `time_budget_hrs` and the move limit; `issue_warrant` and `arrest` fire only once clues have converged on a single culprit, mirroring a cop winning only by landing on the robber.
+- **BFS is the cop's search radius.** `game_world.c` computes shortest paths and reachability (book ch. 5) as the algorithmic backbone for distance and feasible pursuit.
+
 ## Documentation
 
 The full public API reference — generated with Doxygen from the `/** ... */` comments in [`include/carmen/`](include/carmen/) — is published at <https://mgatto.github.io/libcarmen/> and regenerated from `main` by [`.github/workflows/docs.yml`](.github/workflows/docs.yml). Generate it locally with `make docs` (requires `doxygen`), then open `build/doxygen/html/index.html`.
