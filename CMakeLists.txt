@@ -454,7 +454,8 @@ Run from inside this folder:
   trail_demo.exe en settings.toml
 
 carmen.dll and fribidi*.dll must stay next to trail_demo.exe.
-The demo loads locales/en.json relative to the current directory.
+The demo finds locales/en.json and settings.toml next to itself
+(falling back to the current directory), so it runs from anywhere.
 
 If Windows reports a missing VCRUNTIME or MSVCP DLL, install
 the Microsoft Visual C++ Redistributable for 64-bit Windows.
@@ -466,8 +467,9 @@ the Microsoft Visual C++ Redistributable for 64-bit Windows.
 Run from inside this folder:
   ./trail_demo en settings.toml
 
-Keep the shipped carmen library next to trail_demo (the demo loads
-locales/<locale>.json relative to the current directory).
+Keep the shipped carmen library next to trail_demo. The demo finds
+locales/<locale>.json and settings.toml next to itself (falling back
+to the current directory), so it runs from anywhere.
 ")
     endif()
 

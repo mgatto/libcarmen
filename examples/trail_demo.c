@@ -4,9 +4,21 @@
 #include <string.h>
 #include <time.h>
 
+#if defined(_WIN32)
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <limits.h>
+#include <mach-o/dyld.h>
+#include <unistd.h>
+#else
+#include <limits.h>
+#include <unistd.h>
+#endif
+
 #define LINE       "============================================================"
 #define RULE       "------------------------------------------------------------"
 #define EXPAND_BUF 512
+#define PATH_BUF   1024
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
 
@@ -17,6 +29,75 @@ static int valid_locale_id(const char *id)
               *p == '_' || *p == '-'))
             return 0;
     return id[0] != '\0';
+}
+
+/* Fill buf with the directory that contains the running executable (the
+ * dirname of its full path), or leave buf empty on failure so callers fall
+ * back to resolving data files against the current working directory. The
+ * demo ships its locales/ and settings.toml next to the executable, so it
+ * must be able to find them regardless of where it was launched from
+ * (Finder/double-click, an absolute-path invocation, a different CWD). */
+static void executable_dir(char *buf, size_t size)
+{
+    if (!buf || size == 0) return;
+    buf[0] = '\0';
+
+#if defined(_WIN32)
+    char  exe[MAX_PATH];
+    DWORD n = GetModuleFileNameA(NULL, exe, (DWORD)sizeof exe);
+    if (n == 0 || n >= (DWORD)sizeof exe) return;
+    exe[n] = '\0';
+#elif defined(__APPLE__)
+    char     exe[PATH_MAX];
+    char     resolved[PATH_MAX];
+    uint32_t len = (uint32_t)sizeof exe;
+    if (_NSGetExecutablePath(exe, &len) != 0) return;
+    if (realpath(exe, resolved) == NULL) return;
+    snprintf(exe, sizeof exe, "%s", resolved);
+#else
+    char    exe[PATH_MAX];
+    ssize_t n = readlink("/proc/self/exe", exe, sizeof exe - 1);
+    if (n < 0 || n >= (ssize_t)(sizeof exe - 1)) return;
+    exe[n] = '\0';
+#endif
+
+    char *sep = strrchr(exe, '/');
+#if defined(_WIN32)
+    char *bsep = strrchr(exe, '\\');
+    if (!sep || (bsep && bsep > sep)) sep = bsep;
+#endif
+    if (sep) {
+        *sep = '\0';
+        snprintf(buf, size, "%s", exe);
+    } else {
+        snprintf(buf, size, ".");
+    }
+}
+
+/* Resolve a data file that ships next to the executable. If exe_dir is
+ * non-empty and exe_dir/rel exists, write that joined path into out;
+ * otherwise write rel unchanged (the historical CWD-relative behavior, which
+ * keeps `./build/trail_demo` working from the repository root). Returns 1 on
+ * success, 0 if the joined path would not fit in out. */
+static int resolve_data_path(char *out, size_t size, const char *exe_dir, const char *rel)
+{
+    if (exe_dir && exe_dir[0]) {
+        char joined[PATH_BUF];
+#if defined(_WIN32)
+        if (snprintf(joined, sizeof joined, "%s\\%s", exe_dir, rel) < (int)sizeof joined) {
+#else
+        if (snprintf(joined, sizeof joined, "%s/%s", exe_dir, rel) < (int)sizeof joined) {
+#endif
+            FILE *f = fopen(joined, "rb");
+            if (f) {
+                fclose(f);
+                if (snprintf(out, size, "%s", joined) >= (int)size) return 0;
+                return 1;
+            }
+        }
+    }
+    if (snprintf(out, size, "%s", rel) >= (int)size) return 0;
+    return 1;
 }
 
 /* How Arabic/RTL text is emitted to the terminal.
@@ -217,7 +298,10 @@ static void print_usage(const char *prog)
     printf("                    auto     guess from the environment (see below)\n");
     printf("  --help, -h      show this help and exit\n\n");
     printf("The CARMEN_BIDI environment variable accepts the same values and is used\n");
-    printf("when --bidi is absent. Precedence: --bidi > CARMEN_BIDI > auto heuristic.\n");
+    printf("when --bidi is absent. Precedence: --bidi > CARMEN_BIDI > auto heuristic.\n\n");
+    printf("The demo locates its bundled locales/ and settings.toml next to the\n");
+    printf("executable (falling back to the current directory), so the downloaded\n");
+    printf("archive can be run from any working directory.\n");
 }
 
 int main(int argc, char *argv[])
@@ -260,8 +344,16 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Invalid locale id: %s\n", locale);
         return 1;
     }
-    char path[256];
-    snprintf(path, sizeof path, "locales/%s.json", locale);
+    char exe_dir[PATH_BUF];
+    executable_dir(exe_dir, sizeof exe_dir);
+
+    char path[PATH_BUF];
+    char locale_rel[PATH_BUF];
+    snprintf(locale_rel, sizeof locale_rel, "locales/%s.json", locale);
+    if (!resolve_data_path(path, sizeof path, exe_dir, locale_rel)) {
+        fprintf(stderr, "Locale path too long: %s\n", locale_rel);
+        return 1;
+    }
 
     CarmenI18n *i18n = carmen_i18n_load(path);
     if (!i18n) {
@@ -281,8 +373,27 @@ int main(int argc, char *argv[])
 
     CarmenSession      session;
     CarmenCaseSettings settings = carmen_case_settings_default();
-    if (settings_path && !carmen_case_settings_load(&settings, settings_path)) {
-        fprintf(stderr, "Failed to load settings: %s (using defaults)\n", settings_path);
+
+    /* A bare settings filename (no directory separator) is resolved against the
+     * demo's own directory first, then the CWD, so the shipped settings.toml is
+     * found next to the executable. An absolute or explicit relative path is
+     * passed through untouched. */
+    char        resolved_settings[PATH_BUF];
+    const char *effective_settings = NULL;
+    if (settings_path) {
+        int bare = strchr(settings_path, '/') == NULL
+#if defined(_WIN32)
+                   && strchr(settings_path, '\\') == NULL
+#endif
+            ;
+        if (bare &&
+            resolve_data_path(resolved_settings, sizeof resolved_settings, exe_dir, settings_path))
+            effective_settings = resolved_settings;
+        else
+            effective_settings = settings_path;
+    }
+    if (effective_settings && !carmen_case_settings_load(&settings, effective_settings)) {
+        fprintf(stderr, "Failed to load settings: %s (using defaults)\n", effective_settings);
         settings = carmen_case_settings_default();
     }
     if (!carmen_session_start(&session, world, &settings)) {

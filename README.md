@@ -220,9 +220,9 @@ cc -std=c17 -Wall -Wextra -pedantic -O2 \
 
 ## Running
 
-Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`) and the macOS/Linux tarballs (`libcarmen-demo-<version>-{macos,linux}-<arch>.tar.gz`). Unpack, `cd` into the folder, and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS/Linux). Keep the shipped libraries (`carmen.dll` and `fribidi*.dll` on Windows, the `libcarmen` shared library on macOS/Linux) next to the demo.
+Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`) and the macOS/Linux tarballs (`libcarmen-demo-<version>-{macos,linux}-<arch>.tar.gz`). Unpack and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS/Linux). Keep the shipped libraries (`carmen.dll` and `fribidi*.dll` on Windows, the `libcarmen` shared library on macOS/Linux) next to the demo. The archive is self-contained: the demo locates its bundled `locales/` and `settings.toml` relative to its own directory (falling back to the current directory), so it can be launched from any working directory.
 
-From a source checkout, run from the repository root -- the demo loads its locale file via the relative path `locales/<locale>.json`:
+From a source checkout, the demo likewise finds its locale file either in `locales/<locale>.json` relative to the current directory or next to the executable:
 
 ```sh
 ./build/trail_demo              # default locale "en"
