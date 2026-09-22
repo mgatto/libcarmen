@@ -20,10 +20,10 @@ DIST_DIR  = dist
 VERSION  := $(shell cat VERSION)
 SOMAJOR  := $(firstword $(subst ., ,$(VERSION)))
 
-# Distributable demo tarball naming: libcarmen-demo-<version>-macos-<arch>.tar.gz
-ARCH        := $(shell uname -m)
-PKG_NAME     = libcarmen-demo-$(VERSION)-macos-$(ARCH)
-PKG_TARBALL  = $(PKG_NAME).tar.gz
+# Distributable demo image naming: libcarmen-demo-<version>-macos-<arch>.dmg
+ARCH    := $(shell uname -m)
+PKG_NAME = libcarmen-demo-$(VERSION)-macos-$(ARCH)
+PKG_DMG  = $(PKG_NAME).dmg
 
 # --------------------------------------------------------------------------- #
 #  Platform detection
@@ -238,16 +238,18 @@ dist: $(SHARED_LIB) $(TRAIL_DEMO_OBJ) version-check verify-soname
 	@echo "  cd $(DIST_DIR) && ./trail_demo en settings.toml"
 
 # --------------------------------------------------------------------------- #
-#  macOS demo tarball
+#  macOS demo image (.dmg)
 #
 #  Roll the self-contained dist/ bundle into a single versioned, arch-tagged
-#  .tar.gz for macOS. We stage a renamed copy under build/ (rather than using
-#  tar --transform / bsdtar -s) so the archive expands into a self-named
-#  top-level folder without depending on tar-flavor-specific flags.
+#  .dmg for macOS. We stage a renamed copy under build/ (rather than using
+#  tar --transform / bsdtar -s) so the image holds a self-named top-level
+#  folder. Ad-hoc codesigning, the drag-install /Applications symlink, and
+#  hdiutil are handled by scripts/package-demo-macos.sh (shared with the CMake
+#  demo_package target so the two build systems stay in lockstep).
 #
 #  dist/ is rebuilt from scratch first (unlike a plain `make dist`, which
 #  preserves an edited settings.toml) so a stale/edited bundle never leaks
-#  into the shipped tarball. The recursive `$(MAKE) dist` guarantees the wipe
+#  into the shipped image. The recursive `$(MAKE) dist` guarantees the wipe
 #  happens before dist/ is reassembled -- a prerequisite would build too early.
 # --------------------------------------------------------------------------- #
 
@@ -260,16 +262,19 @@ package:
 	printf '%s\n' \
 	    'libcarmen demo ($(VERSION), macos $(ARCH))' \
 	    '' \
-	    'Run from inside this folder:' \
+	    'The .dmg contains a self-contained folder. Mount it, drag the folder' \
+	    'next to the Applications shortcut (or anywhere you like), then run' \
+	    'from inside that folder:' \
 	    '  ./trail_demo en settings.toml' \
 	    '' \
-	    'First launch may be blocked by Gatekeeper (unsigned download).' \
-	    'If so, clear the quarantine flag once:' \
+	    'The demo is ad-hoc signed (no Apple Developer ID), so a downloaded' \
+	    'copy may be blocked by Gatekeeper on first launch. If so, either' \
+	    'right-click trail_demo > Open, or clear the quarantine flag once:' \
 	    '  xattr -dr com.apple.quarantine .' \
 	    > $(BUILD_DIR)/$(PKG_NAME)/README.txt
-	tar -czf $(PKG_TARBALL) -C $(BUILD_DIR) $(PKG_NAME)
+	scripts/package-demo-macos.sh $(BUILD_DIR)/$(PKG_NAME) $(VERSION) $(PKG_DMG)
 	@echo ""
-	@echo "Package ready: $(PKG_TARBALL)"
+	@echo "Package ready: $(PKG_DMG)"
 
 # --------------------------------------------------------------------------- #
 #  macOS SDK tarballs
@@ -337,7 +342,7 @@ clean:
 
 distclean: clean
 	rm -rf $(DIST_DIR)
-	rm -f $(PKG_TARBALL) $(SDK_STATIC_TGZ) $(SDK_SHARED_TGZ)
+	rm -f $(PKG_DMG) $(SDK_STATIC_TGZ) $(SDK_SHARED_TGZ)
 
 # --------------------------------------------------------------------------- #
 #  pkg-config

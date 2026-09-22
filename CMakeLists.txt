@@ -435,6 +435,9 @@ if(CARMEN_BUILD_EXAMPLES)
     if(WIN32)
         set(CARMEN_DEMO_ARCHIVE
             "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}.zip")
+    elseif(APPLE)
+        set(CARMEN_DEMO_ARCHIVE
+            "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}.dmg")
     else()
         set(CARMEN_DEMO_ARCHIVE
             "${CMAKE_BINARY_DIR}/${CARMEN_DEMO_PKG_NAME}.tar.gz")
@@ -460,11 +463,29 @@ The demo finds locales/en.json and settings.toml next to itself
 If Windows reports a missing VCRUNTIME or MSVCP DLL, install
 the Microsoft Visual C++ Redistributable for 64-bit Windows.
 ")
+    elseif(APPLE)
+        file(WRITE "${CARMEN_DEMO_README}"
+"libcarmen demo (${PROJECT_VERSION}, ${CARMEN_DIST_OS} ${CARMEN_DIST_ARCH})
+
+The .dmg contains a self-contained folder. Mount it, drag the folder
+next to the Applications shortcut (or anywhere you like), then run
+from inside that folder:
+  ./trail_demo en settings.toml
+
+Keep the shipped carmen library next to trail_demo. The demo finds
+locales/<locale>.json and settings.toml next to itself (falling back
+to the current directory), so it runs from anywhere.
+
+The demo is ad-hoc signed (no Apple Developer ID), so a downloaded
+copy may be blocked by Gatekeeper on first launch. If so, either
+right-click trail_demo > Open, or clear the quarantine flag once:
+  xattr -dr com.apple.quarantine .
+")
     else()
         file(WRITE "${CARMEN_DEMO_README}"
 "libcarmen demo (${PROJECT_VERSION}, ${CARMEN_DIST_OS} ${CARMEN_DIST_ARCH})
 
-Run from inside this folder:
+Unpack the archive and run from inside the folder:
   ./trail_demo en settings.toml
 
 Keep the shipped carmen library next to trail_demo. The demo finds
@@ -517,6 +538,16 @@ to the current directory), so it runs from anywhere.
         list(APPEND _demo_pkg_commands
             COMMAND ${CMAKE_COMMAND} -E tar cf "${CARMEN_DEMO_ARCHIVE}"
                     --format=zip -- "${CARMEN_DEMO_PKG_NAME}"
+        )
+    elseif(APPLE)
+        # macOS ships a .dmg instead of a tarball: codesign (ad-hoc), the
+        # drag-install /Applications symlink, and hdiutil are all handled by the
+        # shared script so the Makefile `package` target stays in lockstep.
+        list(APPEND _demo_pkg_commands
+            COMMAND ${CMAKE_SOURCE_DIR}/scripts/package-demo-macos.sh
+                    "${CARMEN_DEMO_PKG_DIR}"
+                    "${PROJECT_VERSION}"
+                    "${CARMEN_DEMO_ARCHIVE}"
         )
     else()
         list(APPEND _demo_pkg_commands

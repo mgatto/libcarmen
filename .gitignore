@@ -29,6 +29,11 @@ CMakeUserPresets.json
 # Generated version header (see VERSION; never committed)
 include/carmen/carmen_version.h
 
+# Release packaging artifacts (`make package` / `make sdk`, emitted to repo root)
+/libcarmen-demo-*.dmg
+/libcarmen-demo-*.tar.gz
+/libcarmen-sdk-*.tar.gz
+
 # Editor / IDE
 .vscode/
 .idea/

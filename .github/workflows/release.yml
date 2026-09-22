@@ -91,10 +91,11 @@ jobs:
       - name: Check tag matches VERSION file
         uses: ./.github/actions/check-version
 
-      # Release shared build so the tarball ships carmen's shared library (and
-      # its soname symlink) next to trail_demo, and the shared SDK tarball is
-      # produced by the same build. FriBidi is compiled from the vendored tree
-      # on Unix, so there is no vcpkg step here.
+      # Release shared build so the demo archive ships carmen's shared library
+      # (and its soname symlink) next to trail_demo, and the shared SDK tarball
+      # is produced by the same build. FriBidi is compiled from the vendored
+      # tree on Unix, so there is no vcpkg step here. demo_package emits a
+      # signed .dmg on macOS and a .tar.gz on Linux.
       - name: Configure and package (Release shared)
         run: |
           cmake -S . -B build-cmake-package -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
@@ -106,14 +107,23 @@ jobs:
           cmake -S . -B build-cmake-sdk-static -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
           cmake --build build-cmake-sdk-static --target sdk_package -j
 
+      # The demo archive is a .dmg on macOS and a .tar.gz on Linux, so its path
+      # is discovered (rather than globbed) and exported for the checksum and
+      # upload steps below. A missing demo archive fails loudly.
+      - name: Locate demo archive
+        shell: bash
+        run: |
+          demo="$(find build-cmake-package -maxdepth 1 \( -name 'libcarmen-demo-*.tar.gz' -o -name 'libcarmen-demo-*.dmg' \) -print -quit)"
+          [ -n "$demo" ] || { echo "demo archive not found"; exit 1; }
+          echo "DEMO_ARCHIVE=$demo" >> "$GITHUB_ENV"
+
       - name: SHA256 checksum
         run: |
           : > "build-cmake-package/sha256sums-${{ runner.os }}.txt"
-          for archive in \
-              build-cmake-package/libcarmen-demo-*.tar.gz \
-              build-cmake-package/libcarmen-sdk-*-shared.tar.gz \
-              build-cmake-sdk-static/libcarmen-sdk-*-static.tar.gz; do
-            [ -f "$archive" ] || { echo "archive not found: $archive"; exit 1; }
+          shared_sdk="$(find build-cmake-package -maxdepth 1 -name 'libcarmen-sdk-*-shared.tar.gz' -print -quit)"
+          static_sdk="$(find build-cmake-sdk-static -maxdepth 1 -name 'libcarmen-sdk-*-static.tar.gz' -print -quit)"
+          for archive in "$DEMO_ARCHIVE" "$shared_sdk" "$static_sdk"; do
+            [ -n "$archive" ] && [ -f "$archive" ] || { echo "archive not found: $archive"; exit 1; }
             printf '%s  %s\n' \
               "$(shasum -a 256 "$archive" | cut -d' ' -f1)" "$(basename "$archive")" \
               >> "build-cmake-package/sha256sums-${{ runner.os }}.txt"
@@ -135,7 +145,7 @@ jobs:
         with:
           draft: true
           files: |
-            build-cmake-package/libcarmen-demo-*.tar.gz
+            ${{ env.DEMO_ARCHIVE }}
             build-cmake-package/libcarmen-sdk-*-shared.tar.gz
             build-cmake-sdk-static/libcarmen-sdk-*-static.tar.gz
           fail_on_unmatched_files: true

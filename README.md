@@ -162,12 +162,13 @@ cmake --build build --config Release --target demo_package
 # -> build/libcarmen-demo-<version>-windows-x64.zip
 ```
 
-- **macOS / Linux tarballs** (`libcarmen-demo-<version>-{macos,linux}-<arch>.tar.gz`). A Release shared build on the native platform (no cross-compilation), so the archive ships the `libcarmen` shared library next to `trail_demo`:
+- **macOS disk image** (`libcarmen-demo-<version>-macos-<arch>.dmg`) and **Linux tarball** (`libcarmen-demo-<version>-linux-<arch>.tar.gz`). A Release shared build on the native platform (no cross-compilation), so the archive ships the `libcarmen` shared library next to `trail_demo`. The macOS `.dmg` is a self-contained folder (with an `/Applications` shortcut for drag-install) whose binaries are ad-hoc signed (`codesign --sign -`), so it isn't blocked with "damaged"/library-validation errors — though a downloaded copy still needs a one-time right-click > Open (or `xattr -dr com.apple.quarantine .`) since there is no Developer ID/notarization:
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
 cmake --build build --target demo_package
-# -> build/libcarmen-demo-<version>-<os>-<arch>.tar.gz
+# macOS -> build/libcarmen-demo-<version>-macos-<arch>.dmg
+# Linux  -> build/libcarmen-demo-<version>-linux-<arch>.tar.gz
 ```
 
 SDK archives (`sdk_package`; the developer counterpart of the demo archives, produced in CI and on version tags). Each archive is a relocatable link-time SDK — public headers, the library, a relocatable `carmen.pc` (`prefix=${pcfiledir}`, so `pkg-config` works from wherever it is unpacked), `LICENSE` / `COPYING.fribidi`, a README, and (in the CMake-built archives) the `find_package(carmen)` config under `lib/cmake/carmen`:
@@ -220,7 +221,7 @@ cc -std=c17 -Wall -Wextra -pedantic -O2 \
 
 ## Running
 
-Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`) and the macOS/Linux tarballs (`libcarmen-demo-<version>-{macos,linux}-<arch>.tar.gz`). Unpack and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS/Linux). Keep the shipped libraries (`carmen.dll` and `fribidi*.dll` on Windows, the `libcarmen` shared library on macOS/Linux) next to the demo. The archive is self-contained: the demo locates its bundled `locales/` and `settings.toml` relative to its own directory (falling back to the current directory), so it can be launched from any working directory.
+Pre-built demos for tagged versions are on the GitHub Releases page: the Windows zip (`libcarmen-demo-<version>-windows-x64.zip`), the macOS disk image (`libcarmen-demo-<version>-macos-<arch>.dmg`), and the Linux tarball (`libcarmen-demo-<version>-linux-<arch>.tar.gz`). Unpack and run `trail_demo.exe en settings.toml` (Windows) or `./trail_demo en settings.toml` (macOS/Linux). Keep the shipped libraries (`carmen.dll` and `fribidi*.dll` on Windows, the `libcarmen` shared library on macOS/Linux) next to the demo. The archive is self-contained: the demo locates its bundled `locales/` and `settings.toml` relative to its own directory (falling back to the current directory), so it can be launched from any working directory. On macOS, a freshly downloaded `.dmg` is still quarantined by Gatekeeper (ad-hoc signed, not notarized), so the first launch needs a one-time right-click > Open or `xattr -dr com.apple.quarantine .`.
 
 From a source checkout, the demo likewise finds its locale file either in `locales/<locale>.json` relative to the current directory or next to the executable:
 
