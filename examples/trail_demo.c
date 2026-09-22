@@ -48,13 +48,13 @@ static void executable_dir(char *buf, size_t size)
     if (!buf || size == 0) return;
     buf[0] = '\0';
 
+    char exe[PATH_BUF];
+
 #if defined(_WIN32)
-    char  exe[MAX_PATH];
     DWORD n = GetModuleFileNameA(NULL, exe, (DWORD)sizeof exe);
     if (n == 0 || n >= (DWORD)sizeof exe) return;
     exe[n] = '\0';
 #elif defined(__APPLE__)
-    char     exe[PATH_BUF];
     char     resolved[PATH_BUF];
     uint32_t len = (uint32_t)sizeof exe;
     if (_NSGetExecutablePath(exe, &len) != 0) return;
@@ -65,7 +65,6 @@ static void executable_dir(char *buf, size_t size)
      * empty so callers fall back to the current working directory. */
     return;
 #else
-    char    exe[PATH_BUF];
     ssize_t n = readlink("/proc/self/exe", exe, sizeof exe - 1);
     if (n < 0 || n >= (ssize_t)(sizeof exe - 1)) return;
     exe[n] = '\0';
