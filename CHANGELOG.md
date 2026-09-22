@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.1.0](https://github.com/mgatto/libcarmen/compare/v1.0.2...v1.1.0) (2026-09-22)
+
+### Features
+
+* produce .dmg for macos ([772a89a](https://github.com/mgatto/libcarmen/commit/772a89a11dc52c6797a1d37dbd2b8a3c195cc9e9))
+
+### Bug Fixes
+
+* failing ubuntu and WASM build in Github Actions ([f5f477d](https://github.com/mgatto/libcarmen/commit/f5f477df78ca72296aa20f1446cdb78bac5cd7eb))
+* find locales when launched from Finder or double-clicked ([2ca0fe3](https://github.com/mgatto/libcarmen/commit/2ca0fe36eacb7a8c686570bb8e87d884a12580be))
+* missing var for WASM build ([891078b](https://github.com/mgatto/libcarmen/commit/891078b206c4a38856b9e1644b9d68d3733a4540))
+
 ## [1.0.2](https://github.com/mgatto/libcarmen/compare/v1.0.1...v1.0.2) (2026-09-13)
 
 ### Bug Fixes
