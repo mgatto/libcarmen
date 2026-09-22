@@ -1,3 +1,9 @@
+/* Expose POSIX declarations (readlink, realpath) that glibc hides under
+ * -std=c17 strict-ISO mode; harmless on macOS and other POSIX platforms. */
+#if !defined(_WIN32)
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "carmen/carmen.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,14 +54,18 @@ static void executable_dir(char *buf, size_t size)
     if (n == 0 || n >= (DWORD)sizeof exe) return;
     exe[n] = '\0';
 #elif defined(__APPLE__)
-    char     exe[PATH_MAX];
-    char     resolved[PATH_MAX];
+    char     exe[PATH_BUF];
+    char     resolved[PATH_BUF];
     uint32_t len = (uint32_t)sizeof exe;
     if (_NSGetExecutablePath(exe, &len) != 0) return;
     if (realpath(exe, resolved) == NULL) return;
     snprintf(exe, sizeof exe, "%s", resolved);
+#elif defined(__EMSCRIPTEN__)
+    /* No host filesystem to resolve an executable path against; leave buf
+     * empty so callers fall back to the current working directory. */
+    return;
 #else
-    char    exe[PATH_MAX];
+    char    exe[PATH_BUF];
     ssize_t n = readlink("/proc/self/exe", exe, sizeof exe - 1);
     if (n < 0 || n >= (ssize_t)(sizeof exe - 1)) return;
     exe[n] = '\0';
